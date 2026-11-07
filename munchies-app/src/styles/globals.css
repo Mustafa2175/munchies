@@ -1,0 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+/* ========================================
+   Munchie's Design System — Custom Theme
+   ======================================== */
+
+@theme {
+  /* Brand Colors */
+  --color-primary: #512080;
+  --color-primary-light: #6B3FA0;
+  --color-primary-dark: #3D1860;
+  --color-primary-50: #F3EDFA;
+  --color-primary-100: #E4D6F2;
+  --color-primary-200: #C9ADE5;
+  --color-primary-300: #AE84D8;
+  --color-primary-400: #935BCB;
+  --color-primary-500: #512080;
+  --color-primary-600: #461C6E;
+  --color-primary-700: #3D1860;
+  --color-primary-800: #2E1248;
+  --color-primary-900: #1F0C30;
+
+  --color-yellow: #FFDA35;
+  --color-yellow-light: #FFE566;
+  --color-yellow-dark: #E5C200;
+  --color-yellow-50: #FFFBEB;
+  --color-yellow-100: #FFF3C4;
+  --color-yellow-200: #FFE88A;
+  --color-yellow-300: #FFDA35;
+  --color-yellow-400: #F5CE00;
+  --color-yellow-500: #D4AD00;
+
+  /* Neutral Colors */
+  --color-cream: #FFF8E9;
+  --color-dark: #26212B;
+  --color-light-gray: #F5F3F7;
+  --color-medium-gray: #9B95A3;
+  --color-border: #E8E5EB;
+
+  /* Semantic Colors */
+  --color-success: #27834B;
+  --color-success-light: #ECFDF5;
+  --color-danger: #E84D45;
+  --color-danger-light: #FEF2F2;
+  --color-warning: #F59E0B;
+  --color-warning-light: #FFFBEB;
+  --color-info: #3B82F6;
+  --color-info-light: #EFF6FF;
+
+  /* Typography */
+  --font-arabic: 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --font-english: 'Outfit', system-ui, sans-serif;
+
+  /* Shadows */
+  --shadow-card: 0 2px 8px -1px rgba(81, 32, 128, 0.08), 0 1px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 12px 24px -4px rgba(81, 32, 128, 0.15), 0 4px 8px -2px rgba(0, 0, 0, 0.06);
+  --shadow-yellow: 0 4px 14px 0 rgba(255, 218, 53, 0.39);
+  --shadow-primary: 0 4px 14px 0 rgba(81, 32, 128, 0.35);
+
+  /* Border Radius */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+}
+
+/* ========================================
+   Base Styles
+   ======================================== */
+
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+}
+
+html {
+  font-family: var(--font-arabic);
+  direction: rtl;
+  scroll-behavior: smooth;
+}
+
+html[lang="en"] {
+  font-family: var(--font-english);
+  direction: ltr;
+}
+
+body {
+  background-color: #FDFCFE;
+  color: var(--color-dark);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* RTL-specific helpers */
+html[dir="rtl"] .flip-in-rtl {
+  transform: scaleX(-1);
+}
+
+html[dir="rtl"] .phone-number {
+  direction: ltr;
+  unicode-bidi: embed;
+  text-align: right;
+}
+
+/* ========================================
+   Scrollbar Styling
+   ======================================== */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-light-gray);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-medium-gray);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* Skeleton shimmer */
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-light-gray) 25%,
+    #EBE8EF 37%,
+    var(--color-light-gray) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-loading 1.4s ease infinite;
+}

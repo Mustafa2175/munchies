@@ -13,6 +13,8 @@ import {
   deleteDoc,
   query,
   onSnapshot,
+  serverTimestamp,
+  arrayUnion,
   type QueryConstraint,
   type DocumentData,
   type Unsubscribe,
@@ -67,6 +69,27 @@ export async function updateDocument<T extends DocumentData>(
 export async function removeDocument(collectionName: string, id: string): Promise<void> {
   const docRef = doc(db, collectionName, id);
   await deleteDoc(docRef);
+}
+
+/**
+ * Atomically updates an order's status in Firestore, including statusHistory append
+ * and serverTimestamp for updatedAt. This is the single source of truth for status changes.
+ */
+export async function updateOrderStatusInFirestore(
+  orderId: string,
+  newStatus: string,
+  note?: string
+): Promise<void> {
+  const orderRef = doc(db, 'orders', orderId);
+  await updateDoc(orderRef, {
+    status: newStatus,
+    updatedAt: serverTimestamp(),
+    statusHistory: arrayUnion({
+      status: newStatus,
+      timestamp: new Date().toISOString(),
+      note: note || `تم تغيير الحالة إلى ${newStatus}`,
+    }),
+  });
 }
 
 export function subscribeToDoc<T>(

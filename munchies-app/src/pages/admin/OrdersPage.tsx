@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Search, Printer, Eye, X, UtensilsCrossed, Phone, Clock, MapPin } from 'lucide-react';
+import { Search, Printer, Eye, X, UtensilsCrossed, Truck, Store } from 'lucide-react';
 import type { Order, OrderStatus } from '@/types';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
@@ -12,6 +12,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { formatDateTime } from '@/lib/date';
+import { subscribeToCollection, updateOrderStatusInFirestore } from '@/lib/firestore';
+import { getLocalizedText } from '@/lib/i18n';
 import toast from 'react-hot-toast';
 
 export const OrdersPage: React.FC = () => {
@@ -20,34 +22,39 @@ export const OrdersPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTicketOrder, setSelectedTicketOrder] = useState<Order | null>(null);
 
+  // Subscribe to real-time updates from Firestore orders collection (single source of truth)
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem('munchies_orders') || '[]');
-    setOrders(stored);
+    const unsub = subscribeToCollection<Order>('orders', (remoteOrders) => {
+      const sorted = (remoteOrders || []).sort(
+        (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+      );
+      setOrders(sorted);
+    });
+
+    return () => unsub();
   }, []);
 
-  const handleUpdateStatus = (orderId: string, nextStatus: OrderStatus) => {
-    const updated = orders.map((o) =>
-      o.id === orderId
-        ? {
-            ...o,
-            status: nextStatus,
-            updatedAt: new Date().toISOString(),
-          }
-        : o
-    );
-    setOrders(updated);
-    localStorage.setItem('munchies_orders', JSON.stringify(updated));
-    toast.success('تم تحديث حالة الطلب');
+  const handleUpdateStatus = async (orderId: string, nextStatus: OrderStatus) => {
+    try {
+      await updateOrderStatusInFirestore(orderId, nextStatus);
+      toast.success('تم تحديث حالة الطلب');
+    } catch (err) {
+      console.error('Failed to update order status in Firestore:', err);
+      toast.error('فشل تحديث حالة الطلب – تأكد من تسجيل دخولك كمدير');
+    }
   };
 
   const filtered = orders.filter((o) => {
     const matchesFilter = filterStatus === 'all' || o.status === filterStatus;
-    const query = searchQuery.toLowerCase();
+    const query = searchQuery.trim().toLowerCase();
+    const cleanQuery = query.replace(/^#/, '');
+    const rawOrderNum = String(o.orderNumber || '').toLowerCase().replace(/^#/, '');
     const matchesSearch =
       !query ||
-      o.orderNumber.toLowerCase().includes(query) ||
-      o.customerName.toLowerCase().includes(query) ||
-      o.customerPhone.includes(query);
+      rawOrderNum.includes(cleanQuery) ||
+      `#${rawOrderNum}`.includes(query) ||
+      o.customerName?.toLowerCase().includes(query) ||
+      o.customerPhone?.replace(/[\s\-]/g, '').includes(cleanQuery);
     return matchesFilter && matchesSearch;
   });
 
@@ -124,8 +131,8 @@ export const OrdersPage: React.FC = () => {
               <tbody className="divide-y divide-gray-100">
                 {filtered.map((order) => (
                   <tr key={order.id} className="hover:bg-gray-50/50">
-                    <td className="px-5 py-3.5 font-bold text-[#512080]">
-                      {order.orderNumber}
+                    <td className="px-5 py-3.5 font-black text-[#512080] font-mono text-sm">
+                      #{String(order.orderNumber || '').replace(/^#/, '')}
                     </td>
                     <td className="px-5 py-3.5 text-gray-500">
                       {formatDateTime(order.createdAt)}
@@ -135,9 +142,24 @@ export const OrdersPage: React.FC = () => {
                       <div className="text-gray-400 text-[10px] number-ltr">
                         {order.customerPhone}
                       </div>
+                      {(order.type === 'delivery' || (order as any).deliveryType === 'delivery') ? (
+                        <div className="mt-1">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
+                            <Truck className="w-3 h-3 text-[#512080]" />
+                            <span>توصيل: {getLocalizedText(order.deliveryAddress?.area, 'أسوان')}</span>
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="mt-1">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                            <Store className="w-3 h-3 text-[#27834B]" />
+                            <span>استلام فرع</span>
+                          </span>
+                        </div>
+                      )}
                     </td>
                     <td className="px-5 py-3.5 text-gray-600 max-w-xs truncate">
-                      {order.items.map((i) => `${i.quantity}x ${i.name?.ar || (typeof i.name === 'string' ? i.name : '')}`).join('، ')}
+                      {order.items.map((i) => `${i.quantity}x ${getLocalizedText(i.name, 'صنف')}`).join('، ')}
                     </td>
                     <td className="px-5 py-3.5 font-extrabold text-[#26212B]">
                       <CurrencyDisplay amount={order.total} />
@@ -224,16 +246,24 @@ export const OrdersPage: React.FC = () => {
               </div>
               <p className="text-xs text-gray-500">فرع الكورنيش - حديقة الورد أمام الراية، أسوان</p>
               <p className="text-xs text-gray-500 font-bold number-ltr">01025707026</p>
-              <div className="mt-2 inline-block px-3 py-1 rounded-full bg-[#512080] text-white text-xs font-black">
-                بون استلام من الفرع (PICKUP)
-              </div>
+              {(selectedTicketOrder.type === 'delivery' || (selectedTicketOrder as any).deliveryType === 'delivery') ? (
+                <div className="mt-2 inline-block px-3 py-1 rounded-full bg-emerald-700 text-white text-xs font-black">
+                  بون توصيل ديليفري (DELIVERY)
+                </div>
+              ) : (
+                <div className="mt-2 inline-block px-3 py-1 rounded-full bg-[#512080] text-white text-xs font-black">
+                  بون استلام من الفرع (PICKUP)
+                </div>
+              )}
             </div>
 
             {/* Order meta */}
             <div className="text-xs space-y-1 py-2 border-b border-gray-200">
               <div className="flex justify-between">
                 <span className="text-gray-500">رقم الأوردر:</span>
-                <span className="font-black text-[#512080] text-sm">{selectedTicketOrder.orderNumber}</span>
+                <span className="font-black text-[#512080] text-sm font-mono">
+                  #{String(selectedTicketOrder.orderNumber || '').replace(/^#/, '')}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">التاريخ والوقت:</span>
@@ -241,12 +271,31 @@ export const OrdersPage: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">اسم العميل:</span>
-                <span className="font-bold">{selectedTicketOrder.customerName}</span>
+                <span className="font-bold">{getLocalizedText(selectedTicketOrder.customerName, '')}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">رقم الموبايل:</span>
                 <span className="font-bold number-ltr">{selectedTicketOrder.customerPhone}</span>
               </div>
+              {(selectedTicketOrder.type === 'delivery' || (selectedTicketOrder as any).deliveryType === 'delivery') && selectedTicketOrder.deliveryAddress && (
+                <div className="p-2 my-1 rounded-lg bg-amber-50 border border-amber-200">
+                  <span className="font-extrabold text-amber-900 block mb-0.5">عنوان التوصيل في أسوان:</span>
+                  <span className="font-bold text-gray-800 block">
+                    {[
+                      getLocalizedText(selectedTicketOrder.deliveryAddress.area),
+                      getLocalizedText(selectedTicketOrder.deliveryAddress.addressLine1 || selectedTicketOrder.deliveryAddress.street),
+                      getLocalizedText(selectedTicketOrder.deliveryAddress.addressLine2 || selectedTicketOrder.deliveryAddress.building),
+                    ]
+                      .filter(Boolean)
+                      .join(' – ')}
+                  </span>
+                  {selectedTicketOrder.deliveryAddress.deliveryInstructions && (
+                    <span className="text-[10px] text-gray-600 block mt-0.5">
+                      علامة مميزة: {getLocalizedText(selectedTicketOrder.deliveryAddress.deliveryInstructions)}
+                    </span>
+                  )}
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-gray-500">طريقة الدفع:</span>
                 <span className="font-bold text-emerald-700">كاش عند الاستلام</span>
@@ -260,16 +309,22 @@ export const OrdersPage: React.FC = () => {
                 {selectedTicketOrder.items.map((item, idx) => (
                   <div key={idx} className="text-xs">
                     <div className="flex justify-between font-bold text-[#26212B]">
-                      <span>{item.quantity}x {item.name?.ar || (typeof item.name === 'string' ? item.name : '')}</span>
+                      <span>{item.quantity}x {getLocalizedText(item.name, 'صنف')}</span>
                       <CurrencyDisplay amount={item.totalPrice} />
                     </div>
                     {item.customizations && item.customizations.length > 0 && (
                       <div className="ps-4 text-[11px] text-gray-500 space-y-0.5 mt-0.5">
-                        {item.customizations.map((c: any, cIdx: number) => (
-                          <div key={cIdx}>
-                            • {c.groupName?.ar || c.groupId}: {c.selectedOptions?.map((o: any) => o.name?.ar || o.name).join('، ')}
-                          </div>
-                        ))}
+                        {item.customizations.map((c: any, cIdx: number) => {
+                          const groupTitle = getLocalizedText(c.groupName || c.groupId, '');
+                          const opts = Array.isArray(c.selectedOptions)
+                            ? c.selectedOptions.map((o: any) => getLocalizedText(o?.name || o, '')).filter(Boolean).join('، ')
+                            : getLocalizedText(c.optionName || c.name, '');
+                          return (
+                            <div key={cIdx}>
+                              • {groupTitle ? `${groupTitle}: ` : ''}{opts}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                     {item.specialInstructions && (

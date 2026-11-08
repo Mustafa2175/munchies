@@ -16,6 +16,7 @@ export const ROUTES = {
   CHECKOUT: '/checkout',
   ORDER_SUCCESS: '/order-success/:id',
   ORDER_TRACKING: '/orders/:id',
+  TRACK_ORDER: '/track-order',
   ORDERS: '/orders',
   PROFILE: '/profile',
   ADDRESSES: '/profile/addresses',
@@ -26,7 +27,7 @@ export const ROUTES = {
 
   /** Authentication */
   AUTH: '/auth',
-  LOGIN: '/auth/login',
+  LOGIN: '/admin/login',
   REGISTER: '/auth/register',
   FORGOT_PASSWORD: '/auth/forgot-password',
   RESET_PASSWORD: '/auth/reset-password',
@@ -43,12 +44,6 @@ export const ROUTES = {
   ADMIN_CATEGORIES: '/admin/menu/categories',
   ADMIN_CATEGORY_NEW: '/admin/menu/categories/new',
   ADMIN_CATEGORY_EDIT: '/admin/menu/categories/:id/edit',
-  ADMIN_OFFERS: '/admin/offers',
-  ADMIN_OFFER_NEW: '/admin/offers/new',
-  ADMIN_OFFER_EDIT: '/admin/offers/:id/edit',
-  ADMIN_COUPONS: '/admin/coupons',
-  ADMIN_COUPON_NEW: '/admin/coupons/new',
-  ADMIN_COUPON_EDIT: '/admin/coupons/:id/edit',
   ADMIN_USERS: '/admin/users',
   ADMIN_USER_DETAIL: '/admin/users/:id',
   ADMIN_STAFF: '/admin/staff',
@@ -118,22 +113,6 @@ export function getAdminProductEditRoute(id: string): string {
  */
 export function getAdminCategoryEditRoute(id: string): string {
   return ROUTES.ADMIN_CATEGORY_EDIT.replace(':id', id);
-}
-
-/**
- * Generate the admin offer edit route.
- * @param id - The offer document ID.
- */
-export function getAdminOfferEditRoute(id: string): string {
-  return ROUTES.ADMIN_OFFER_EDIT.replace(':id', id);
-}
-
-/**
- * Generate the admin coupon edit route.
- * @param id - The coupon document ID.
- */
-export function getAdminCouponEditRoute(id: string): string {
-  return ROUTES.ADMIN_COUPON_EDIT.replace(':id', id);
 }
 
 /**

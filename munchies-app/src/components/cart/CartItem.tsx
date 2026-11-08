@@ -8,6 +8,7 @@ import { Trash2 } from 'lucide-react';
 import { type CartItem as CartItemType, useCartStore } from '@/stores/cartStore';
 import { QuantitySelector } from '@/components/ui/QuantitySelector';
 import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
+import { getLocalizedText } from '@/lib/i18n';
 
 export interface CartItemProps {
   item: CartItemType;
@@ -16,7 +17,7 @@ export interface CartItemProps {
 export const CartItem: React.FC<CartItemProps> = ({ item }) => {
   const { updateQuantity, removeItem } = useCartStore();
 
-  const productName = item.name.ar;
+  const productName = getLocalizedText(item.name, 'صنف');
 
   return (
     <div className="flex gap-3 py-3 border-b border-gray-100 last:border-0 items-start">
@@ -40,14 +41,21 @@ export const CartItem: React.FC<CartItemProps> = ({ item }) => {
         {/* Customization options list */}
         {item.customizations && item.customizations.length > 0 && (
           <div className="mt-1 space-y-0.5">
-            {item.customizations.map((group) => (
-              <p key={group.groupId} className="text-[11px] text-gray-500 truncate">
-                <span className="font-medium text-gray-600">
-                  {group.groupName.ar}:
-                </span>{' '}
-                {group.selectedOptions.map((o) => o.name.ar).join('، ')}
-              </p>
-            ))}
+            {item.customizations.map((group) => {
+              const gTitle = getLocalizedText(group.groupName || group.groupId, '');
+              const opts = Array.isArray(group.selectedOptions)
+                ? group.selectedOptions
+                    .map((o: any) => getLocalizedText(o?.name || o, ''))
+                    .filter(Boolean)
+                    .join('، ')
+                : getLocalizedText((group as any).optionName, '');
+              return (
+                <p key={group.groupId} className="text-[11px] text-gray-500 truncate">
+                  {gTitle && <span className="font-medium text-gray-600">{gTitle}: </span>}
+                  {opts}
+                </p>
+              );
+            })}
           </div>
         )}
 

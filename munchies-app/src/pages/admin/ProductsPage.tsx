@@ -4,8 +4,8 @@
  */
 
 import React, { useState } from 'react';
-import { Plus, Edit2, Archive, X, Check, Image as ImageIcon } from 'lucide-react';
-import { PRODUCTS, CATEGORIES } from '@/data/mockData';
+import { Plus, Edit2, Archive, Image as ImageIcon } from 'lucide-react';
+import { PRODUCTS } from '@/data/mockData';
 import type { Product } from '@/types';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';

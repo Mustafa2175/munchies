@@ -5,21 +5,19 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { X, UtensilsCrossed, Phone, MapPin, User, LogOut, Shield } from 'lucide-react';
+import { X, Phone, MapPin } from 'lucide-react';
 import { useUIStore } from '@/stores/uiStore';
-import { useAuthStore } from '@/stores/authStore';
 import { ROUTES } from '@/config/routes';
-import { Button } from '@/components/ui/Button';
 
 export const MobileMenu: React.FC = () => {
   const location = useLocation();
   const { isMobileMenuOpen, closeMobileMenu } = useUIStore();
-  const { isAuthenticated, user, isAdmin, logout } = useAuthStore();
 
   if (!isMobileMenuOpen) return null;
 
   const navLinks = [
     { label: 'الرئيسية', path: ROUTES.HOME },
+    { label: 'تتبع طلبك 🔍', path: ROUTES.TRACK_ORDER },
     { label: 'المنيو', path: ROUTES.MENU },
     { label: 'اصنع ساندوتشك', path: '/build-your-own' },
     { label: 'العروض', path: ROUTES.OFFERS },
@@ -78,55 +76,6 @@ export const MobileMenu: React.FC = () => {
               </Link>
             );
           })}
-
-          <div className="pt-4 mt-4 border-t border-gray-100 space-y-2">
-            {isAdmin && (
-              <Link
-                to={ROUTES.ADMIN_DASHBOARD}
-                onClick={handleLinkClick}
-                className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-bold text-[#512080] bg-[#F3EDFA]"
-              >
-                <Shield className="w-4 h-4" />
-                <span>لوحة تحكم المطبخ والإدارة</span>
-              </Link>
-            )}
-
-            {isAuthenticated ? (
-              <>
-                <Link
-                  to={ROUTES.PROFILE}
-                  onClick={handleLinkClick}
-                  className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-100"
-                >
-                  <User className="w-4 h-4 text-[#512080]" />
-                  <span>{user?.fullName || 'حسابي الشخصي'}</span>
-                </Link>
-                <button
-                  onClick={() => {
-                    logout();
-                    closeMobileMenu();
-                  }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-bold text-red-600 hover:bg-red-50 text-start"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>تسجيل الخروج</span>
-                </button>
-              </>
-            ) : (
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                <Link to={ROUTES.LOGIN} onClick={handleLinkClick}>
-                  <Button variant="secondary" size="sm" fullWidth>
-                    تسجيل الدخول
-                  </Button>
-                </Link>
-                <Link to={ROUTES.REGISTER} onClick={handleLinkClick}>
-                  <Button variant="primary" size="sm" fullWidth>
-                    إنشاء حساب
-                  </Button>
-                </Link>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Footer info in drawer */}

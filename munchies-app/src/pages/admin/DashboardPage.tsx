@@ -9,7 +9,6 @@ import {
   TrendingUp,
   ShoppingBag,
   Clock,
-  CheckCircle2,
   AlertCircle,
   Eye,
   Check,
@@ -23,37 +22,33 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ROUTES } from '@/config/routes';
 import { formatTime } from '@/lib/date';
+import { subscribeToCollection, updateOrderStatusInFirestore } from '@/lib/firestore';
+import { getLocalizedText } from '@/lib/i18n';
 import toast from 'react-hot-toast';
 
 export const DashboardPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
 
+  // Subscribe to real-time Firestore orders (single source of truth)
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem('munchies_orders') || '[]');
-    setOrders(stored);
+    const unsub = subscribeToCollection<Order>('orders', (remoteOrders) => {
+      const sorted = (remoteOrders || []).sort(
+        (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+      );
+      setOrders(sorted);
+    });
+
+    return () => unsub();
   }, []);
 
-  const handleUpdateStatus = (orderId: string, nextStatus: OrderStatus) => {
-    const updated = orders.map((o) =>
-      o.id === orderId
-        ? {
-            ...o,
-            status: nextStatus,
-            updatedAt: new Date().toISOString(),
-            statusHistory: [
-              ...(o.statusHistory || []),
-              {
-                status: nextStatus,
-                timestamp: new Date().toISOString(),
-                note: `تم تغيير الحالة إلى ${nextStatus}`,
-              },
-            ],
-          }
-        : o
-    );
-    setOrders(updated);
-    localStorage.setItem('munchies_orders', JSON.stringify(updated));
-    toast.success('تم تحديث حالة الطلب بنجاح');
+  const handleUpdateStatus = async (orderId: string, nextStatus: OrderStatus) => {
+    try {
+      await updateOrderStatusInFirestore(orderId, nextStatus);
+      toast.success('تم تحديث حالة الطلب بنجاح');
+    } catch (err) {
+      console.error('Failed to update order status in Firestore:', err);
+      toast.error('فشل تحديث حالة الطلب – تأكد من تسجيل دخولك كمدير');
+    }
   };
 
   const totalOrders = orders.length;
@@ -170,19 +165,26 @@ export const DashboardPage: React.FC = () => {
                 {orders.slice(0, 10).map((order) => (
                   <tr key={order.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-5 py-3.5 font-bold text-[#512080]">
-                      <div>{order.orderNumber}</div>
+                      <div className="font-mono font-black">#{String(order.orderNumber || '').replace(/^#/, '')}</div>
                       <span className="text-[10px] text-gray-400 font-normal">
                         {formatTime(order.createdAt)}
                       </span>
                     </td>
                     <td className="px-5 py-3.5">
-                      <div className="font-bold text-gray-800">{order.customerName}</div>
+                      <div className="font-bold text-gray-800">{getLocalizedText(order.customerName, '')}</div>
                       <div className="text-gray-400 text-[10px] number-ltr">
                         {order.customerPhone}
                       </div>
+                      {(order.type === 'delivery' || (order as any).deliveryType === 'delivery') && (
+                        <div className="mt-0.5">
+                          <span className="inline-block text-[10px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200">
+                            ديليفري {order.deliveryAddress?.area ? `(${getLocalizedText(order.deliveryAddress.area)})` : ''}
+                          </span>
+                        </div>
+                      )}
                     </td>
                     <td className="px-5 py-3.5 text-gray-600 max-w-xs truncate">
-                      {order.items.map((i) => `${i.quantity}x ${i.name?.ar || (typeof i.name === 'string' ? i.name : '')}`).join('، ')}
+                      {order.items.map((i) => `${i.quantity}x ${getLocalizedText(i.name, 'صنف')}`).join('، ')}
                     </td>
                     <td className="px-5 py-3.5 font-extrabold text-[#26212B]">
                       <CurrencyDisplay amount={order.total} />

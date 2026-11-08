@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { UtensilsCrossed, Phone, MapPin, Clock, Heart } from 'lucide-react';
+import { Phone, MapPin, Clock, Heart } from 'lucide-react';
 import { ROUTES } from '@/config/routes';
 
 export const Footer: React.FC = () => {

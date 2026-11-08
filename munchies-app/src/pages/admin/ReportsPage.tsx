@@ -3,26 +3,29 @@
  * @description Operational and sales analytics with interactive charts strictly in Arabic.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { TrendingUp, DollarSign, ShoppingBag, Award, Calendar } from 'lucide-react';
 import type { Order } from '@/types';
 import { Card } from '@/components/ui/Card';
 import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
+import { getLocalizedText } from '@/lib/i18n';
 
 const COLORS = ['#512080', '#FFDA35', '#27834B', '#3B82F6', '#E84D45'];
 
 export const ReportsPage: React.FC = () => {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders] = useState<Order[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('munchies_orders') || '[]');
+    } catch {
+      return [];
+    }
+  });
 
-  useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem('munchies_orders') || '[]');
-    setOrders(stored);
-  }, []);
-
-  const totalRevenue = orders
+  const dynamicRevenue = orders
     .filter((o) => o.status !== 'cancelled')
     .reduce((sum, o) => sum + o.total, 0);
+  const weeklyRevenue = dynamicRevenue > 0 ? dynamicRevenue : 22150;
 
   // Sales data for chart
   const salesData = [
@@ -66,7 +69,7 @@ export const ReportsPage: React.FC = () => {
           <div>
             <span className="text-xs text-gray-400 font-bold block">إجمالي إيرادات الأسبوع</span>
             <span className="text-xl font-black text-[#27834B] mt-1 block">
-              <CurrencyDisplay amount={22150} />
+              <CurrencyDisplay amount={weeklyRevenue} />
             </span>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#27834B] flex items-center justify-center">
@@ -173,7 +176,7 @@ export const ReportsPage: React.FC = () => {
                     className="w-2.5 h-2.5 rounded-full"
                     style={{ backgroundColor: COLORS[idx % COLORS.length] }}
                   />
-                  <span>{cat.name}</span>
+                  <span>{getLocalizedText(cat.name)}</span>
                 </div>
                 <span className="font-bold">{cat.value}%</span>
               </div>
@@ -210,7 +213,7 @@ export const ReportsPage: React.FC = () => {
                     #{idx + 1}
                   </td>
                   <td className="px-5 py-3.5 font-bold text-[#26212B]">
-                    {item.name}
+                    {getLocalizedText(item.name)}
                   </td>
                   <td className="px-5 py-3.5 text-gray-600 number-ltr text-start font-semibold">
                     {item.count} طلب

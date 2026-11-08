@@ -137,4 +137,22 @@ export function updateDocumentDirection() {
 
 updateDocumentDirection();
 
+/**
+ * Safely resolves any string, LocalizedText, or nested object to a displayable Arabic string.
+ * Guaranteed to NEVER return an object so React never throws "Objects are not valid as a React child".
+ */
+export function getLocalizedText(val: any, fallback = ''): string {
+  if (val === null || val === undefined) return fallback;
+  if (typeof val === 'string') return val;
+  if (typeof val === 'number' || typeof val === 'boolean') return String(val);
+  if (typeof val === 'object') {
+    if (typeof val.ar === 'string' && val.ar.trim()) return val.ar;
+    if (typeof val.en === 'string' && val.en.trim()) return val.en;
+    if (val.name) return getLocalizedText(val.name, fallback);
+    if (val.title) return getLocalizedText(val.title, fallback);
+    if (val.label) return getLocalizedText(val.label, fallback);
+  }
+  return fallback;
+}
+
 export default i18n;

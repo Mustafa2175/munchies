@@ -12,6 +12,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
 import { formatDate } from '@/lib/date';
 import { ROUTES } from '@/config/routes';
+import { getLocalizedText } from '@/lib/i18n';
 
 export interface OrderCardProps {
   order: Order;
@@ -24,8 +25,8 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
     <Card hoverable className="p-5 border border-gray-100 hover:border-[#512080]/30">
       <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-gray-100">
         <div>
-          <span className="text-xs font-bold text-[#512080] block">
-            {order.orderNumber}
+          <span className="text-xs font-black text-[#512080] font-mono block">
+            #{String(order.orderNumber || '').replace(/^#/, '')}
           </span>
           <span className="text-[11px] text-gray-400 flex items-center gap-1 mt-0.5">
             <Clock className="w-3 h-3" />
@@ -39,7 +40,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
         {order.items.slice(0, 3).map((item, idx) => (
           <div key={idx} className="flex justify-between text-xs text-gray-600">
             <span>
-              {item.quantity}x {item.name.ar}
+              {item.quantity}x {getLocalizedText(item.name, 'صنف')}
             </span>
             <CurrencyDisplay amount={item.totalPrice} />
           </div>

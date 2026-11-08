@@ -11,6 +11,7 @@ import {
 } from 'firebase/auth';
 import {
   getFirestore,
+  initializeFirestore,
   connectFirestoreEmulator,
   type Firestore,
 } from 'firebase/firestore';
@@ -49,7 +50,17 @@ try {
 
 export const app: FirebaseApp = appInstance;
 export const auth: Auth = getAuth(app);
-export const db: Firestore = getFirestore(app);
+
+let dbInstance: Firestore;
+try {
+  dbInstance = initializeFirestore(app, {
+    ignoreUndefinedProperties: true,
+  });
+} catch {
+  dbInstance = getFirestore(app);
+}
+export const db: Firestore = dbInstance;
+
 export const storage: FirebaseStorage = getStorage(app);
 export const functions: Functions = getFunctions(app);
 

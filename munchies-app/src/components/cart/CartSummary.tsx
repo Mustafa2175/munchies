@@ -9,13 +9,14 @@ import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
 
 export interface CartSummaryProps {
   orderType?: 'pickup' | 'delivery';
+  deliveryFee?: number;
   showDiscountInput?: boolean;
 }
 
-export const CartSummary: React.FC<CartSummaryProps> = ({ orderType = 'pickup' }) => {
+export const CartSummary: React.FC<CartSummaryProps> = ({ orderType = 'pickup', deliveryFee: customDeliveryFee }) => {
   const subtotal = useCartStore((state) => state.getSubtotal());
   const discountAmount = useCartStore((state) => state.discountAmount);
-  const deliveryFee = orderType === 'delivery' ? 25 : 0;
+  const deliveryFee = orderType === 'delivery' ? (customDeliveryFee !== undefined ? customDeliveryFee : 25) : 0;
   const total = Math.max(0, subtotal + deliveryFee - discountAmount);
 
   return (

@@ -1,18 +1,20 @@
 /**
  * @module pages/auth/LoginPage
- * @description Email & Password sign-in form. Strictly Arabic.
+ * @description Dedicated Admin Portal Login form strictly for authorized staff.
  */
 
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Mail, Lock, LogIn } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Mail, Lock, ShieldCheck, LogIn } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/config/firebase';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '@/config/firebase';
 import { useAuthStore } from '@/stores/authStore';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { ROUTES } from '@/config/routes';
+import type { AdminUser } from '@/types';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -24,7 +26,7 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const from = (location.state as any)?.from?.pathname || ROUTES.HOME;
+  const from = (location.state as any)?.from?.pathname || ROUTES.ADMIN_DASHBOARD;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,65 +37,60 @@ export const LoginPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // Check for demo admin account login or try Firebase
-      if (email.toLowerCase().includes('admin')) {
-        const adminData: any = {
-          uid: 'admin_1',
-          name: 'مدير مانشيز',
-          email: email.trim(),
-          role: 'super_admin',
-          isActive: true,
-          permissions: ['orders.view', 'orders.manage', 'products.view', 'products.manage'],
-          createdAt: new Date().toISOString(),
-          createdBy: 'system',
-        };
-        setUser({
-          uid: 'admin_1',
-          fullName: 'مدير مانشيز',
-          email: email.trim(),
-          phone: '01025707026',
-          role: 'customer',
-          preferredLanguage: 'ar',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        } as any);
-        setAdminUser(adminData);
-        toast.success('مرحباً بك في لوحة تحكم المطعم');
-        navigate(ROUTES.ADMIN_DASHBOARD);
-        return;
+      // Authenticate against Firebase Authentication
+      const userCred = await signInWithEmailAndPassword(auth, email.trim(), password);
+      const uid = userCred.user.uid;
+
+      // Verify that the user exists and is active in adminUsers
+      const adminDocRef = doc(db, 'adminUsers', uid);
+      const adminSnap = await getDoc(adminDocRef);
+
+      if (adminSnap.exists()) {
+        const adminData = { uid, ...adminSnap.data() } as AdminUser;
+        if (adminData.isActive) {
+          setAdminUser(adminData);
+          setUser({
+            uid,
+            fullName: adminData.name || adminData.displayName || userCred.user.displayName || 'مدير مانشيز',
+            email: userCred.user.email || email.trim(),
+            phone: userCred.user.phoneNumber || adminData.phone || '01025707026',
+            role: 'admin',
+            preferredLanguage: 'ar',
+            createdAt: adminData.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          } as any);
+
+          toast.success('مرحباً بك في لوحة تحكم المطعم');
+          const target = from.startsWith('/admin') && from !== ROUTES.ADMIN && from !== ROUTES.ADMIN_LOGIN
+            ? from
+            : ROUTES.ADMIN_DASHBOARD;
+          navigate(target, { replace: true });
+          return;
+        }
       }
 
-      // Customer login
-      try {
-        const userCred = await signInWithEmailAndPassword(auth, email.trim(), password);
-        setUser({
-          uid: userCred.user.uid,
-          fullName: userCred.user.displayName || email.split('@')[0],
-          email: userCred.user.email || email,
-          phone: '01025707026',
-          role: 'customer',
-          preferredLanguage: 'ar',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        } as any);
-      } catch {
-        // Fallback demo user for offline testing
-        setUser({
-          uid: `user_${Date.now()}`,
-          fullName: email.split('@')[0],
-          email: email.trim(),
-          phone: '01025707026',
-          role: 'customer',
-          preferredLanguage: 'ar',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        } as any);
-      }
-
-      toast.success('تم تسجيل الدخول بنجاح!');
-      navigate(from, { replace: true });
+      // Not an active admin -> revoke session immediately
+      await signOut(auth);
+      setAdminUser(null);
+      setUser(null);
+      toast.error('هذا الحساب ليس لديه صلاحيات المسؤول للوصول إلى لوحة الإدارة');
     } catch (err: any) {
-      toast.error(err.message || 'بيانات الدخول غير صحيحة');
+      console.error('Admin login error:', err);
+      let message = 'بيانات الدخول غير صحيحة';
+      if (
+        err.code === 'auth/invalid-credential' ||
+        err.code === 'auth/wrong-password' ||
+        err.code === 'auth/user-not-found'
+      ) {
+        message = 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
+      } else if (err.code === 'auth/too-many-requests') {
+        message = 'تم تجاوز عدد محاولات الدخول المسموح بها، يرجى المحاولة لاحقاً';
+      } else if (err.code === 'auth/network-request-failed') {
+        message = 'تعذر الاتصال بالخادم، يرجى التحقق من اتصال الإنترنت';
+      } else if (err.message) {
+        message = err.message;
+      }
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -102,22 +99,25 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="text-center">
+        <div className="w-12 h-12 rounded-2xl bg-[#512080] text-[#FFDA35] flex items-center justify-center mx-auto mb-3 shadow-md">
+          <ShieldCheck className="w-7 h-7" />
+        </div>
         <h2 className="text-2xl font-black text-[#26212B]">
-          تسجيل الدخول
+          بوابة إدارة المطعم
         </h2>
         <p className="text-xs text-gray-500 mt-1">
-          سجل دخولك لمتابعة طلباتك وإتمام الشراء بسهولة
+          لوحة تحكم مانشيز – يرجى تسجيل الدخول بحساب المسؤول
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
-          label="البريد الإلكتروني"
+          label="البريد الإلكتروني للمسؤول"
           type="email"
           leftIcon={Mail}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="name@example.com"
+          placeholder="admin@munchies.com"
           required
         />
 
@@ -131,15 +131,6 @@ export const LoginPage: React.FC = () => {
           required
         />
 
-        <div className="flex items-center justify-between text-xs">
-          <Link
-            to={ROUTES.FORGOT_PASSWORD}
-            className="text-[#512080] font-bold hover:underline"
-          >
-            نسيت كلمة المرور؟
-          </Link>
-        </div>
-
         <Button
           type="submit"
           variant="yellow"
@@ -147,18 +138,11 @@ export const LoginPage: React.FC = () => {
           fullWidth
           isLoading={isLoading}
           leftIcon={LogIn}
-          className="font-black"
+          className="font-black mt-2"
         >
-          تسجيل الدخول
+          دخول لوحة التحكم
         </Button>
       </form>
-
-      <div className="text-center text-xs text-gray-500 pt-2 border-t border-gray-100">
-        <span>ليس لديك حساب؟ </span>
-        <Link to={ROUTES.REGISTER} className="text-[#512080] font-bold hover:underline">
-          إنشاء حساب جديد
-        </Link>
-      </div>
     </div>
   );
 };

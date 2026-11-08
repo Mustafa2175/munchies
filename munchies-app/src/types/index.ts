@@ -162,7 +162,8 @@ export interface Order {
   statusHistory?: OrderStatusEntry[];
   type?: 'delivery' | 'pickup';
   orderType?: 'delivery' | 'pickup';
-  deliveryAddress?: Address;
+  deliveryType?: 'delivery' | 'pickup';
+  deliveryAddress?: Address | null;
   paymentMethod: 'cash' | 'card';
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
   customerName: string;
@@ -190,6 +191,9 @@ export interface Address {
   isDefault: boolean;
   lat?: number;
   lng?: number;
+  addressLine1?: string;
+  addressLine2?: string;
+  deliveryInstructions?: string;
 }
 
 export interface UserProfile {

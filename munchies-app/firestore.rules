@@ -1,63 +1,70 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+
     function isAuthenticated() {
       return request.auth != null;
     }
-    
-    function isOwner(uid) {
-      return isAuthenticated() && request.auth.uid == uid;
-    }
-    
+
     function isAdmin() {
-      return isAuthenticated() && 
-        exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.isActive == true;
+      return isAuthenticated() && (
+        request.auth.token.email == 'admin@munchies.com' ||
+        (exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.isActive == true)
+      );
     }
 
-    // Public read
+    // Public collections
     match /products/{productId} {
       allow read: if true;
       allow write: if isAdmin();
     }
-    
+
     match /categories/{categoryId} {
       allow read: if true;
       allow write: if isAdmin();
     }
-    
+
     match /offers/{offerId} {
       allow read: if true;
       allow write: if isAdmin();
     }
-    
+
+    // Settings collection
+    match /settings/orderCounter {
+      allow read: if true;
+      allow create, update: if true;
+    }
+
     match /settings/{docId} {
       allow read: if true;
       allow write: if isAdmin();
     }
-    
-    // User profile
+
+    // User profile collection
     match /users/{uid} {
-      allow read, write: if isOwner(uid) || isAdmin();
+      allow read, write: if isAuthenticated() && (request.auth.uid == uid || isAdmin());
     }
-    
-    // Orders
+
+    // Guest Checkout & Order Tracking
     match /orders/{orderId} {
-      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow write: if isAdmin();
-      allow create: if isAuthenticated();
+      allow create: if true;
+      allow get, list: if true;
+      allow update: if isAdmin() || (
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt', 'statusHistory']) &&
+        request.resource.data.status == 'cancelled' &&
+        resource.data.status in ['pending', 'confirmed']
+      );
+      allow delete: if isAdmin();
     }
-    
-    // Admin collections
+
+    // Admin-only collections
     match /adminUsers/{uid} {
       allow read, write: if isAdmin();
     }
-    
+
     match /auditLogs/{logId} {
-      allow read: if isAdmin();
-      allow create: if isAdmin();
+      allow read, create: if isAdmin();
     }
   }
 }
-

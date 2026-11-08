@@ -107,8 +107,30 @@ export const createOrder = onCall({ region: 'us-central1' }, async (request) => 
   const discount = 0;
   const total = calculatedSubtotal + deliveryFee - discount;
 
-  const orderNum = Math.floor(1000 + Math.random() * 9000);
-  const orderNumber = `ORD-${orderNum}`;
+  // 4. Atomic sequential numeric order number starting at 1001
+  const counterRef = db.doc('settings/orderCounter');
+  const nextOrderNum = await db.runTransaction(async (transaction) => {
+    const snap = await transaction.get(counterRef);
+    let current = 1000;
+    if (snap.exists) {
+      const val = snap.data()?.lastOrderNumber;
+      if (typeof val === 'number') {
+        current = val;
+      }
+    }
+    const next = current + 1;
+    transaction.set(
+      counterRef,
+      {
+        lastOrderNumber: next,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+    return next;
+  });
+
+  const orderNumber = String(nextOrderNum);
   const orderRef = db.collection('orders').doc();
 
   const newOrder = {

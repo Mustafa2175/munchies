@@ -7,6 +7,7 @@ import { httpsCallable } from 'firebase/functions';
 import { doc, collection, setDoc, runTransaction, serverTimestamp } from 'firebase/firestore';
 import { functions, db } from '@/config/firebase';
 import { updateOrderStatusInFirestore } from '@/lib/firestore';
+import { isStoreCurrentlyOpen } from '@/stores/restaurantStore';
 import type { Order, OrderStatus } from '@/types';
 
 export interface CreateOrderPayload {
@@ -91,6 +92,11 @@ function stripUndefined<T>(val: T): T {
 export async function callCreateOrder(
   payload: CreateOrderPayload
 ): Promise<{ orderId: string; orderNumber: string; order: Order }> {
+  // Guard: Verify restaurant is currently accepting orders
+  if (!isStoreCurrentlyOpen()) {
+    throw new Error('عذراً، المطعم مغلق حالياً ولا يستقبل طلبات جديدة في الوقت الحالي.');
+  }
+
   const orderNumber = await getNextOrderNumber();
   const rawNum = String(orderNumber).replace(/^#/, '');
   const numericVal = parseInt(rawNum, 10);

@@ -18,10 +18,13 @@ import { ROUTES } from '@/config/routes';
 import { Button } from '@/components/ui/Button';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { HeroSection } from '@/components/home/HeroSection';
-import { PRODUCTS, CATEGORIES } from '@/data/mockData';
+import { useProductStore } from '@/stores/productStore';
+import { useCategoryStore } from '@/stores/categoryStore';
 
 export const HomePage: React.FC = () => {
-  const bestSellers = PRODUCTS.filter((p) => p.isBestSeller).slice(0, 6);
+  const products = useProductStore((s) => s.products);
+  const categories = useCategoryStore((s) => s.categories);
+  const bestSellers = products.filter((p) => p.isBestSeller).slice(0, 6);
 
   return (
     <div className="space-y-16 sm:space-y-24 pb-16">
@@ -49,25 +52,50 @@ export const HomePage: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {CATEGORIES.filter((c) => c.id !== 'all').map((cat) => (
-            <Link
-              key={cat.id}
-              to={`${ROUTES.MENU}?category=${cat.id}`}
-              className="group p-5 rounded-3xl bg-white border border-gray-100 hover:border-[#512080] hover:shadow-lg transition-all duration-300 text-center flex flex-col items-center justify-center gap-3 cursor-pointer"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-[#F5F3F7] group-hover:bg-[#F3EDFA] text-[#512080] flex items-center justify-center transition-colors">
-                <UtensilsCrossed className="w-6 h-6 stroke-[2]" />
-              </div>
-              <div>
-                <h3 className="text-xs sm:text-sm font-bold text-[#26212B] group-hover:text-[#512080] transition-colors">
-                  {cat.name.ar}
-                </h3>
-                <span className="text-[10px] text-gray-400 font-medium">
-                  {cat.productCount} صنف
-                </span>
-              </div>
-            </Link>
-          ))}
+          {categories.filter((c) => c.id !== 'all').map((cat) => {
+            const isActive = cat.isActive !== false;
+
+            return (
+              <Link
+                key={cat.id}
+                to={`${ROUTES.MENU}?category=${cat.id}`}
+                className={`group p-5 rounded-3xl border transition-all duration-300 text-center flex flex-col items-center justify-center gap-2.5 cursor-pointer relative ${
+                  isActive
+                    ? 'bg-white border-gray-100 hover:border-[#512080] hover:shadow-lg'
+                    : 'bg-gray-50/70 border-dashed border-gray-300 opacity-80 hover:border-gray-400'
+                }`}
+              >
+                {!isActive && (
+                  <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-bold text-[9px] mb-0.5 shadow-2xs">
+                    غير متاح حالياً
+                  </span>
+                )}
+                <div
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
+                    isActive
+                      ? 'bg-[#F5F3F7] group-hover:bg-[#F3EDFA] text-[#512080]'
+                      : 'bg-gray-200 text-gray-400'
+                  }`}
+                >
+                  <UtensilsCrossed className="w-6 h-6 stroke-[2]" />
+                </div>
+                <div>
+                  <h3
+                    className={`text-xs sm:text-sm font-bold transition-colors ${
+                      isActive
+                        ? 'text-[#26212B] group-hover:text-[#512080]'
+                        : 'text-gray-500 line-through decoration-red-300'
+                    }`}
+                  >
+                    {cat.name.ar}
+                  </h3>
+                  <span className="text-[10px] text-gray-400 font-medium">
+                    {cat.productCount} صنف
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </section>
 

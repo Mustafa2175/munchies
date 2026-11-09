@@ -1,18 +1,23 @@
 /**
  * @module components/cart/CartDrawer
  * @description Slide-in cart panel from the screen side strictly in Arabic.
+ * Evaluates item availability and restaurant operational status before allowing checkout.
  */
 
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { X, ShoppingBag, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 import { useUIStore } from '@/stores/uiStore';
+import { useProductStore, isProductAvailable } from '@/stores/productStore';
+import { useIsStoreOpen, useRestaurantStore } from '@/stores/restaurantStore';
+import { useCategoryStore, isCategoryActive, getCategoryName } from '@/stores/categoryStore';
 import { CartItem } from './CartItem';
 import { CartSummary } from './CartSummary';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ROUTES } from '@/config/routes';
+import toast from 'react-hot-toast';
 
 export const CartDrawer: React.FC = () => {
   const navigate = useNavigate();
@@ -20,6 +25,27 @@ export const CartDrawer: React.FC = () => {
   const { isCartDrawerOpen, closeCartDrawer } = useUIStore();
   const items = useCartStore((state) => state.items);
   const itemCount = useCartStore((state) => state.getItemCount());
+  const products = useProductStore((state) => state.products);
+  const isStoreOpen = useIsStoreOpen();
+  const closureMessage = useRestaurantStore((state) => state.closureMessage);
+  // Re-render when categories update
+  useCategoryStore((state) => state.categories);
+
+  // Check if any cart item belongs to a disabled category
+  const disabledCategoryItem = items.find((item) => {
+    const prod = products.find((p) => p.id === item.productId);
+    if (!prod) return false;
+    return !isCategoryActive(prod.categoryId);
+  });
+
+  const disabledCategoryName = disabledCategoryItem
+    ? (() => {
+        const prod = products.find((p) => p.id === disabledCategoryItem.productId);
+        return prod ? getCategoryName(prod.categoryId) : '';
+      })()
+    : '';
+
+  const hasDisabledCategoryItems = Boolean(disabledCategoryItem);
 
   useEffect(() => {
     if (isCartDrawerOpen) {
@@ -35,6 +61,34 @@ export const CartDrawer: React.FC = () => {
   if (!isCartDrawerOpen) return null;
 
   const handleCheckout = () => {
+    if (!isStoreOpen) {
+      toast.error('المطعم مغلق حالياً ولا يستقبل طلبات جديدة في الوقت الحالي', {
+        id: 'drawer-closed-toast',
+      });
+      return;
+    }
+
+    // Check if category is disabled
+    if (hasDisabledCategoryItems) {
+      toast.error(`أصناف من قسم "${disabledCategoryName}" غير متاحة حالياً. يرجى إزالتها لإتمام الطلب.`);
+      return;
+    }
+
+    // Validate availability before checkout
+    const unavailable = items.find((item) => {
+      const prod = products.find((p) => p.id === item.productId);
+      return prod && !isProductAvailable(prod);
+    });
+
+    if (unavailable) {
+      const name =
+        typeof unavailable.name === 'object' && unavailable.name?.ar
+          ? unavailable.name.ar
+          : 'أحد الأصناف';
+      toast.error(`الصنف "${name}" غير متوفر حالياً. يرجى إزالته من السلة للمتابعة.`);
+      return;
+    }
+
     closeCartDrawer();
     navigate(ROUTES.CHECKOUT);
   };
@@ -70,6 +124,30 @@ export const CartDrawer: React.FC = () => {
             </button>
           </div>
 
+          {/* Restaurant Closed Notice in Drawer */}
+          {!isStoreOpen && (
+            <div className="bg-red-50 border-b border-red-200 px-4 py-2.5 flex items-start gap-2 text-xs text-red-700">
+              <AlertTriangle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-black block">المطعم مغلق حالياً:</span>
+                <span>{closureMessage || 'لا يمكن إتمام الطلب في الوقت الحالي نظراً لغلق المطعم.'}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Inactive Category Notice in Drawer */}
+          {hasDisabledCategoryItems && (
+            <div className="bg-amber-50 border-b border-amber-200 px-4 py-2.5 flex items-start gap-2 text-xs text-amber-800">
+              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-black block">أصناف غير متاحة للطلب:</span>
+                <span>
+                  يوجد بالسلة أصناف تتبع قسم "{disabledCategoryName}" وهو غير متاح حالياً. يرجى حذفها لإتمام الطلب.
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Items list */}
           <div className="flex-1 overflow-y-auto px-6 py-4">
             {items.length === 0 ? (
@@ -103,13 +181,24 @@ export const CartDrawer: React.FC = () => {
                   عرض السلة
                 </Button>
                 <Button
-                  variant="yellow"
+                  variant={!isStoreOpen || hasDisabledCategoryItems ? 'ghost' : 'yellow'}
+                  disabled={!isStoreOpen || hasDisabledCategoryItems}
                   onClick={handleCheckout}
                   size="md"
-                  rightIcon={ArrowLeft}
-                  className="font-black"
+                  rightIcon={isStoreOpen && !hasDisabledCategoryItems ? ArrowLeft : undefined}
+                  className={
+                    !isStoreOpen
+                      ? 'bg-red-50 text-red-600 border border-red-200 cursor-not-allowed font-bold opacity-90 hover:bg-red-50 hover:text-red-600 text-xs'
+                      : hasDisabledCategoryItems
+                      ? 'bg-amber-50 text-amber-700 border border-amber-200 cursor-not-allowed font-bold opacity-90 hover:bg-amber-50 hover:text-amber-700 text-xs'
+                      : 'font-black'
+                  }
                 >
-                  إتمام الطلب
+                  {!isStoreOpen
+                    ? 'المطعم مغلق'
+                    : hasDisabledCategoryItems
+                    ? 'القسم غير متاح'
+                    : 'إتمام الطلب'}
                 </Button>
               </div>
             </div>

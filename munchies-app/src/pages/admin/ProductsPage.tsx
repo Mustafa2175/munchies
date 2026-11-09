@@ -5,20 +5,21 @@
 
 import React, { useState } from 'react';
 import { Plus, Edit2, Archive, Image as ImageIcon } from 'lucide-react';
-import { PRODUCTS } from '@/data/mockData';
 import type { Product } from '@/types';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
+import { useProductStore } from '@/stores/productStore';
 import toast from 'react-hot-toast';
 
 export const ProductsPage: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>(() => {
-    const local = localStorage.getItem('munchies_custom_products');
-    return local ? JSON.parse(local) : PRODUCTS;
-  });
+  const products = useProductStore((s) => s.products);
+  const storeToggle = useProductStore((s) => s.toggleAvailability);
+  const storeAdd = useProductStore((s) => s.addProduct);
+  const storeUpdate = useProductStore((s) => s.updateProduct);
+  const storeRemove = useProductStore((s) => s.removeProduct);
 
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,16 +34,8 @@ export const ProductsPage: React.FC = () => {
   const [isBestSeller, setIsBestSeller] = useState(false);
   const [isNew, setIsNew] = useState(false);
 
-  const saveProductsToStorage = (updated: Product[]) => {
-    setProducts(updated);
-    localStorage.setItem('munchies_custom_products', JSON.stringify(updated));
-  };
-
   const toggleAvailability = (id: string) => {
-    const updated = products.map((p) =>
-      p.id === id ? { ...p, isAvailable: !p.isAvailable } : p
-    );
-    saveProductsToStorage(updated);
+    storeToggle(id);
     toast.success('تم تحديث حالة توفر الصنف');
   };
 
@@ -72,8 +65,7 @@ export const ProductsPage: React.FC = () => {
 
   const handleDelete = (id: string) => {
     if (window.confirm('هل أنت متأكد من رغبتك في حذف هذا الصنف من المنيو؟')) {
-      const updated = products.filter((p) => p.id !== id);
-      saveProductsToStorage(updated);
+      storeRemove(id);
       toast.success('تم حذف الصنف من القائمة');
     }
   };
@@ -87,22 +79,15 @@ export const ProductsPage: React.FC = () => {
 
     if (editingProduct) {
       // Update
-      const updated = products.map((p) =>
-        p.id === editingProduct.id
-          ? {
-              ...p,
-              name: { ar: nameAr.trim(), en: p.name.en || nameAr.trim() },
-              description: { ar: descAr.trim(), en: p.description.en || descAr.trim() },
-              price: Number(price),
-              categoryId,
-              image: imageUrl.trim() || p.image,
-              isBestSeller,
-              isNew,
-              updatedAt: new Date().toISOString(),
-            }
-          : p
-      );
-      saveProductsToStorage(updated);
+      storeUpdate(editingProduct.id, {
+        name: { ar: nameAr.trim(), en: editingProduct.name.en || nameAr.trim() },
+        description: { ar: descAr.trim(), en: editingProduct.description.en || descAr.trim() },
+        price: Number(price),
+        categoryId,
+        image: imageUrl.trim() || editingProduct.image,
+        isBestSeller,
+        isNew,
+      });
       toast.success('تم تحديث بيانات الصنف بنجاح!');
     } else {
       // Create new
@@ -124,7 +109,7 @@ export const ProductsPage: React.FC = () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      saveProductsToStorage([newProduct, ...products]);
+      storeAdd(newProduct);
       toast.success('تمت إضافة الصنف الجديد إلى المنيو بنجاح!');
     }
 

@@ -12,6 +12,7 @@ export interface QuantitySelectorProps {
   min?: number;
   max?: number;
   size?: 'sm' | 'md';
+  disabled?: boolean;
 }
 
 export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
@@ -20,9 +21,11 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
   min = 1,
   max = 99,
   size = 'md',
+  disabled = false,
 }) => {
   const handleDecrement = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (disabled) return;
     if (value > min) {
       onChange(value - 1);
     }
@@ -30,6 +33,7 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
 
   const handleIncrement = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (disabled) return;
     if (value < max) {
       onChange(value + 1);
     }
@@ -40,11 +44,15 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
   const textSize = size === 'sm' ? 'text-xs px-2' : 'text-sm px-3';
 
   return (
-    <div className="inline-flex items-center rounded-xl border border-gray-200 bg-[#F5F3F7] p-1 select-none">
+    <div
+      className={`inline-flex items-center rounded-xl border border-gray-200 bg-[#F5F3F7] p-1 select-none ${
+        disabled ? 'opacity-50 cursor-not-allowed' : ''
+      }`}
+    >
       <button
         type="button"
         onClick={handleDecrement}
-        disabled={value <= min}
+        disabled={disabled || value <= min}
         className={`${btnSize} flex items-center justify-center rounded-lg bg-white text-gray-700 shadow-xs hover:bg-gray-50 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all`}
         aria-label="Decrease quantity"
       >
@@ -56,7 +64,7 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
       <button
         type="button"
         onClick={handleIncrement}
-        disabled={value >= max}
+        disabled={disabled || value >= max}
         className={`${btnSize} flex items-center justify-center rounded-lg bg-[#512080] text-white shadow-xs hover:bg-[#461C6E] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all`}
         aria-label="Increase quantity"
       >

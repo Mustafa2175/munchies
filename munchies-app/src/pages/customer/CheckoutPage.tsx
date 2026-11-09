@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Building,
   Navigation,
+  AlertTriangle,
 } from 'lucide-react';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
@@ -21,6 +22,9 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { getLocalizedText } from '@/lib/i18n';
 import { useCartStore } from '@/stores/cartStore';
+import { useProductStore, isProductAvailable } from '@/stores/productStore';
+import { useIsStoreOpen, useRestaurantStore, isStoreCurrentlyOpen, getTodayWorkingHoursText } from '@/stores/restaurantStore';
+import { useCategoryStore, isCategoryActive, getCategoryName } from '@/stores/categoryStore';
 import { CartSummary } from '@/components/cart/CartSummary';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -41,6 +45,30 @@ const deliveryAddressSchema = z.object({
 export const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
   const { items, clearCart } = useCartStore();
+
+  const isStoreOpen = useIsStoreOpen();
+  const isManualClosed = useRestaurantStore((s) => s.isManualClosed);
+  const closureMessage = useRestaurantStore((s) => s.closureMessage);
+  const todayHours = getTodayWorkingHoursText();
+  // Subscribe to category changes
+  useCategoryStore((s) => s.categories);
+  const currentProducts = useProductStore((s) => s.products);
+
+  // Check if any cart item belongs to a disabled category
+  const disabledCategoryItem = items.find((item) => {
+    const prod = currentProducts.find((p) => p.id === item.productId);
+    if (!prod) return false;
+    return !isCategoryActive(prod.categoryId);
+  });
+
+  const disabledCategoryName = disabledCategoryItem
+    ? (() => {
+        const prod = currentProducts.find((p) => p.id === disabledCategoryItem.productId);
+        return prod ? getCategoryName(prod.categoryId) : '';
+      })()
+    : '';
+
+  const hasDisabledCategoryItems = Boolean(disabledCategoryItem);
 
   // Restaurant Settings synced live from Firestore settings/restaurant
   const [deliveryEnabled, setDeliveryEnabled] = useState(false);
@@ -107,6 +135,39 @@ export const CheckoutPage: React.FC = () => {
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check restaurant operational status before proceeding
+    if (!isStoreCurrentlyOpen()) {
+      toast.error('عذراً، المطعم مغلق حالياً ولا يستقبل طلبات جديدة في الوقت الحالي');
+      return;
+    }
+
+    // Check if any cart item belongs to a disabled category
+    if (hasDisabledCategoryItems) {
+      const itemName = disabledCategoryItem
+        ? (typeof disabledCategoryItem.name === 'object' && disabledCategoryItem.name?.ar
+            ? disabledCategoryItem.name.ar
+            : 'أحد الأصناف')
+        : 'أحد الأصناف';
+      toast.error(`الصنف "${itemName}" يتبع قسماً غير متاح حالياً (${disabledCategoryName}). يرجى حذفه لإتمام الطلب.`);
+      return;
+    }
+
+    // Check item availability before proceeding
+    const currentProducts = useProductStore.getState().products;
+    const unavailable = items.find((item) => {
+      const prod = currentProducts.find((p) => p.id === item.productId);
+      return prod && !isProductAvailable(prod);
+    });
+
+    if (unavailable) {
+      const name =
+        typeof unavailable.name === 'object' && unavailable.name?.ar
+          ? unavailable.name.ar
+          : 'أحد الأصناف';
+      toast.error(`الصنف "${name}" غير متوفر حالياً. يرجى حذفه من السلة لإتمام الطلب.`);
+      return;
+    }
 
     if (!fullName.trim() || !phone.trim()) {
       toast.error('يرجى إدخال اسم العميل ورقم الموبايل');
@@ -194,6 +255,42 @@ export const CheckoutPage: React.FC = () => {
             : 'خطوة واحدة بسيطة لتأكيد طلبك والاستلام من فرع أسوان'}
         </p>
       </div>
+
+      {/* Restaurant Closed Warning Alert */}
+      {!isStoreOpen && (
+        <div className="mb-6 p-4 rounded-2xl bg-red-50 border-2 border-red-200 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+          <div className="text-xs sm:text-sm text-red-700">
+            <h4 className="font-black text-red-800 text-sm">
+              المطعم مغلق حالياً ولا يستقبل طلبات
+            </h4>
+            <p className="mt-0.5 leading-relaxed">
+              {isManualClosed ? (
+                closureMessage || 'استلام الطلبات متوقف مؤقتاً وسنعاود الاستقبال قريباً.'
+              ) : (
+                <>
+                  أوقات العمل المقررة اليوم: <span className="font-bold">{todayHours || 'مغلق'}</span>. لا يمكن إرسال الطلب في الوقت الحالي.
+                </>
+              )}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Inactive Category Warning Alert */}
+      {hasDisabledCategoryItems && (
+        <div className="mb-6 p-4 rounded-2xl bg-amber-50 border-2 border-amber-300 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="text-xs sm:text-sm text-amber-900">
+            <h4 className="font-black text-amber-900 text-sm">
+              ⚠️ لا يمكن إتمام الطلب: بعض الأصناف غير متاحة حالياً
+            </h4>
+            <p className="mt-0.5 leading-relaxed text-amber-800">
+              يحتوي طلبك على أصناف تتبع قسم <span className="font-bold">"{disabledCategoryName}"</span> وهو غير متاح للطلب في الوقت الحالي. يرجى إزالة هذه الأصناف لمتابعة إتمام الطلب.
+            </p>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmitOrder}>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -493,13 +590,24 @@ export const CheckoutPage: React.FC = () => {
               <div className="pt-2">
                 <Button
                   type="submit"
-                  variant="yellow"
+                  variant={isStoreOpen && !hasDisabledCategoryItems ? 'yellow' : 'ghost'}
                   size="lg"
                   fullWidth
+                  disabled={!isStoreOpen || hasDisabledCategoryItems}
                   isLoading={isSubmitting}
-                  className="font-black shadow-lg shadow-[#FFDA35]/30 hover:scale-[1.01]"
+                  className={
+                    !isStoreOpen
+                      ? 'bg-red-50 text-red-600 border border-red-200 cursor-not-allowed font-black opacity-90 hover:bg-red-50 hover:text-red-600'
+                      : hasDisabledCategoryItems
+                      ? 'bg-amber-50 text-amber-700 border border-amber-200 cursor-not-allowed font-black opacity-90 hover:bg-amber-50 hover:text-amber-700'
+                      : 'font-black shadow-lg shadow-[#FFDA35]/30 hover:scale-[1.01]'
+                  }
                 >
-                  {orderType === 'delivery'
+                  {!isStoreOpen
+                    ? 'المطعم مغلق حالياً'
+                    : hasDisabledCategoryItems
+                    ? 'أصناف غير متاحة بالطلب'
+                    : orderType === 'delivery'
                     ? 'تأكيد وإرسال طلب التوصيل'
                     : 'تأكيد وإرسال الطلب'}
                 </Button>

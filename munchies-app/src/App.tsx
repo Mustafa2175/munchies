@@ -38,13 +38,13 @@ import { AccountPage } from '@/pages/customer/AccountPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
 
 // Admin Pages
-import { DashboardPage } from '@/pages/admin/DashboardPage';
 import { OrdersPage } from '@/pages/admin/OrdersPage';
 import { ProductsPage } from '@/pages/admin/ProductsPage';
 import { CategoriesPage } from '@/pages/admin/CategoriesPage';
 import { OperationsPage } from '@/pages/admin/OperationsPage';
 import { SettingsPage } from '@/pages/admin/SettingsPage';
 import { AuditLogPage } from '@/pages/admin/AuditLogPage';
+import { SalesAnalyticsPage } from '@/pages/admin/SalesAnalyticsPage';
 
 export function App() {
   const { i18n } = useTranslation();
@@ -171,7 +171,7 @@ export function App() {
 
         {/* Admin sub-routes — protected by AdminRoute */}
         <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
-          <Route path={ROUTES.ADMIN_DASHBOARD} element={<DashboardPage />} />
+          <Route path={ROUTES.ADMIN_DASHBOARD} element={<OrdersPage />} />
           <Route path={ROUTES.ADMIN_ORDERS} element={<OrdersPage />} />
           <Route path={ROUTES.ADMIN_PRODUCTS} element={<ProductsPage />} />
           <Route path="/admin/products" element={<ProductsPage />} />
@@ -180,7 +180,7 @@ export function App() {
           <Route path="/admin/operations" element={<OperationsPage />} />
           <Route path={ROUTES.ADMIN_SETTINGS} element={<SettingsPage />} />
           <Route path={ROUTES.ADMIN_AUDIT_LOG} element={<AuditLogPage />} />
-          <Route path={ROUTES.ADMIN_ANALYTICS} element={<DashboardPage />} />
+          <Route path={ROUTES.ADMIN_ANALYTICS} element={<SalesAnalyticsPage />} />
         </Route>
 
         {/* Catch-all redirect to Home */}

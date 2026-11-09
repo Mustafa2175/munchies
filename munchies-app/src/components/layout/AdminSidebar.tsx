@@ -3,11 +3,10 @@
  * @description Sidebar navigation for restaurant staff strictly in Arabic.
  */
 
-import React from 'react';
-import { NavLink } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard,
-  ClipboardList,
+  LayoutGrid,
   Utensils,
   Layers,
   Sliders,
@@ -19,14 +18,30 @@ import {
 } from 'lucide-react';
 import { ROUTES } from '@/config/routes';
 import { useAuthStore } from '@/stores/authStore';
+import { subscribeToCollection } from '@/lib/firestore';
+import type { Order } from '@/types';
 
 export const AdminSidebar: React.FC = () => {
   const logout = useAuthStore((state) => state.logout);
   const adminUser = useAuthStore((state) => state.adminUser);
+  const location = useLocation();
+  const [orderCount, setOrderCount] = useState<number | null>(null);
+
+  // Live real-time subscription for order count badge
+  useEffect(() => {
+    const unsub = subscribeToCollection<Order>('orders', (remoteOrders) => {
+      setOrderCount((remoteOrders || []).length);
+    });
+    return () => unsub();
+  }, []);
 
   const menuItems = [
-    { label: 'نظرة عامة', path: ROUTES.ADMIN_DASHBOARD, icon: LayoutDashboard },
-    { label: 'الطلبات الواردة', path: ROUTES.ADMIN_ORDERS, icon: ClipboardList },
+    {
+      label: orderCount !== null ? `الطلبات (${orderCount})` : 'الطلبات',
+      path: ROUTES.ADMIN_DASHBOARD,
+      icon: LayoutGrid,
+      matchPaths: [ROUTES.ADMIN_DASHBOARD, ROUTES.ADMIN_ORDERS, '/admin'],
+    },
     { label: 'قائمة الأصناف', path: ROUTES.ADMIN_PRODUCTS, icon: Utensils },
     { label: 'أقسام المنيو', path: ROUTES.ADMIN_CATEGORIES, icon: Layers },
     { label: 'تشغيل المطعم والمواعيد', path: '/admin/operations', icon: Sliders },
@@ -52,13 +67,17 @@ export const AdminSidebar: React.FC = () => {
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {menuItems.map((item) => {
           const Icon = item.icon;
+          const isItemActive =
+            item.matchPaths?.includes(location.pathname) ||
+            location.pathname === item.path;
+
           return (
             <NavLink
               key={item.path}
               to={item.path}
-              className={({ isActive }) =>
+              className={() =>
                 `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                  isActive
+                  isItemActive
                     ? 'bg-[#512080] text-white shadow-sm'
                     : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`

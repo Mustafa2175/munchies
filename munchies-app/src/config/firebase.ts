@@ -31,13 +31,13 @@ import {
  * Provides fallback dummy strings so the app works seamlessly in local/offline demo mode.
  */
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyDemoFallbackKeyForDevelopment12345',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'munchies-aswan.firebaseapp.com',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'munchies-aswan',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'munchies-aswan.appspot.com',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '1029384756',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:1029384756:web:a1b2c3d4e5f6g7h8',
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || undefined,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyDwMPEoN2HXR7bwsadLsAuJ2yl5iIMPuVE',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'munchies-9a7b7.firebaseapp.com',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'munchies-9a7b7',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'munchies-9a7b7.firebasestorage.app',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '365206142749',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:365206142749:web:55d21fa70c0e027601abf4',
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || 'G-1NDXR9HJXR',
 };
 
 let appInstance: FirebaseApp;

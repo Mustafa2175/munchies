@@ -6,7 +6,7 @@
  */
 
 import React, { useState } from 'react';
-import { Bell, ExternalLink, Volume2, Menu } from 'lucide-react';
+import { Bell, ExternalLink, Volume2, Menu, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
 import {
@@ -22,12 +22,18 @@ interface AdminTopBarProps {
   onClearUnread?: () => void;
   /** Open mobile sidebar drawer */
   onMenuClick?: () => void;
+  /** Whether desktop sidebar is collapsed to icon-only mode */
+  isSidebarCollapsed?: boolean;
+  /** Toggle desktop sidebar collapsed/expanded state */
+  onToggleSidebarCollapse?: () => void;
 }
 
 export const AdminTopBar: React.FC<AdminTopBarProps> = ({
   unreadCount = 0,
   onClearUnread,
   onMenuClick,
+  isSidebarCollapsed = false,
+  onToggleSidebarCollapse,
 }) => {
   const [justClicked, setJustClicked] = useState(false);
 
@@ -56,6 +62,22 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = ({
             aria-label="فتح القائمة"
           >
             <Menu className="w-5 h-5" />
+          </button>
+        )}
+        {onToggleSidebarCollapse && (
+          <button
+            type="button"
+            onClick={onToggleSidebarCollapse}
+            className="hidden md:inline-flex p-2 -ms-2 rounded-xl text-gray-500 hover:text-primary hover:bg-primary-50/70 transition-colors cursor-pointer shrink-0"
+            title={isSidebarCollapsed ? 'توسيع القائمة الجانبية' : 'طي القائمة للأيقونات فقط'}
+            aria-label={isSidebarCollapsed ? 'توسيع القائمة الجانبية' : 'طي القائمة للأيقونات فقط'}
+            aria-expanded={!isSidebarCollapsed}
+          >
+            {isSidebarCollapsed ? (
+              <PanelRightOpen className="w-5 h-5" />
+            ) : (
+              <PanelRightClose className="w-5 h-5" />
+            )}
           </button>
         )}
         <h1 className="text-sm max-sm:text-xs font-extrabold text-dark truncate">

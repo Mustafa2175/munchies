@@ -76,7 +76,7 @@ export const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl" dir="rtl">
+    <div className="w-full space-y-6" dir="rtl">
       <div>
         <h1 className="text-2xl font-black text-dark">إعدادات الفرع والنظام</h1>
         <p className="text-xs text-gray-500 mt-1">
@@ -85,13 +85,14 @@ export const SettingsPage: React.FC = () => {
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
-        {/* Branch Info Card */}
-        <Card className="p-6 space-y-4">
-          <h3 className="font-bold text-base text-dark pb-2 border-b border-gray-100 flex items-center gap-2">
-            <Phone className="w-4 h-4 text-primary" />
-            <span>بيانات الفرع والخط الساخن</span>
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+          {/* Branch Info Card */}
+          <Card className="xl:col-span-5 p-6 space-y-4">
+            <h3 className="font-bold text-base text-dark pb-2 border-b border-gray-100 flex items-center gap-2">
+              <Phone className="w-4 h-4 text-primary" />
+              <span>بيانات الفرع والخط الساخن</span>
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-4">
             <Input
               label="رقم الهاتف والواتساب الخاص بالفرع"
               value={phone}
@@ -108,8 +109,8 @@ export const SettingsPage: React.FC = () => {
           </div>
         </Card>
 
-        {/* Feature Flags: Fulfillment Types */}
-        <Card className="p-6 space-y-5">
+          {/* Feature Flags: Fulfillment Types */}
+          <Card className="xl:col-span-7 p-6 space-y-5">
           <h3 className="font-bold text-base text-dark pb-2 border-b border-gray-100 flex items-center gap-2">
             <Store className="w-4 h-4 text-primary" />
             <span>طرق الاستلام والخدمات المفعلة</span>
@@ -205,7 +206,8 @@ export const SettingsPage: React.FC = () => {
               </p>
             </div>
           )}
-        </Card>
+          </Card>
+        </div>
 
         <Button
           type="submit"

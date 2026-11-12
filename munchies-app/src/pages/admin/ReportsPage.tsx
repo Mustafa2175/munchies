@@ -55,7 +55,7 @@ export const ReportsPage: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-8 max-w-6xl">
+    <div className="w-full space-y-8">
       <div>
         <h1 className="text-2xl font-black text-dark">تقارير المبيعات والأداء</h1>
         <p className="text-xs text-gray-500 mt-1">

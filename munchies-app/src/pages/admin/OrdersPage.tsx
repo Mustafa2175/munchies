@@ -315,7 +315,7 @@ export const OrdersPage: React.FC = () => {
   const workingHoursText = getTodayWorkingHoursText() || 'من 12:00 م إلى 03:00 ص';
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <div className="w-full space-y-6">
       {/* ══════════════════════════════════════════════════════════════════════
           1. HEADER SECTION
           ══════════════════════════════════════════════════════════════════════ */}
@@ -583,7 +583,7 @@ export const OrdersPage: React.FC = () => {
           </p>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
           {finalFilteredOrders.map((order) => {
             const rawOrderNum = String(order.orderNumber || '').replace(/^#/, '');
             const displayOrderNumber = `#${rawOrderNum}`;

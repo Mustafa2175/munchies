@@ -63,7 +63,7 @@ export const OperationsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 max-w-4xl">
+    <div className="w-full space-y-6">
       <div>
         <h1 className="text-2xl font-black text-dark">تشغيل المطعم وساعات العمل</h1>
         <p className="text-xs text-gray-500 mt-1">
@@ -71,8 +71,9 @@ export const OperationsPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Manual Emergency Closure Switch */}
-      <Card className="p-6 border-2 border-amber-200 bg-amber-50/40 space-y-4">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+        {/* Manual Emergency Closure Switch */}
+        <Card className="xl:col-span-5 p-6 border-2 border-amber-200 bg-amber-50/40 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
             <div
@@ -137,8 +138,8 @@ export const OperationsPage: React.FC = () => {
         )}
       </Card>
 
-      {/* Weekly Schedule */}
-      <Card className="p-6 space-y-4">
+        {/* Weekly Schedule */}
+        <Card className="xl:col-span-7 p-6 space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-gray-100">
           <div>
             <h3 className="font-bold text-base text-dark flex items-center gap-2">
@@ -206,7 +207,8 @@ export const OperationsPage: React.FC = () => {
             </div>
           ))}
         </div>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 };

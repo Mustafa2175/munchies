@@ -46,7 +46,7 @@ export const CategoryNav: React.FC<CategoryNavProps> = ({
                     isActive ? 'bg-black/30 text-white' : 'bg-danger/10 text-danger'
                   }`}
                 >
-                  غير متاح
+                  مش متاح
                 </span>
               )}
             </button>

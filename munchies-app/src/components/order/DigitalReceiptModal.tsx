@@ -54,10 +54,10 @@ export const DigitalReceiptModal: React.FC<DigitalReceiptModalProps> = ({
     try {
       await navigator.clipboard.writeText(displayOrderNumber);
       setCopied(true);
-      toast.success('تم نسخ رقم الطلب بنجاح');
+      toast.success('نسخنا رقم الطلب!');
       setTimeout(() => setCopied(false), 2500);
     } catch {
-      toast.error('تعذر نسخ الرقم تلقائياً');
+      toast.error('معرفناش ننسخ الرقم تلقائي، انسخه يدوي.');
     }
   };
 
@@ -70,9 +70,9 @@ export const DigitalReceiptModal: React.FC<DigitalReceiptModalProps> = ({
     navigate(ROUTES.ORDER_TRACKING.replace(':id', order.id));
   };
 
-  const handleCloseAndGoMenu = () => {
+  const handleCloseAndGoHome = () => {
     onClose();
-    navigate(ROUTES.MENU);
+    navigate(ROUTES.HOME);
   };
 
   return (
@@ -106,13 +106,13 @@ export const DigitalReceiptModal: React.FC<DigitalReceiptModalProps> = ({
         <div className="px-5 py-4 bg-primary text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             <Receipt className="w-5 h-5 text-yellow" />
-            <h3 className="font-extrabold text-sm sm:text-base">إيصال تأكيد الطلب</h3>
+            <h3 className="font-extrabold text-sm sm:text-base">تفاصيل طلبك</h3>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="p-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer print:hidden"
-            title="إغلاق"
+            title="اقفل"
           >
             <X className="w-5 h-5" />
           </button>
@@ -128,10 +128,10 @@ export const DigitalReceiptModal: React.FC<DigitalReceiptModalProps> = ({
                 <CheckCircle2 className="w-9 h-9" />
               </div>
               <h2 className="text-xl sm:text-2xl font-black text-dark">
-                تم استلام طلبك بنجاح
+                متقلقش، طلبك وصلنا!
               </h2>
               <p className="text-xs sm:text-sm text-gray-500 font-semibold">
-                شكراً لطلبك من مانشيز Munchie's – فرع أسوان
+                شكرًا إنك اخترت Munchie's ❤️
               </p>
             </div>
 
@@ -140,7 +140,7 @@ export const DigitalReceiptModal: React.FC<DigitalReceiptModalProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <span className="text-xs font-bold text-gray-500 block mb-0.5">
-                    رقم طلبك المميز للمتابعة
+                    رقم الطلب
                   </span>
                   <div className="text-3xl sm:text-4xl font-black text-primary tracking-wider font-mono tabular-nums">
                     {displayOrderNumber}
@@ -159,12 +159,12 @@ export const DigitalReceiptModal: React.FC<DigitalReceiptModalProps> = ({
                   {copied ? (
                     <>
                       <Check className="w-4 h-4" />
-                      <span>تم النسخ</span>
+                      <span>اتنسخ</span>
                     </>
                   ) : (
                     <>
                       <Copy className="w-4 h-4" />
-                      <span>نسخ الرقم</span>
+                      <span>انسخ الرقم</span>
                     </>
                   )}
                 </button>
@@ -174,7 +174,7 @@ export const DigitalReceiptModal: React.FC<DigitalReceiptModalProps> = ({
               <div className="p-3 bg-amber-50 rounded-xl border border-amber-200/80 text-amber-900 text-xs sm:text-[13px] leading-relaxed font-bold flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
                 <span>
-                  <strong>هام جداً:</strong> احتفظ برقم الطلب هذا (<span className="font-mono text-primary font-black tabular-nums">{displayOrderNumber}</span>) أو خذ لقطة شاشة (Screenshot) لأنك ستحتاجه لمتابعة حالة طلبك.
+                  <strong>خلّي بالك:</strong> احتفظ برقم الطلب ده (<span className="font-mono text-primary font-black tabular-nums">{displayOrderNumber}</span>) أو خُدله Screenshot عشان تقدر تتابع طلبك بيه.
                 </span>
               </div>
             </div>
@@ -188,7 +188,7 @@ export const DigitalReceiptModal: React.FC<DigitalReceiptModalProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <Receipt className="w-4 h-4 text-primary" />
-                  <span>تفاصيل الفاتورة الرقمية</span>
+                  <span>تفاصيل طلبك</span>
                 </div>
                 <div className="print:hidden">
                   {isDetailsExpanded ? (
@@ -205,19 +205,19 @@ export const DigitalReceiptModal: React.FC<DigitalReceiptModalProps> = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-gray-600">
                     <div className="flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                      <span>التاريخ والوقت:</span>
+                      <span>تاريخ الطلب:</span>
                       <strong className="text-gray-800">{formatDateTime(order.createdAt)}</strong>
                     </div>
 
                     <div className="flex items-center gap-1.5">
                       <User className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                      <span>اسم العميل:</span>
+                      <span>الاسم:</span>
                       <strong className="text-gray-800">{order.customerName}</strong>
                     </div>
 
                     <div className="flex items-center gap-1.5">
                       <Phone className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                      <span>رقم الهاتف:</span>
+                      <span>الموبايل:</span>
                       <strong className="text-gray-800 number-ltr tabular-nums">{order.customerPhone}</strong>
                     </div>
 
@@ -227,11 +227,11 @@ export const DigitalReceiptModal: React.FC<DigitalReceiptModalProps> = ({
                       ) : (
                         <ShoppingBag className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                       )}
-                      <span>طريقة الاستلام:</span>
+                      <span>طريقة الدفع:</span>
                       <strong className="text-primary">
                         {(order.type === 'delivery' || (order as any).deliveryType === 'delivery')
-                          ? 'توصيل ديليفري (كاش)'
-                          : 'استلام من الفرع (كاش)'}
+                          ? 'كاش عند التوصيل'
+                          : 'كاش في الفرع'}
                       </strong>
                     </div>
                   </div>
@@ -264,7 +264,7 @@ export const DigitalReceiptModal: React.FC<DigitalReceiptModalProps> = ({
 
                   {/* Itemized List */}
                   <div className="pt-3 space-y-2.5">
-                    <span className="font-extrabold text-gray-700 block">الأصناف المطلوبة:</span>
+                    <span className="font-extrabold text-gray-700 block">طلبك:</span>
                     <div className="space-y-2">
                       {order.items.map((item, idx) => {
                         const itemName = getLocalizedText(item.name, 'صنف');
@@ -312,7 +312,7 @@ export const DigitalReceiptModal: React.FC<DigitalReceiptModalProps> = ({
                   {/* Pricing Breakdown */}
                   <div className="pt-3 space-y-1.5 text-gray-600">
                     <div className="flex justify-between">
-                      <span>المجموع الفرعي:</span>
+                      <span>المجموع:</span>
                       <CurrencyDisplay amount={order.subtotal} />
                     </div>
                     {order.deliveryFee > 0 && (
@@ -328,7 +328,7 @@ export const DigitalReceiptModal: React.FC<DigitalReceiptModalProps> = ({
                       </div>
                     )}
                     <div className="pt-2 border-t border-gray-200 flex justify-between items-center text-sm font-black text-dark">
-                      <span>المبلغ الإجمالي كاش عند الاستلام:</span>
+                      <span>الإجمالي:</span>
                       <CurrencyDisplay
                         amount={order.total}
                         className="text-lg font-black text-primary"
@@ -341,7 +341,7 @@ export const DigitalReceiptModal: React.FC<DigitalReceiptModalProps> = ({
 
             {/* Branch address footer in receipt */}
             <div className="text-center text-[11px] text-gray-400 border-t border-gray-100 pt-3">
-              مانشيز – حديقة الورد أمام الراية – الكورنيش، أسوان | هاتف: <span className="tabular-nums">01025707026</span>
+              Munchie's – حديقة الورد أمام الراية – الكورنيش، أسوان | موبايل: <span className="tabular-nums">01025707026</span>
             </div>
           </div>
         </div>
@@ -354,7 +354,7 @@ export const DigitalReceiptModal: React.FC<DigitalReceiptModalProps> = ({
             onClick={handleNavigateToTracking}
             className="w-full py-3.5 px-6 rounded-2xl bg-primary hover:bg-primary-dark active:scale-[0.99] text-white font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg shadow-primary/25 transition-all cursor-pointer"
           >
-            <span>متابعة حالة الطلب الآن</span>
+            <span>تابع طلبك</span>
             <ArrowLeft className="w-5 h-5 rtl:rotate-180" />
           </button>
 
@@ -366,15 +366,15 @@ export const DigitalReceiptModal: React.FC<DigitalReceiptModalProps> = ({
               className="py-2.5 px-4 rounded-xl border border-border bg-white hover:bg-gray-100 active:scale-[0.99] font-bold text-xs text-dark flex items-center justify-center gap-2 transition-all cursor-pointer"
             >
               <Printer className="w-4 h-4 text-gray-500" />
-              <span>طباعة الفاتورة</span>
+              <span>اطبع الفاتورة</span>
             </button>
 
             <button
               type="button"
-              onClick={handleCloseAndGoMenu}
+              onClick={handleCloseAndGoHome}
               className="py-2.5 px-4 rounded-xl bg-white hover:bg-gray-100 border border-border active:scale-[0.99] font-bold text-xs text-dark flex items-center justify-center gap-1.5 transition-all cursor-pointer"
             >
-              <span>إغلاق والعودة للمنيو</span>
+              <span>ارجع للرئيسية</span>
             </button>
           </div>
         </div>

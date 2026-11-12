@@ -22,14 +22,14 @@ export const CartSummary: React.FC<CartSummaryProps> = ({ orderType = 'pickup', 
   return (
     <div className="space-y-2.5 text-sm">
       <div className="flex justify-between text-medium-gray">
-        <span>المجموع الفرعي</span>
+        <span>المجموع</span>
         <CurrencyDisplay amount={subtotal} className="text-dark font-semibold" />
       </div>
 
       <div className="flex justify-between text-medium-gray">
-        <span>رسوم الاستلام / التوصيل</span>
+        <span>رسوم التوصيل</span>
         {orderType === 'pickup' ? (
-          <span className="text-success font-bold">مجاني</span>
+          <span className="text-success font-bold">مجاني (استلام من الفرع)</span>
         ) : (
           <CurrencyDisplay amount={deliveryFee} className="text-dark font-semibold" />
         )}
@@ -43,7 +43,7 @@ export const CartSummary: React.FC<CartSummaryProps> = ({ orderType = 'pickup', 
       )}
 
       <div className="border-t border-border pt-3 flex justify-between items-center text-base font-bold text-dark">
-        <span>الإجمالي المطلوب</span>
+        <span>الإجمالي</span>
         <CurrencyDisplay amount={total} className="text-xl font-black text-primary" />
       </div>
     </div>

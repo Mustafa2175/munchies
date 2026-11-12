@@ -17,7 +17,7 @@ export const CartIcon: React.FC<{ className?: string }> = ({ className = '' }) =
       type="button"
       onClick={openCartDrawer}
       className={`relative w-10 h-10 flex items-center justify-center rounded-xl text-white hover:text-[#FFDA35] hover:bg-white/10 transition-colors cursor-pointer select-none active:scale-95 ${className}`}
-      aria-label="سلة المشتريات"
+      aria-label="السلة"
     >
       <ShoppingBag className="w-5 h-5" />
       {itemCount > 0 && (

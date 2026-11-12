@@ -36,9 +36,9 @@ export const ProductDetailsPage: React.FC = () => {
   if (!product) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-        <h2 className="text-xl font-bold text-dark">الصنف غير موجود</h2>
+        <h2 className="text-xl font-bold text-dark">ملقيناش الصنف ده</h2>
         <Link to={ROUTES.MENU} className="mt-4 inline-block text-primary font-bold">
-          العودة للمنيو
+          شوف المنيو
         </Link>
       </div>
     );
@@ -79,15 +79,15 @@ export const ProductDetailsPage: React.FC = () => {
 
   const handleAddToCart = () => {
     if (!isStoreOpen) {
-      toast.error('المطعم مغلق حالياً ولا يستقبل طلبات جديدة');
+      toast.error('معلش، إحنا قافلين دلوقتي. راجعنا قريب!');
       return;
     }
     if (!isCategoryActive) {
-      toast.error('عذراً، هذا القسم غير متاح للطلب حالياً');
+      toast.error('القسم ده مش متاح للطلب دلوقتي');
       return;
     }
     if (!isProductBaseAvailable) {
-      toast.error('عذراً، هذا الصنف غير متوفر للطلب حالياً');
+      toast.error('الصنف ده خلص مننا مؤقتًا');
       return;
     }
 
@@ -128,7 +128,7 @@ export const ProductDetailsPage: React.FC = () => {
       specialInstructions: notes.trim() || undefined,
     });
 
-    toast.success(`تمت إضافة "${productName}" إلى السلة بنجاح!`);
+    toast.success(`ضيفنا "${productName}" للسلة!`);
   };
 
   return (
@@ -140,7 +140,7 @@ export const ProductDetailsPage: React.FC = () => {
           className="inline-flex items-center gap-1.5 text-xs font-bold text-medium-gray hover:text-primary transition-colors"
         >
           <ArrowRight className="w-4 h-4" />
-          <span>العودة للمنيو</span>
+          <span>ارجع للمنيو</span>
         </Link>
       </div>
 
@@ -163,17 +163,17 @@ export const ProductDetailsPage: React.FC = () => {
               {!isCategoryActive ? (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-danger text-white shadow-xs">
                   <Ban className="w-4 h-4" />
-                  <span>القسم غير متاح حالياً</span>
+                  <span>القسم مش متاح دلوقتي</span>
                 </span>
               ) : !isProductBaseAvailable ? (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-danger text-white shadow-xs">
                   <Ban className="w-4 h-4" />
-                  <span>غير متوفر حالياً</span>
+                  <span>خلص مننا مؤقتًا</span>
                 </span>
               ) : !isStoreOpen ? (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-warning text-dark shadow-xs">
                   <Clock className="w-4 h-4" />
-                  <span>المطعم مغلق</span>
+                  <span>قافلين دلوقتي</span>
                 </span>
               ) : (
                 <>
@@ -276,14 +276,14 @@ export const ProductDetailsPage: React.FC = () => {
           {/* Notes */}
           <div className="space-y-1.5 pt-4 border-t border-border">
             <label className="text-xs font-bold text-dark">
-              ملاحظات خاصة للمطبخ
+              عندك أي ملاحظات على الطلب؟
             </label>
             <input
               type="text"
               value={notes}
               disabled={!isOrderable}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="مثال: بدون بصل، زيادة صوص..."
+              placeholder="مثال: من غير بصل، زوّد صوص..."
               className="w-full text-xs rounded-xl border border-border p-3 focus:outline-none focus:border-primary disabled:bg-light-gray disabled:text-medium-gray"
             />
           </div>
@@ -306,14 +306,14 @@ export const ProductDetailsPage: React.FC = () => {
               }
             >
               {!isCategoryActive ? (
-                <span>القسم غير متاح حالياً</span>
+                <span>القسم مش متاح دلوقتي</span>
               ) : !isProductBaseAvailable ? (
-                <span>غير متوفر حالياً</span>
+                <span>خلص مننا مؤقتًا</span>
               ) : !isStoreOpen ? (
-                <span>المطعم مغلق حالياً</span>
+                <span>قافلين دلوقتي</span>
               ) : (
                 <>
-                  <span>أضف للسلة</span>
+                  <span>ضيف للسلة</span>
                   <span className="mx-2">•</span>
                   <CurrencyDisplay amount={lineTotal} />
                 </>

@@ -25,8 +25,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   onConfirm,
   title,
   message,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  confirmText = 'تأكيد',
+  cancelText = 'إلغاء',
   confirmVariant = 'primary',
   isLoading = false,
 }) => {

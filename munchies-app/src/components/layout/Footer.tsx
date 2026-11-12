@@ -21,13 +21,13 @@ export const Footer: React.FC = () => {
               </div>
               <div className="flex flex-col">
                 <span className="text-xl font-black text-yellow tracking-wider leading-none">
-                  مانشيز MUNCHIE'S
+                  Munchie's | مانشيز
                 </span>
-                <span className="text-xs text-purple-200 font-bold mt-1">لو كبير عليك، اضغطه!</span>
+                <span className="text-xs text-purple-200 font-bold mt-1">لو كبير عليك، اضغطه! 🍔</span>
               </div>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
-              مطعم مانشيز بأسوان — أشهى ساندوتشات البرجر، الفات بير، وفرايز لوديد بأعلى جودة ولحوم بلدية طازجة 100%.
+              مطعم مانشيز في أسوان — أشهى ساندوتشات البرجر، الفات بير، والـ Loaded Fries بأعلى جودة ولحوم بلدية طازة 100%.
             </p>
             <div className="pt-1">
               <a
@@ -36,7 +36,7 @@ export const Footer: React.FC = () => {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-primary hover:bg-primary-light text-white text-xs font-bold transition-all shadow-xs border border-yellow/30"
               >
-                <span>صفحتنا على فيسبوك</span>
+                <span>تابعنا على فيسبوك</span>
               </a>
             </div>
           </div>
@@ -63,13 +63,18 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
+                <Link to={ROUTES.TRACK_ORDER} className="hover:text-yellow transition-colors">
+                  تابع طلبك
+                </Link>
+              </li>
+              <li>
                 <Link to={ROUTES.ABOUT} className="hover:text-yellow transition-colors">
-                  عن مانشيز
+                  حكايتنا
                 </Link>
               </li>
               <li>
                 <Link to={ROUTES.CONTACT} className="hover:text-yellow transition-colors">
-                  تواصل معنا
+                  كلمنا
                 </Link>
               </li>
             </ul>
@@ -78,7 +83,7 @@ export const Footer: React.FC = () => {
           {/* Col 3: Contact & Branch Info */}
           <div className="space-y-3.5">
             <h4 className="text-sm font-bold text-white uppercase tracking-wider">
-              الفرع والتواصل
+              مكاننا وكلمنا
             </h4>
             <div className="space-y-2.5 text-sm text-gray-400">
               <div className="flex items-start gap-2.5">
@@ -101,9 +106,9 @@ export const Footer: React.FC = () => {
 
         {/* Bottom bar */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-3">
-          <p>جميع الحقوق محفوظة لمطعم مانشيز © 2026</p>
+          <p>جميع الحقوق محفوظة لـ Munchie's © 2026</p>
           <p className="flex items-center gap-1.5">
-            <span>صنع بكل</span>
+            <span>صُنع بكل</span>
             <Heart className="w-3.5 h-3.5 text-danger fill-current" />
             <span>في أسوان</span>
           </p>

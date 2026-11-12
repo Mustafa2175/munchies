@@ -106,7 +106,7 @@ export const Navbar: React.FC = () => {
             <Link
               to={ROUTES.HOME}
               className="inline-flex items-center shrink-0 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFDA35]"
-              aria-label="مانشيز - الصفحة الرئيسية"
+              aria-label="Munchie's - الرئيسية"
             >
               <img
                 src="/munchies-logo.png"

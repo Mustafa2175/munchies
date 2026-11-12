@@ -13,13 +13,13 @@ export const AboutPage: React.FC = () => {
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
         <span className="text-xs font-black text-primary uppercase tracking-wider block">
-          قصتنا في أسوان
+          حكايتنا في أسوان
         </span>
         <h1 className="text-3xl sm:text-4xl font-black text-dark">
-          عن مطعم مانشيز
+          مين Munchie's؟
         </h1>
         <p className="text-base text-medium-gray leading-relaxed">
-          انطلقنا من كورنيش أسوان بشغف تقديم ساندوتشات برجر وفات بير غنية بالصوصات الطازجة وأعلى معايير الجودة.
+          بدأنا من كورنيش أسوان بشغف نعمل ساندوتشات Burger وFat Bear بصوصات Fresh وجودة تفرق معاك من أول لقمة.
         </p>
       </div>
 
@@ -27,20 +27,20 @@ export const AboutPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
         <div className="space-y-4 text-dark leading-relaxed text-sm sm:text-base">
           <h2 className="text-2xl font-black text-primary">
-            سر النكهة والطعم في مانشيز
+            إيه سر الطعم في Munchie's؟
           </h2>
           <p className="text-medium-gray">
-            في مانشيز، نؤمن أن جودة الساندوتش تبدأ من التفاصيل. نختار لحومنا البلدية الطازجة بعناية، ونحضر صوصاتنا الخاصة داخل مطبخنا يومياً لنضمن لك نكهة متوازنة ومميزة في كل طلب.
+            في Munchie's بنهتم بكل تفصيلة في الساندوتش؛ من اختيار اللحوم البلدية الطازة كل يوم، لحد صوصاتنا اللي بنحضرها بنفسنا في مطبخنا عشان تاخد طعم مظبوط في كل أوردر.
           </p>
           <p className="text-medium-gray">
-            سواء كنت تفضل البرجر الكلاسيكي، أو سندوتشات الفات بير، أو الفرايز الغرقانة بالجبنة، نحن هنا لنقدم لك تجربة ممتعة في كل مرة تزورنا فيها بأسوان.
+            سواء بتحب الـ Burger الكلاسيك، أو ساندوتشات الـ Fat Bear، أو الـ Loaded Fries الغرقانة جبنة وصوص... إحنا دايمًا جاهزين نقدملك تجربة تبسطك في أسوان.
           </p>
         </div>
 
         <div className="relative aspect-4/3 rounded-2xl overflow-hidden shadow-card border border-border bg-light-gray flex items-center justify-center p-6">
           <img
             src="/hero_food_blended.png"
-            alt="أطباق مانشيز الطازجة"
+            alt="أطباق Munchie's الطازة"
             className="w-full h-full object-contain filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.15)]"
           />
         </div>
@@ -53,10 +53,10 @@ export const AboutPage: React.FC = () => {
             <Award className="w-6 h-6" />
           </div>
           <h3 className="font-extrabold text-base text-dark">
-            لحوم بلدية طازجة
+            لحوم بلدية Fresh
           </h3>
           <p className="text-xs text-medium-gray">
-            نستخدم لحوماً طازجة يومياً ونحضر كل ساندوتش عند الطلب مباشرة.
+            بنستخدم لحوم طازة كل يوم وبنحضر كل ساندوتش وقت ما تطلبه على طول.
           </p>
         </Card>
 
@@ -65,10 +65,10 @@ export const AboutPage: React.FC = () => {
             <UtensilsCrossed className="w-6 h-6" />
           </div>
           <h3 className="font-extrabold text-base text-dark">
-            صوصات خاصة بمطبخنا
+            صوصات مخصوص لمطبخنا
           </h3>
           <p className="text-xs text-medium-gray">
-            وصفات صوصات وإضافات متوازنة تم ابتكارها لتناسب كل صنف بالمنيو.
+            وصفات صوصات وإضافات متظبطة عشان تليق على كل ساندوتش في المنيو.
           </p>
         </Card>
 
@@ -77,10 +77,10 @@ export const AboutPage: React.FC = () => {
             <Heart className="w-6 h-6" />
           </div>
           <h3 className="font-extrabold text-base text-dark">
-            خدمة وضيافة أسوانية
+            خدمة سريعة في أسوان
           </h3>
           <p className="text-xs text-medium-gray">
-            فريقنا بفرع الكورنيش حريص على تقديم طلبك بأفضل سرعة وجودة.
+            فريقنا في فرع الكورنيش هدفه يوصلك طلبك سخن وبأحسن جودة.
           </p>
         </Card>
       </div>

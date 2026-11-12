@@ -4,27 +4,38 @@
  */
 
 import React from 'react';
-import { Check, Clock, ChefHat, PackageCheck, CheckCircle2, XCircle } from 'lucide-react';
+import { Check, Clock, ChefHat, PackageCheck, CheckCircle2, XCircle, Truck } from 'lucide-react';
 import type { OrderStatus } from '@/types';
 import { formatTime } from '@/lib/date';
 
 export interface OrderTimelineProps {
   currentStatus: OrderStatus;
   statusHistory?: { status: OrderStatus; timestamp: string; note?: string }[];
+  orderType?: 'pickup' | 'delivery';
   locale?: string;
 }
 
-const STEPS: { status: OrderStatus; labelAr: string; icon: any }[] = [
-  { status: 'pending', labelAr: 'تم إرسال الطلب', icon: Clock },
-  { status: 'confirmed', labelAr: 'تم قبول الطلب من المطعم', icon: Check },
-  { status: 'preparing', labelAr: 'جاري التحضير في المطبخ', icon: ChefHat },
-  { status: 'ready', labelAr: 'الطلب جاهز للاستلام', icon: PackageCheck },
-  { status: 'picked_up', labelAr: 'تم استلام الطلب بنجاح', icon: CheckCircle2 },
+const PICKUP_STEPS: { status: OrderStatus; labelAr: string; icon: any }[] = [
+  { status: 'pending', labelAr: 'متقلقش، طلبك وصلنا!', icon: Clock },
+  { status: 'confirmed', labelAr: 'المطعم وافق على طلبك', icon: Check },
+  { status: 'preparing', labelAr: 'طلبك بيتجهز دلوقتي 🔥', icon: ChefHat },
+  { status: 'ready', labelAr: 'طلبك جاهز للاستلام! 🍔', icon: PackageCheck },
+  { status: 'picked_up', labelAr: 'بالهنا والشفا ❤️', icon: CheckCircle2 },
+];
+
+const DELIVERY_STEPS: { status: OrderStatus; labelAr: string; icon: any }[] = [
+  { status: 'pending', labelAr: 'متقلقش، طلبك وصلنا!', icon: Clock },
+  { status: 'confirmed', labelAr: 'المطعم وافق على طلبك', icon: Check },
+  { status: 'preparing', labelAr: 'طلبك بيتجهز دلوقتي 🔥', icon: ChefHat },
+  { status: 'ready', labelAr: 'طلبك جاهز وهيطلع ليك 🍔', icon: PackageCheck },
+  { status: 'out_for_delivery', labelAr: 'طلبك في الطريق ليك 🛵', icon: Truck },
+  { status: 'delivered', labelAr: 'بالهنا والشفا ❤️', icon: CheckCircle2 },
 ];
 
 export const OrderTimeline: React.FC<OrderTimelineProps> = ({
   currentStatus,
   statusHistory = [],
+  orderType = 'pickup',
 }) => {
   if (currentStatus === 'cancelled') {
     return (
@@ -32,22 +43,23 @@ export const OrderTimeline: React.FC<OrderTimelineProps> = ({
         <XCircle className="w-6 h-6 text-red-600 shrink-0" />
         <div>
           <h4 className="font-bold text-sm">
-            تم إلغاء هذا الطلب
+            الطلب اتلغى
           </h4>
           <p className="text-xs text-red-600 mt-0.5">
-            تم إلغاء الطلب طبقاً لسياسة الإلغاء قبل بدء التحضير في المطبخ.
+            تم إلغاء الطلب قبل ما يبدأ التحضير في المطبخ.
           </p>
         </div>
       </div>
     );
   }
 
-  const currentIndex = STEPS.findIndex((s) => s.status === currentStatus);
+  const steps = orderType === 'delivery' ? DELIVERY_STEPS : PICKUP_STEPS;
+  const currentIndex = steps.findIndex((s) => s.status === currentStatus);
   const activeIdx = currentIndex > -1 ? currentIndex : 0;
 
   return (
     <div className="relative ps-6 space-y-6 before:absolute before:inset-y-2 before:start-2.5 before:w-0.5 before:bg-gray-200">
-      {STEPS.map((step, idx) => {
+      {steps.map((step, idx) => {
         const isDone = idx <= activeIdx;
         const isCurrent = idx === activeIdx;
         const Icon = step.icon;

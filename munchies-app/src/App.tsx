@@ -90,7 +90,7 @@ export function App() {
 
             setUser({
               uid: firebaseUser.uid,
-              fullName: firebaseUser.displayName || 'Customer',
+              fullName: firebaseUser.displayName || 'عميل مانشيز',
               email: firebaseUser.email || '',
               phone: firebaseUser.phoneNumber || '01025707026',
               role: 'customer',

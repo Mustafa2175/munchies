@@ -47,14 +47,14 @@ export const CartPage: React.FC = () => {
 
   const handleProceedToCheckout = () => {
     if (!isStoreOpen) {
-      toast.error('المطعم مغلق حالياً ولا يستقبل طلبات جديدة في الوقت الحالي', {
+      toast.error('معلش، إحنا قافلين دلوقتي ومش بنستقبل طلبات جديدة', {
         id: 'cart-closed-toast',
       });
       return;
     }
 
     if (hasDisabledCategoryItems) {
-      toast.error(`أصناف من قسم "${disabledCategoryName}" غير متاحة حالياً. يرجى إزالتها لإتمام الطلب.`);
+      toast.error(`قسم "${disabledCategoryName}" مش متاح دلوقتي. شيل الأصناف دي من السلة عشان تكمل طلبك.`);
       return;
     }
 
@@ -68,7 +68,7 @@ export const CartPage: React.FC = () => {
         typeof unavailable.name === 'object' && unavailable.name?.ar
           ? unavailable.name.ar
           : 'أحد الأصناف';
-      toast.error(`الصنف "${name}" غير متوفر حالياً. يرجى إزالته من السلة للمتابعة.`);
+      toast.error(`"${name}" خلص مننا مؤقتًا. شيله من السلة عشان تكمل طلبك.`);
       return;
     }
 
@@ -80,9 +80,9 @@ export const CartPage: React.FC = () => {
       <div className="max-w-2xl mx-auto px-4 py-16 sm:py-24">
         <EmptyState
           icon={ShoppingBag}
-          title="سلة المشتريات فارغة"
-          description="لم تقم بإضافة أي أصناف إلى سلتك بعد. تفضل بزيارة المنيو واختر ما تحب!"
-          actionLabel="استكشف قائمة الطعام"
+          title="السلة لسه فاضية!"
+          description="لسه مستني إيه؟ اختار أكلك المفضل وابدأ طلبك."
+          actionLabel="كمّل اختياراتك"
           onAction={() => navigate(ROUTES.MENU)}
         />
       </div>
@@ -97,14 +97,14 @@ export const CartPage: React.FC = () => {
           <AlertTriangle className="w-5 h-5 text-danger shrink-0 mt-0.5" />
           <div className="text-xs sm:text-sm text-danger">
             <h4 className="font-black text-danger text-sm">
-              المطعم مغلق حالياً ولا يستقبل طلبات جديدة
+              قافلين دلوقتي ومش بنستقبل طلبات جديدة
             </h4>
             <p className="mt-0.5 leading-relaxed">
               {isManualClosed ? (
-                closureMessage || 'استلام الطلبات متوقف مؤقتاً وسنعاود استقبال الطلبات قريباً.'
+                closureMessage || 'استلام الطلبات متوقف مؤقتًا، وهنرجع نستقبل طلباتك قريب!'
               ) : (
                 <>
-                  أوقات العمل المقررة اليوم: <span className="font-bold">{todayHours || 'مغلق'}</span>. يمكنك تصفح السلة وسيتاح تأكيد الطلب فور بدء موعد العمل.
+                  مواعيد شغلنا النهارده: <span className="font-bold">{todayHours || 'قافلين'}</span>. تقدر تقلب في السلة وتكمل طلبك أول ما نفتح.
                 </>
               )}
             </p>
@@ -118,10 +118,10 @@ export const CartPage: React.FC = () => {
           <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div className="text-xs sm:text-sm text-amber-900">
             <h4 className="font-black text-amber-900 text-sm">
-              تنبيه: أصناف غير متاحة للطلب حالياً
+              تنبيه: في أصناف مش متاحة للطلب دلوقتي
             </h4>
             <p className="mt-0.5 leading-relaxed text-amber-800">
-              يوجد في السلة أصناف تتبع قسم <span className="font-bold">"{disabledCategoryName}"</span> وهو غير متاح للطلب حالياً. يرجى حذفها لإتمام الطلب.
+              في السلة أصناف من قسم <span className="font-bold">"{disabledCategoryName}"</span> وهو مش متاح دلوقتي. شيلها من السلة عشان تكمل طلبك.
             </p>
           </div>
         </div>
@@ -130,10 +130,10 @@ export const CartPage: React.FC = () => {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-dark">
-            سلة المشتريات
+            السلة
           </h1>
           <p className="text-xs text-medium-gray mt-1">
-            لديك {itemCount} أصناف في السلة
+            معاك {itemCount} أصناف في السلة
           </p>
         </div>
 
@@ -141,7 +141,7 @@ export const CartPage: React.FC = () => {
           onClick={clearCart}
           className="text-xs text-danger font-bold hover:underline cursor-pointer"
         >
-          تفريغ السلة
+          فضّي السلة
         </button>
       </div>
 
@@ -156,7 +156,7 @@ export const CartPage: React.FC = () => {
         {/* Summary */}
         <div className="lg:col-span-4 bg-white rounded-2xl p-6 border border-border shadow-card space-y-6 sticky top-28">
           <h3 className="font-bold text-base text-dark">
-            ملخص الحساب
+            ملخص الطلب
           </h3>
           <CartSummary orderType="pickup" />
           <div className="pt-2">
@@ -176,10 +176,10 @@ export const CartPage: React.FC = () => {
               }
             >
               {!isStoreOpen
-                ? 'المطعم مغلق حالياً'
+                ? 'قافلين دلوقتي'
                 : hasDisabledCategoryItems
-                ? 'القسم غير متاح حالياً'
-                : 'متابعة إلى إتمام الطلب'}
+                ? 'القسم مش متاح دلوقتي'
+                : 'كمّل طلبك'}
             </Button>
           </div>
         </div>

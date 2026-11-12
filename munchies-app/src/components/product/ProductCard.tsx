@@ -58,19 +58,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const handleCardClick = () => {
     if (!isStoreOpen) {
-      toast.error('المطعم مغلق حالياً ولا يستقبل طلبات جديدة', {
+      toast.error('معلش، إحنا قافلين دلوقتي. راجعنا قريب!', {
         id: 'store-closed-toast',
       });
       return;
     }
     if (!isCategoryActive) {
-      toast.error('عذراً، هذا القسم غير متاح للطلب حالياً', {
+      toast.error('القسم ده مش متاح للطلب دلوقتي', {
         id: `category-disabled-${product.categoryId}`,
       });
       return;
     }
     if (!isProductBaseAvailable) {
-      toast.error('هذا الصنف غير متوفر حالياً', {
+      toast.error('الصنف ده خلص مننا مؤقتًا', {
         id: `unavailable-card-${product.id}`,
       });
       return;
@@ -87,7 +87,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         quantity: 1,
         customizations: [],
       });
-      toast.success(`تمت إضافة "${productName}" إلى السلة`);
+      toast.success(`ضيفنا "${productName}" للسلة!`);
     }
   };
 
@@ -95,19 +95,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     e.stopPropagation();
 
     if (!isStoreOpen) {
-      toast.error('المطعم مغلق حالياً ولا يستقبل طلبات جديدة', {
+      toast.error('معلش، إحنا قافلين دلوقتي. راجعنا قريب!', {
         id: 'store-closed-toast',
       });
       return;
     }
     if (!isCategoryActive) {
-      toast.error('عذراً، هذا القسم غير متاح للطلب حالياً', {
+      toast.error('القسم ده مش متاح للطلب دلوقتي', {
         id: `category-disabled-${product.categoryId}`,
       });
       return;
     }
     if (!isProductBaseAvailable) {
-      toast.error('عذراً، هذا الصنف غير متوفر للطلب حالياً', {
+      toast.error('الصنف ده خلص مننا مؤقتًا', {
         id: `unavailable-action-${product.id}`,
       });
       return;
@@ -148,7 +148,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       customizations: defaultCustomizations,
     });
 
-    toast.success(`تمت إضافة "${productName}" إلى السلة`);
+    toast.success(`ضيفنا "${productName}" للسلة!`);
   };
 
   return (
@@ -186,15 +186,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className="absolute top-1.5 start-1.5 flex flex-col gap-1 z-10 pointer-events-none">
             {!isCategoryActive ? (
               <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black bg-danger text-white">
-                غير متاح
+                مش متاح
               </span>
             ) : !isProductBaseAvailable ? (
               <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black bg-danger text-white">
-                غير متوفر
+                خلص مننا مؤقتًا
               </span>
             ) : !isStoreOpen ? (
               <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black bg-warning text-dark">
-                مغلق
+                قافلين
               </span>
             ) : product.isBestSeller ? (
               <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black bg-yellow text-dark">
@@ -249,8 +249,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 ? 'bg-yellow hover:bg-yellow-dark text-dark hover:scale-105 shadow-xs'
                 : 'bg-light-gray text-medium-gray cursor-not-allowed'
             }`}
-            aria-label={`إضافة ${productName} إلى السلة`}
-            title={`إضافة ${productName} إلى السلة`}
+            aria-label={`ضيف ${productName} للسلة`}
+            title={`ضيف ${productName} للسلة`}
           >
             <ShoppingCart className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[2.2]" />
           </button>

@@ -65,7 +65,7 @@ export const HeroSection: React.FC = () => {
             {/* Headline Block */}
             <div className="space-y-3 sm:space-y-3.5 lg:space-y-4">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.15]">
-                مش أي برجر...
+                مش اي برجر ...
               </h1>
 
               <div>
@@ -82,7 +82,7 @@ export const HeroSection: React.FC = () => {
 
             {/* Desktop supporting copy */}
             <p className="hidden lg:block text-white/90 text-xl font-medium max-w-lg leading-relaxed">
-              لحوم بلدية طازجة، صوصات خاصة، وألذ إضافات محضرة يومياً في أسوان.
+              لحوم بلدية طازة، صوصات خاصة، وألذ إضافات بتتحضر كل يوم في أسوان.
             </p>
 
             {/* CTA Buttons (Single primary button on mobile; Primary + Secondary on desktop) */}
@@ -100,7 +100,7 @@ export const HeroSection: React.FC = () => {
                 className="hidden lg:inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-base border border-white/25 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap"
               >
                 <UtensilsCrossed className="w-5 h-5 text-[#FFDA35]" />
-                <span>تصفح المنيو</span>
+                <span>شوف المنيو</span>
               </Link>
             </div>
           </div>

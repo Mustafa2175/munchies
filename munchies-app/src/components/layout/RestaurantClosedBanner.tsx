@@ -26,21 +26,21 @@ export const RestaurantClosedBanner: React.FC = () => {
       <div className="max-w-7xl mx-auto flex items-center justify-center text-center gap-2 sm:gap-3 flex-wrap">
         <div className="flex items-center gap-1.5 shrink-0 bg-white/20 px-2 py-0.5 rounded-full text-white">
           <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow" />
-          <span className="text-[11px] sm:text-xs font-black">المطعم مغلق</span>
+          <span className="text-[11px] sm:text-xs font-black">قافلين دلوقتي</span>
         </div>
 
         <p className="leading-snug">
           {isManualClosed ? (
             <span>
-              {closureMessage || 'المطعم مغلق حالياً ولا يستقبل طلبات جديدة في الوقت الحالي.'}
+              {closureMessage || 'معلش، إحنا قافلين دلوقتي. راجعنا قريب!'}
             </span>
           ) : (
             <span>
-              المطعم مغلق حالياً ولا يستقبل طلبات
+              معلش، إحنا قافلين دلوقتي. راجعنا قريب!
               {todayHours ? (
-                <> — مواعيد العمل اليوم: <span className="underline decoration-white/40 font-black">{todayHours}</span></>
+                <> — مواعيدنا النهاردة: <span className="underline decoration-white/40 font-black">{todayHours}</span></>
               ) : (
-                ' — اليوم عطلة أسبوعية'
+                ' — النهاردة إجازة'
               )}
             </span>
           )}

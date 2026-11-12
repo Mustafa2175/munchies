@@ -35,9 +35,9 @@ import type { Order } from '@/types';
 
 // Zod Schema for Aswan Delivery Address
 const deliveryAddressSchema = z.object({
-  area: z.string().trim().min(2, 'يرجى تحديد أو إدخال المنطقة في أسوان'),
-  street: z.string().trim().min(2, 'يرجى إدخال اسم الشارع بالتفصيل'),
-  buildingApt: z.string().trim().min(1, 'يرجى إدخال رقم العقار / الدور / الشقة'),
+  area: z.string().trim().min(2, 'من فضلك اكتب اسم المنطقة في أسوان'),
+  street: z.string().trim().min(2, 'من فضلك اكتب اسم الشارع بالتفصيل'),
+  buildingApt: z.string().trim().min(1, 'من فضلك اكتب رقم العمارة والدور والشقة'),
   landmark: z.string().trim().optional(),
 });
 
@@ -126,7 +126,7 @@ export const CheckoutPage: React.FC = () => {
     e.preventDefault();
 
     if (!isStoreCurrentlyOpen()) {
-      toast.error('عذراً، المطعم مغلق حالياً ولا يستقبل طلبات جديدة في الوقت الحالي');
+      toast.error('معلش، المطعم قافل دلوقتي ومش بيستقبل طلبات جديدة.');
       return;
     }
 
@@ -136,7 +136,7 @@ export const CheckoutPage: React.FC = () => {
             ? disabledCategoryItem.name.ar
             : 'أحد الأصناف')
         : 'أحد الأصناف';
-      toast.error(`الصنف "${itemName}" يتبع قسماً غير متاح حالياً (${disabledCategoryName}). يرجى حذفه لإتمام الطلب.`);
+      toast.error(`"${itemName}" تبع قسم مش متاح دلوقتي (${disabledCategoryName}). من فضلك شيله من السلة عشان تكمل طلبك.`);
       return;
     }
 
@@ -151,18 +151,18 @@ export const CheckoutPage: React.FC = () => {
         typeof unavailable.name === 'object' && unavailable.name?.ar
           ? unavailable.name.ar
           : 'أحد الأصناف';
-      toast.error(`الصنف "${name}" غير متوفر حالياً. يرجى حذفه من السلة لإتمام الطلب.`);
+      toast.error(`"${name}" غير متاح حاليًا. من فضلك شيله من السلة عشان تكمل طلبك.`);
       return;
     }
 
     if (!fullName.trim() || !phone.trim()) {
-      toast.error('يرجى إدخال اسم العميل ورقم الموبايل');
+      toast.error('من فضلك اكتب اسمك ورقم موبايلك عشان نقدر نأكد الطلب.');
       return;
     }
 
     const phoneRegex = /^(010|011|012|015)[0-9]{8}$/;
     if (!phoneRegex.test(phone.trim())) {
-      toast.error('يرجى إدخال رقم موبايل مصري صحيح (مثال: 01025707026)');
+      toast.error('من فضلك اكتب رقم موبايل مصري صحيح مكوّن من 11 رقم (مثال: 01025707026).');
       return;
     }
 
@@ -217,11 +217,11 @@ export const CheckoutPage: React.FC = () => {
       setIsReceiptModalOpen(true);
       toast.success(
         orderType === 'delivery'
-          ? 'تم استلام طلب التوصيل بنجاح وجاري تجهيزه!'
-          : 'تم إرسال طلبك بنجاح للمطعم!'
+          ? 'متقلقش، طلبك وصلنا وبدأنا نجهزه وهيوصلّك على طول!'
+          : 'متقلقش، طلبك وصلنا وهنجهزهولك في أسرع وقت!'
       );
     } catch (err: any) {
-      toast.error(err.message || 'حدث خطأ أثناء إرسال الطلب');
+      toast.error(err.message || 'حصلت مشكلة أثناء تأكيد الطلب، جرّب تاني');
     } finally {
       setIsSubmitting(false);
     }
@@ -231,12 +231,12 @@ export const CheckoutPage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12" dir="rtl">
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-black text-dark">
-          إتمام الطلب
+          يلا نكمّل طلبك!
         </h1>
         <p className="text-xs text-medium-gray mt-1">
           {orderType === 'delivery'
-            ? 'خطوة واحدة بسيطة لتأكيد طلبك وتوصيله لباب بيتك في أسوان'
-            : 'خطوة واحدة بسيطة لتأكيد طلبك والاستلام من فرع أسوان'}
+            ? 'خطوة واحدة ونبدأ نجهزلك طلبك ويوصلّك لحد باب البيت في أسوان'
+            : 'خطوة واحدة ونجهزلك طلبك عشان تستلمه Fresh وسخن من فرع أسوان'}
         </p>
       </div>
 
@@ -246,14 +246,14 @@ export const CheckoutPage: React.FC = () => {
           <AlertTriangle className="w-5 h-5 text-danger shrink-0 mt-0.5" />
           <div className="text-xs sm:text-sm text-danger">
             <h4 className="font-black text-danger text-sm">
-              المطعم مغلق حالياً ولا يستقبل طلبات
+              معلش، قافلين دلوقتي ومش بنستقبل طلبات
             </h4>
             <p className="mt-0.5 leading-relaxed">
               {isManualClosed ? (
-                closureMessage || 'استلام الطلبات متوقف مؤقتاً وسنعاود الاستقبال قريباً.'
+                closureMessage || 'استلام الطلبات متوقف مؤقتًا، وهنرجع نستقبل طلباتك قريب!'
               ) : (
                 <>
-                  أوقات العمل المقررة اليوم: <span className="font-bold">{todayHours || 'مغلق'}</span>. لا يمكن إرسال الطلب في الوقت الحالي.
+                  مواعيد شغلنا النهارده: <span className="font-bold">{todayHours || 'قافلين'}</span>. مش هنقدر نأكد الطلب دلوقتي.
                 </>
               )}
             </p>
@@ -267,10 +267,10 @@ export const CheckoutPage: React.FC = () => {
           <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div className="text-xs sm:text-sm text-amber-900">
             <h4 className="font-black text-amber-900 text-sm">
-              لا يمكن إتمام الطلب: بعض الأصناف غير متاحة حالياً
+              في أصناف مش متاحة للطلب دلوقتي
             </h4>
             <p className="mt-0.5 leading-relaxed text-amber-800">
-              يحتوي طلبك على أصناف تتبع قسم <span className="font-bold">"{disabledCategoryName}"</span> وهو غير متاح للطلب في الوقت الحالي. يرجى إزالة هذه الأصناف لمتابعة إتمام الطلب.
+              طلبك فيه أصناف من قسم <span className="font-bold">"{disabledCategoryName}"</span> وهو مش متاح دلوقتي. شيلها من السلة عشان تكمل طلبك.
             </p>
           </div>
         </div>
@@ -283,7 +283,7 @@ export const CheckoutPage: React.FC = () => {
             {/* Step 1: Fulfillment Type */}
             <Card className="p-6">
               <h2 className="text-base font-extrabold text-dark mb-4">
-                ١. طريقة الاستلام
+                1. هتستلم إزاي؟
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -307,7 +307,7 @@ export const CheckoutPage: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="font-extrabold text-sm text-dark">
-                      استلام من المطعم (Pickup)
+                      Pickup – استلام من الفرع
                     </h3>
                     <p className="text-xs text-medium-gray mt-0.5 leading-relaxed">
                       حديقة الورد أمام الراية – فرع الكورنيش
@@ -346,12 +346,12 @@ export const CheckoutPage: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="font-extrabold text-sm text-dark">
-                      توصيل ديليفري (Delivery)
+                      Delivery – توصيل لحد عندك
                     </h3>
                     <p className="text-xs text-medium-gray mt-0.5 leading-relaxed">
                       {deliveryEnabled
                         ? `توصيل سريع لباب بيتك (رسوم التوصيل: ${deliveryFee} ج.م)`
-                        : 'خدمة التوصيل غير مفعلة حالياً ومتاحة قريباً في أسوان'}
+                        : 'الديليفري مش متاح دلوقتي وهنفتحه قريب في أسوان'}
                     </p>
                     <span
                       className={`inline-block mt-2 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
@@ -360,7 +360,7 @@ export const CheckoutPage: React.FC = () => {
                           : 'text-warning-800 bg-warning-light border-warning/20'
                       }`}
                     >
-                      {deliveryEnabled ? 'متاح في أسوان' : 'قريباً في أسوان'}
+                      {deliveryEnabled ? 'متاح في أسوان' : 'قريبًا في أسوان'}
                     </span>
                   </div>
                 </div>
@@ -376,7 +376,7 @@ export const CheckoutPage: React.FC = () => {
                       <Navigation className="w-4 h-4" />
                     </div>
                     <h2 className="text-base font-extrabold text-dark">
-                      ٢. عنوان وتفاصيل التوصيل في أسوان
+                      2. هنوصلّك فين؟
                     </h2>
                   </div>
                   <span className="text-xs font-bold text-primary bg-white px-2.5 py-1 rounded-full border border-primary/20">
@@ -387,7 +387,7 @@ export const CheckoutPage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-dark mb-1.5">
-                      المنطقة / الحي بأسوان <span className="text-danger">*</span>
+                      المنطقة في أسوان <span className="text-danger">*</span>
                     </label>
                     <Input
                       value={area}
@@ -399,7 +399,7 @@ export const CheckoutPage: React.FC = () => {
 
                   <div>
                     <label className="block text-xs font-semibold text-dark mb-1.5">
-                      اسم الشارع بالتفصيل <span className="text-danger">*</span>
+                      اسم الشارع <span className="text-danger">*</span>
                     </label>
                     <Input
                       value={street}
@@ -413,12 +413,12 @@ export const CheckoutPage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-dark mb-1.5">
-                      رقم العقار / الدور / الشقة <span className="text-danger">*</span>
+                      رقم العمارة / الدور / الشقة <span className="text-danger">*</span>
                     </label>
                     <Input
                       value={buildingApt}
                       onChange={(e) => setBuildingApt(e.target.value)}
-                      placeholder="مثال: عمارة ١٢، الدور الثالث، شقة ٥"
+                      placeholder="مثال: عمارة 12، الدور الثالث، شقة 5"
                       required
                     />
                   </div>
@@ -430,7 +430,7 @@ export const CheckoutPage: React.FC = () => {
                     <Input
                       value={landmark}
                       onChange={(e) => setLandmark(e.target.value)}
-                      placeholder="مثال: بجوار صيدلية أو مسجد..."
+                      placeholder="مثال: جنب صيدلية أو مسجد..."
                     />
                   </div>
                 </div>
@@ -438,7 +438,7 @@ export const CheckoutPage: React.FC = () => {
             ) : (
               <Card className="p-6">
                 <h2 className="text-base font-extrabold text-dark mb-4">
-                  ٢. تفاصيل الاستلام
+                  2. تفاصيل الاستلام من الفرع
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-light-gray border border-border">
@@ -455,10 +455,10 @@ export const CheckoutPage: React.FC = () => {
                     <Clock className="w-5 h-5 text-primary shrink-0" />
                     <div className="text-xs">
                       <span className="font-bold text-dark block">
-                        موعد الاستلام
+                        هتستلم إمتى؟
                       </span>
                       <span className="text-medium-gray">
-                        أقرب وقت متاح (ASAP)
+                        في أسرع وقت ممكن (أول ما يجهز)
                       </span>
                     </div>
                   </div>
@@ -469,19 +469,19 @@ export const CheckoutPage: React.FC = () => {
             {/* Step 3: Customer Details */}
             <Card className="p-6 space-y-4">
               <h2 className="text-base font-extrabold text-dark">
-                ٣. بيانات التواصل
+                3. بياناتك
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
-                  label="الاسم الكامل"
+                  label="اسمك إيه؟"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="أحمد محمد"
+                  placeholder="اكتب اسمك هنا"
                   required
                 />
                 <Input
-                  label="رقم الموبايل"
+                  label="رقم موبايلك"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="01025707026"
@@ -491,22 +491,22 @@ export const CheckoutPage: React.FC = () => {
               </div>
 
               <Input
-                label="البريد الإلكتروني (اختياري)"
+                label="الإيميل (اختياري)"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com (اختياري)"
+                placeholder="name@domain.com (اختياري)"
               />
 
               <div>
                 <label className="block text-xs font-semibold text-dark mb-1.5">
-                  ملاحظات إضافية للمطبخ أو المندوب
+                  عندك أي ملاحظات على الطلب؟
                 </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
-                  placeholder="أي تعليمات إضافية بخصوص التحضير، التغليف أو الوصول..."
+                  placeholder="اكتب أي تعليمات للمطبخ أو المندوب..."
                   className="w-full rounded-xl border border-border p-3 text-xs focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
                 />
               </div>
@@ -515,7 +515,7 @@ export const CheckoutPage: React.FC = () => {
             {/* Step 4: Payment Method */}
             <Card className="p-6">
               <h2 className="text-base font-extrabold text-dark mb-4">
-                ٤. طريقة الدفع
+                4. هتدفع إزاي؟
               </h2>
 
               <div className="p-4 rounded-2xl border-2 border-primary bg-primary-50 flex items-center justify-between">
@@ -526,18 +526,18 @@ export const CheckoutPage: React.FC = () => {
                   <div>
                     <h4 className="font-extrabold text-sm text-dark">
                       {orderType === 'delivery'
-                        ? 'الدفع نقداً عند استلام الديليفري'
-                        : 'الدفع نقداً عند الاستلام من الفرع'}
+                        ? 'كاش عند الاستلام من المندوب'
+                        : 'كاش عند الاستلام من الفرع'}
                     </h4>
                     <p className="text-xs text-medium-gray">
                       {orderType === 'delivery'
-                        ? 'الدفع كاش لمندوب التوصيل عند باب البيت'
-                        : 'الدفع كاش عند استلام طلبك من الفرع'}
+                        ? 'ادفع كاش للمندوب أول ما طلبك يوصلّك'
+                        : 'ادفع كاش لما تستلم طلبك من الفرع'}
                     </p>
                   </div>
                 </div>
                 <span className="text-xs font-bold text-primary bg-white px-2.5 py-1 rounded-full border border-primary/20">
-                  كاش نقداً
+                  كاش
                 </span>
               </div>
             </Card>
@@ -548,10 +548,10 @@ export const CheckoutPage: React.FC = () => {
             <Card className="p-6 space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="font-bold text-base text-dark">
-                  ملخص الحساب
+                  ملخص الطلب
                 </h3>
                 <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-light-gray text-dark">
-                  {orderType === 'delivery' ? 'طلب ديليفري' : 'استلام فرع'}
+                  {orderType === 'delivery' ? 'Delivery' : 'Pickup'}
                 </span>
               </div>
 
@@ -588,19 +588,19 @@ export const CheckoutPage: React.FC = () => {
                   }
                 >
                   {!isStoreOpen
-                    ? 'المطعم مغلق حالياً'
+                    ? 'قافلين دلوقتي'
                     : hasDisabledCategoryItems
-                    ? 'أصناف غير متاحة بالطلب'
-                    : orderType === 'delivery'
-                    ? 'تأكيد وإرسال طلب التوصيل'
-                    : 'تأكيد وإرسال الطلب'}
+                    ? 'في أصناف مش متاحة'
+                    : isSubmitting
+                    ? 'بنأكد طلبك...'
+                    : 'أكّد الطلب'}
                 </Button>
               </div>
 
               <div className="flex items-center justify-center gap-1.5 text-[11px] text-medium-gray">
                 <ShieldCheck className="w-3.5 h-3.5 text-success" />
                 <span>
-                  طلب آمن ومضمون من مطعم مانشيز أسوان
+                  طلبك في أمان مع Munchie's – فرع أسوان
                 </span>
               </div>
             </Card>

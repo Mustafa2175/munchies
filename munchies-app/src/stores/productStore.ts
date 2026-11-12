@@ -69,7 +69,7 @@ export function syncCartWithProductAvailability(products: Product[]): void {
 
     if (removedItems.length > 0) {
       removedItems.forEach((name) => {
-        toast.error(`تمت إزالة "${name}" من سلة المشتريات لأنه أصبح غير متوفر حالياً`, {
+        toast.error(`شيلنا "${name}" من السلة عشان خلص مننا مؤقتًا`, {
           id: `unavailable-${name}`,
           duration: 4500,
         });

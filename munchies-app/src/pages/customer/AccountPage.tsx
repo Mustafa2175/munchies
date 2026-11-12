@@ -29,13 +29,15 @@ export const AccountPage: React.FC = () => {
           </div>
           <div>
             <h1 className="text-xl sm:text-2xl font-black text-dark">
-              {user?.fullName || 'عميل مانشيز'}
+              {user?.fullName || 'عميل Munchie\'s'}
             </h1>
             <div className="flex flex-wrap items-center gap-4 text-xs text-medium-gray mt-1">
-              <span className="flex items-center gap-1">
-                <Mail className="w-3.5 h-3.5 text-primary" />
-                {user?.email || 'customer@example.com'}
-              </span>
+              {user?.email && (
+                <span className="flex items-center gap-1">
+                  <Mail className="w-3.5 h-3.5 text-primary" />
+                  {user.email}
+                </span>
+              )}
               <span className="flex items-center gap-1 number-ltr">
                 <Phone className="w-3.5 h-3.5 text-primary" />
                 {user?.phone || '01025707026'}
@@ -59,19 +61,19 @@ export const AccountPage: React.FC = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-black text-dark">
-            سجل طلباتي
+            طلباتي
           </h2>
           <span className="text-xs text-medium-gray">
-            {orders.length} طلب
+            عدد الطلبات: {orders.length}
           </span>
         </div>
 
         {orders.length === 0 ? (
           <EmptyState
             icon={ShoppingBag}
-            title="لا توجد طلبات سابقة"
-            description="لم تقم بطلب أي وجبة بعد. تفضل بزيارة المنيو واطلب الآن!"
-            actionLabel="استكشف المنيو"
+            title="لسه مفيش طلبات سابقة!"
+            description="المطبخ جاهز... اختار اللي على مزاجك من المنيو واطلب دلوقتي."
+            actionLabel="شوف المنيو"
             onAction={() => (window.location.href = ROUTES.MENU)}
           />
         ) : (

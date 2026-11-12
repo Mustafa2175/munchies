@@ -97,10 +97,10 @@ export const MenuPage: React.FC = () => {
       {/* Header */}
       <div className="text-center max-w-2xl mx-auto space-y-2">
         <h1 className="text-3xl sm:text-4xl font-black text-dark">
-          قائمة طعام مانشيز
+          منيو مانشيز
         </h1>
         <p className="text-sm text-medium-gray">
-          اختر ما يروق لمزاجك من أطباقنا اللذيذة والطازجة واستلمها ساخنة
+          اختار اللي على مزاجك، وإحنا هنجهزهولك Fresh وسخن!
         </p>
       </div>
 
@@ -125,10 +125,10 @@ export const MenuPage: React.FC = () => {
           </div>
           <div>
             <h3 className="font-extrabold text-sm text-amber-900">
-              هذا القسم غير متاح للطلب حالياً
+              القسم ده مش متاح للطلب دلوقتي
             </h3>
             <p className="text-xs text-amber-800 mt-0.5">
-              أصناف هذا القسم للعرض فقط ولا يمكن إضافتها للسلة أو طلبها في الوقت الحالي.
+              تقدر تشوف الأصناف هنا، بس مش متاح تضيفها للسلة حالياً.
             </p>
           </div>
         </div>
@@ -137,14 +137,14 @@ export const MenuPage: React.FC = () => {
       {/* Products result count */}
       <div className="flex items-center justify-between text-xs text-medium-gray border-b border-border pb-3">
         <span>
-          عرض {filteredProducts.length} صنف
+          عدد الأصناف: <strong className="text-dark tabular-nums">{filteredProducts.length}</strong>
         </span>
         {searchQuery && (
           <button
             onClick={() => setSearchQuery('')}
             className="text-primary font-bold hover:underline cursor-pointer"
           >
-            مسح البحث
+            امسح البحث
           </button>
         )}
       </div>
@@ -154,9 +154,9 @@ export const MenuPage: React.FC = () => {
         <div className="py-12">
           <EmptyState
             icon={Utensils}
-            title="لم يتم العثور على نتائج تطابق بحثك"
-            description="جرب البحث بكلمة أخرى أو تصفح الأقسام المختلفة."
-            actionLabel="عرض كل الأصناف"
+            title="ملقيناش اللي بتدور عليه!"
+            description="جرّب تدور بكلمة تانية."
+            actionLabel="شوف كل المنيو"
             onAction={() => {
               setSelectedCategory('all');
               setSearchQuery('');

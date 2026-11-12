@@ -26,7 +26,7 @@ export const ForgotPasswordPage: React.FC = () => {
     try {
       await sendPasswordResetEmail(auth, email.trim());
       setIsSent(true);
-      toast.success('تم إرسال رابط استعادة كلمة المرور إلى بريدك');
+      toast.success('بعتنالك لينك استعادة كلمة المرور على إيميلك');
     } catch {
       // Mock success for offline testing
       setIsSent(true);
@@ -39,33 +39,33 @@ export const ForgotPasswordPage: React.FC = () => {
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-black text-dark">
-          استعادة كلمة المرور
+          نسيت كلمة السر؟ ولا يهمك.
         </h2>
         <p className="text-xs text-gray-500 mt-1">
-          أدخل بريدك الإلكتروني وسنرسل لك رابطاً لإعادة تعيين كلمة المرور
+          اكتب إيميلك وهنبعتلك لينك ترجع بيه كلمة المرور في ثواني
         </p>
       </div>
 
       {isSent ? (
         <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-3">
           <p className="text-xs text-emerald-800 font-bold leading-relaxed">
-            تم إرسال تعليمات إعادة تعيين كلمة المرور إلى بريدك الإلكتروني بنجاح.
+            بعتنالك خطوات تغيير كلمة المرور على إيميلك.
           </p>
           <Link to={ROUTES.LOGIN}>
             <Button size="sm" variant="primary">
-              العودة لتسجيل الدخول
+              ارجع لتسجيل الدخول
             </Button>
           </Link>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            label="البريد الإلكتروني"
+            label="الإيميل"
             type="email"
             leftIcon={Mail}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="name@example.com"
+            placeholder="name@domain.com"
             required
           />
 
@@ -78,7 +78,7 @@ export const ForgotPasswordPage: React.FC = () => {
             leftIcon={KeyRound}
             className="font-black"
           >
-            إرسال الرابط
+            ابعت اللينك
           </Button>
         </form>
       )}
@@ -89,7 +89,7 @@ export const ForgotPasswordPage: React.FC = () => {
           className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline"
         >
           <ArrowRight className="w-4 h-4" />
-          <span>العودة لتسجيل الدخول</span>
+          <span>ارجع لتسجيل الدخول</span>
         </Link>
       </div>
     </div>

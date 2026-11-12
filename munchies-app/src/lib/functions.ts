@@ -94,7 +94,7 @@ export async function callCreateOrder(
 ): Promise<{ orderId: string; orderNumber: string; order: Order }> {
   // Guard: Verify restaurant is currently accepting orders
   if (!isStoreCurrentlyOpen()) {
-    throw new Error('عذراً، المطعم مغلق حالياً ولا يستقبل طلبات جديدة في الوقت الحالي.');
+    throw new Error('معلش، إحنا قافلين دلوقتي ومبنستقبلش طلبات جديدة. راجعنا قريب!');
   }
 
   const orderNumber = await getNextOrderNumber();
@@ -160,7 +160,7 @@ export async function callCreateOrder(
     await setDoc(orderRef, sanitizedOrder);
   } catch (firestoreErr) {
     console.error('CRITICAL: Failed to write order to Cloud Firestore:', firestoreErr);
-    throw new Error('فشل إرسال الطلب إلى الخادم، يرجى المحاولة مرة أخرى');
+    throw new Error('حصلت مشكلة أثناء إرسال الطلب، جرّب تاني من فضلك.');
   }
 
   // 2. Keep local storage in sync for backup / fast offline read
@@ -178,7 +178,7 @@ export async function callCreateOrder(
 export async function callCancelOrder(orderId: string, reason?: string): Promise<boolean> {
   try {
     // Write directly to Cloud Firestore (Spark plan, no Cloud Functions needed)
-    await updateOrderStatusInFirestore(orderId, 'cancelled', reason || 'طلب العميل إلغاء الأوردر');
+    await updateOrderStatusInFirestore(orderId, 'cancelled', reason || 'العميل لغى الطلب');
 
     // Also update local storage if present
     try {

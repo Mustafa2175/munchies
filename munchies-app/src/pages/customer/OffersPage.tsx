@@ -47,13 +47,13 @@ export const OffersPage: React.FC = () => {
       <div className="text-center max-w-2xl mx-auto space-y-2">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-50 text-primary text-xs font-black">
           <Tag className="w-3.5 h-3.5 text-primary" />
-          <span>عروض مانشيز الحصرية</span>
+          <span>عروض Munchie's الحصرية</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-black text-dark">
           العروض والتوفير
         </h1>
         <p className="text-sm text-medium-gray">
-          أفضل الصفقات والوجبات الموفرة لتستمتع بأشهى أكلات مانشيز مع أصحابك وعيلتك.
+          أحلى Combos وعروض توفير عشان تستمتع بأكل Munchie's مع أصحابك وعيلتك.
         </p>
       </div>
 
@@ -91,7 +91,7 @@ export const OffersPage: React.FC = () => {
 
                 <Link to={ROUTES.MENU}>
                   <Button size="sm" variant="yellow" rightIcon={ArrowLeft} className="font-black">
-                    اطلب العرض
+                    اطلب دلوقتي
                   </Button>
                 </Link>
               </div>

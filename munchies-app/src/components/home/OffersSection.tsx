@@ -27,7 +27,7 @@ export const OffersSection: React.FC = () => {
   const titleText =
     typeof currentOffer.title === 'object' && currentOffer.title?.ar
       ? currentOffer.title.ar
-      : (currentOffer.title as string) || 'عرض مانشيز المميز';
+      : (currentOffer.title as string) || "عرض Munchie's المميز";
 
   const badgeText =
     typeof currentOffer.badge === 'object' && (currentOffer.badge as any)?.ar
@@ -54,7 +54,7 @@ export const OffersSection: React.FC = () => {
             <Tag className="w-4 h-4 text-primary" />
           </div>
           <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tight">
-            العروض
+            اختيارات تستاهل تجربها
           </h2>
         </div>
 
@@ -62,7 +62,7 @@ export const OffersSection: React.FC = () => {
           to={ROUTES.MENU}
           className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-primary text-primary hover:bg-primary-50 transition-colors text-xs sm:text-sm font-bold group cursor-pointer"
         >
-          <span>شوف المنيو كامل</span>
+          <span>شوف المنيو</span>
           <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
         </Link>
       </div>

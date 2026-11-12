@@ -26,7 +26,7 @@ export const ProductSearch: React.FC<ProductSearchProps> = ({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="ابحث في السندوتشات، البرجر، الإضافات..."
+        placeholder="بتدور على حاجة معينة؟ اكتب اسمها هنا..."
         className="w-full rounded-xl border border-border bg-white py-2.5 ps-10 pe-9 text-sm text-dark placeholder:text-medium-gray focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all shadow-xs"
       />
       {value && (
@@ -34,7 +34,7 @@ export const ProductSearch: React.FC<ProductSearchProps> = ({
           type="button"
           onClick={() => onChange('')}
           className="absolute inset-y-0 end-0 flex items-center pe-3 text-medium-gray hover:text-dark cursor-pointer"
-          aria-label="مسح البحث"
+          aria-label="امسح البحث"
         >
           <X className="w-4 h-4" />
         </button>

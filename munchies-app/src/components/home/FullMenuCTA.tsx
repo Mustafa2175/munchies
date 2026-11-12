@@ -19,10 +19,10 @@ export const FullMenuCTA: React.FC = () => {
 
         <div className="space-y-1.5 max-w-md">
           <h3 className="text-xl sm:text-2xl font-black text-dark">
-            جاهز تختار وجبتك؟
+            جعان؟ إحنا جاهزين!
           </h3>
           <p className="text-xs sm:text-sm text-medium-gray font-medium">
-            تصفح قائمتنا الكاملة من البرجر، السندوتشات، الفرايز، والمشروبات الطازجة
+            اختار اللي على مزاجك من البرجر، الساندوتشات، الفرايز، والمشروبات الطازة
           </p>
         </div>
 
@@ -31,7 +31,7 @@ export const FullMenuCTA: React.FC = () => {
             to={ROUTES.MENU}
             className="inline-flex items-center justify-center gap-2.5 px-8 sm:px-10 py-3.5 rounded-xl bg-primary hover:bg-primary-600 text-white font-bold text-sm sm:text-base shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group cursor-pointer"
           >
-            <span>شوف المنيو كامل</span>
+            <span>شوف المنيو</span>
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:-translate-x-1 stroke-[2.5]" />
           </Link>
         </div>

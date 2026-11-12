@@ -54,7 +54,7 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
         onClick={handleDecrement}
         disabled={disabled || value <= min}
         className={`${btnSize} flex items-center justify-center rounded-lg bg-white text-dark shadow-xs hover:bg-gray-50 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all`}
-        aria-label="Decrease quantity"
+        aria-label="قلّل الكمية"
       >
         <Minus className={iconSize} />
       </button>
@@ -66,7 +66,7 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
         onClick={handleIncrement}
         disabled={disabled || value >= max}
         className={`${btnSize} flex items-center justify-center rounded-lg bg-primary text-white shadow-xs hover:bg-primary-600 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all`}
-        aria-label="Increase quantity"
+        aria-label="زوّد الكمية"
       >
         <Plus className={iconSize} />
       </button>

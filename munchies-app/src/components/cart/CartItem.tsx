@@ -52,20 +52,20 @@ export const CartItem: React.FC<CartItemProps> = ({ item }) => {
             {!isCategoryEnabled ? (
               <span className="inline-flex items-center gap-1 text-[10px] font-black text-warning-800 mt-0.5 bg-warning-light px-2 py-0.5 rounded-full border border-warning/30">
                 <AlertCircle className="w-3 h-3 text-warning-700" />
-                <span>القسم غير متاح حالياً</span>
+                <span>القسم ده مش متاح دلوقتي</span>
               </span>
             ) : !isBaseAvailable ? (
               <span className="inline-flex items-center gap-1 text-[10px] font-black text-danger mt-0.5">
                 <AlertCircle className="w-3 h-3" />
-                <span>غير متوفر حالياً</span>
+                <span>خلص مننا مؤقتًا</span>
               </span>
             ) : null}
           </div>
           <button
             onClick={() => removeItem(item.id)}
             className="p-1 text-medium-gray hover:text-danger transition-colors rounded-lg hover:bg-danger-light cursor-pointer"
-            title="حذف الصنف"
-            aria-label={`حذف ${productName}`}
+            title="شيل من السلة"
+            aria-label={`شيل ${productName} من السلة`}
           >
             <Trash2 className="w-4 h-4" />
           </button>

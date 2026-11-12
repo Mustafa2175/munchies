@@ -32,11 +32,11 @@ export const BestSellersSection: React.FC = () => {
 
   const handleProductClick = (product: Product, isCatActive: boolean) => {
     if (!isStoreOpen) {
-      toast.error('المطعم مغلق حالياً ولا يستقبل طلبات جديدة', { id: 'store-closed' });
+      toast.error('معلش، إحنا قافلين دلوقتي. راجعنا قريب!', { id: 'store-closed' });
       return;
     }
     if (!isCatActive) {
-      toast.error('هذا القسم غير متاح للطلب حالياً', { id: `category-disabled-${product.categoryId}` });
+      toast.error('القسم ده مش متاح للطلب دلوقتي', { id: `category-disabled-${product.categoryId}` });
       return;
     }
     setSelectedProduct(product);
@@ -46,11 +46,11 @@ export const BestSellersSection: React.FC = () => {
     e.stopPropagation();
 
     if (!isStoreOpen) {
-      toast.error('المطعم مغلق حالياً ولا يستقبل طلبات جديدة', { id: 'store-closed' });
+      toast.error('معلش، إحنا قافلين دلوقتي. راجعنا قريب!', { id: 'store-closed' });
       return;
     }
     if (!isCatActive) {
-      toast.error('هذا القسم غير متاح للطلب حالياً', { id: `category-disabled-${product.categoryId}` });
+      toast.error('القسم ده مش متاح للطلب دلوقتي', { id: `category-disabled-${product.categoryId}` });
       return;
     }
 
@@ -71,7 +71,7 @@ export const BestSellersSection: React.FC = () => {
         quantity: 1,
         customizations: [],
       });
-      toast.success(`تمت إضافة "${product.name.ar}" إلى السلة`);
+      toast.success(`ضيفنا "${product.name.ar}" للسلة!`);
     }
   };
 
@@ -84,7 +84,7 @@ export const BestSellersSection: React.FC = () => {
             <Flame className="w-4 h-4 text-primary" />
           </div>
           <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tight">
-            الأكثر مبيعاً
+            أكتر حاجات الناس بتحبها
           </h2>
         </div>
 
@@ -92,7 +92,7 @@ export const BestSellersSection: React.FC = () => {
           to={ROUTES.MENU}
           className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-primary hover:text-primary-light transition-colors group cursor-pointer"
         >
-          <span>عرض الكل</span>
+          <span>شوف المنيو</span>
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
         </Link>
       </div>
@@ -132,7 +132,7 @@ export const BestSellersSection: React.FC = () => {
                 {!isOrderable && (
                   <div className="absolute inset-0 bg-dark/40 backdrop-blur-2xs z-20 flex items-center justify-center p-2 text-center">
                     <span className="px-2.5 py-1 rounded-lg bg-dark/80 text-white text-[10px] sm:text-xs font-bold">
-                      {!isStoreOpen ? 'المطعم مغلق' : 'غير متاح'}
+                      {!isStoreOpen ? 'قافلين دلوقتي' : 'خلص مننا مؤقتًا'}
                     </span>
                   </div>
                 )}
@@ -172,8 +172,8 @@ export const BestSellersSection: React.FC = () => {
                       ? 'bg-yellow hover:bg-yellow-dark text-dark active:scale-95 shadow-xs'
                       : 'bg-light-gray text-medium-gray cursor-not-allowed'
                   }`}
-                  aria-label={`إضافة ${product.name.ar} إلى السلة`}
-                  title={`إضافة ${product.name.ar} إلى السلة`}
+                  aria-label={`ضيف ${product.name.ar} للسلة`}
+                  title={`ضيف ${product.name.ar} للسلة`}
                 >
                   <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.2]" />
                 </button>

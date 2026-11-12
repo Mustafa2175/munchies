@@ -216,7 +216,7 @@ export const useRestaurantStore = create<RestaurantState>()(
     (set, get) => ({
       isManualClosed: false,
       closureMessage:
-        'عذراً، استلام الطلبات متوقف مؤقتاً لضغط العمل في المطبخ وسنعاود الاستقبال قريباً.',
+        'معلش، مش بنستقبل طلبات دلوقتي عشان ضغط الشغل في المطبخ. هنرجع نفتح قريب!',
       workingHours: DEFAULT_SCHEDULE,
       isLoaded: false,
 

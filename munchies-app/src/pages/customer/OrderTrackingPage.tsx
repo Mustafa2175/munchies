@@ -165,7 +165,7 @@ export const OrderTrackingPage: React.FC = () => {
             setSearchError(null);
           } else {
             setSearchError(
-              'لم يتم العثور على طلب مطابق للبيانات في الرابط. يرجى التأكد من رقم الطلب ورقم الهاتف.'
+              'ملقيناش طلب مطابق للبيانات اللي في اللينك. اتأكد من رقم الطلب ورقم الموبايل.'
             );
           }
         }
@@ -204,7 +204,7 @@ export const OrderTrackingPage: React.FC = () => {
             setSearchError(null);
           } else if (id === activeOrderId) {
             setActiveOrderId(null);
-            setSearchError('لم نتمكن من العثور على طلب بهذا المعرّف. يمكنك البحث برقم الطلب ورقم الهاتف أدناه.');
+            setSearchError('ملقيناش طلب بالرقم ده. تقدر تدور برقم الطلب ورقم موبايلك تحت.');
           }
         } catch {
           // ignore
@@ -222,17 +222,17 @@ export const OrderTrackingPage: React.FC = () => {
     const cleanPhone = normalizePhone(phoneInput);
 
     if (!cleanNum) {
-      toast.error('يرجى إدخال رقم الطلب');
+      toast.error('من فضلك اكتب رقم الطلب');
       return;
     }
 
     if (!cleanPhone) {
-      toast.error('يرجى إدخال رقم الموبايل المسجل بالطلب');
+      toast.error('من فضلك اكتب رقم الموبايل المسجل بالطلب');
       return;
     }
 
     if (cleanPhone.length < 10) {
-      toast.error('يرجى إدخال رقم موبايل مصري صحيح (مثال: 01025707026)');
+      toast.error('من فضلك اكتب رقم موبايل مصري صحيح (مثال: 01025707026)');
       return;
     }
 
@@ -245,14 +245,14 @@ export const OrderTrackingPage: React.FC = () => {
         setActiveOrderId(found.id);
         setOrder(found);
         setSearchParams({ orderNumber: cleanNum, phone: phoneInput.trim() });
-        toast.success(`تم العثور على طلبك #${cleanNum}!`);
+        toast.success(`لقينا طلبك #${cleanNum}!`);
       } else {
         setSearchError(
-          'لم نتمكن من العثور على طلب مطابق لرقم الطلب ورقم الهاتف المدخلين. يرجى التأكد من البيانات والمحاولة مرة أخرى.'
+          'ملقيناش طلب مطابق لرقم الطلب ورقم الموبايل دول. اتأكد من البيانات وجرّب تاني.'
         );
       }
     } catch {
-      setSearchError('حدث خطأ أثناء البحث، يرجى المحاولة مرة أخرى.');
+      setSearchError('حصلت مشكلة أثناء البحث، من فضلك جرّب تاني.');
     } finally {
       setIsSearching(false);
     }
@@ -273,12 +273,12 @@ export const OrderTrackingPage: React.FC = () => {
     if (!order) return;
     setIsCancelling(true);
     try {
-      await callCancelOrder(order.id, 'طلب العميل إلغاء الأوردر');
+      await callCancelOrder(order.id, 'العميل لغى الطلب');
       setOrder((prev) => (prev ? { ...prev, status: 'cancelled' } : null));
-      toast.success('تم إلغاء الطلب بنجاح');
+      toast.success('اتلغى الطلب خلاص');
       setIsCancelModalOpen(false);
     } catch {
-      toast.error('تعذر إلغاء الطلب');
+      toast.error('معرفناش نلغي الطلب، من فضلك كلم الفرع.');
     } finally {
       setIsCancelling(false);
     }
@@ -327,10 +327,10 @@ export const OrderTrackingPage: React.FC = () => {
               <PackageSearch className="w-8 h-8 text-primary" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-dark">
-              تتبع حالة طلبك
+              طلبك وصل لفين؟
             </h1>
             <p className="text-xs sm:text-sm text-medium-gray max-w-md mx-auto">
-              أدخل رقم الطلب المدون بالفاتورة ورقم الموبايل لمتابعة حالة تحضير طلبك مباشرة لحظة بلحظة.
+              اكتب رقم الطلب اللي في الفاتورة ورقم موبايلك عشان تتابع طلبك لحظة بلحظة.
             </p>
           </div>
 
@@ -338,7 +338,7 @@ export const OrderTrackingPage: React.FC = () => {
             <form onSubmit={handleSearchSubmit} className="space-y-5">
               <div>
                 <label className="block text-xs font-black text-dark mb-1.5">
-                  رقم الطلب (Order Number)
+                  رقم الطلب
                 </label>
                 <Input
                   type="text"
@@ -352,13 +352,13 @@ export const OrderTrackingPage: React.FC = () => {
                   required
                 />
                 <p className="text-[11px] text-medium-gray mt-1">
-                  الرقم التسلسلي المدون على الفاتورة الرقمية
+                  الرقم اللي ظهرلك في تفاصيل طلبك
                 </p>
               </div>
 
               <div>
                 <label className="block text-xs font-black text-dark mb-1.5">
-                  رقم الموبايل المسجل بالطلب
+                  رقم موبايلك المسجل في الطلب
                 </label>
                 <Input
                   type="tel"
@@ -372,7 +372,7 @@ export const OrderTrackingPage: React.FC = () => {
                   required
                 />
                 <p className="text-[11px] text-medium-gray mt-1">
-                  رقم الهاتف الذي قمت بإدخاله عند إتمام الطلب
+                  نفس رقم الموبايل اللي طلبت بيه
                 </p>
               </div>
 
@@ -392,7 +392,7 @@ export const OrderTrackingPage: React.FC = () => {
                 className="font-black shadow-md"
               >
                 <Search className="w-4 h-4 ms-2" />
-                <span>متابعة حالة الطلب</span>
+                <span>تابع طلبك</span>
               </Button>
             </form>
           </Card>
@@ -402,7 +402,7 @@ export const OrderTrackingPage: React.FC = () => {
               to={ROUTES.MENU}
               className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1"
             >
-              <span>العودة لقائمة الطعام واطلب الآن</span>
+              <span>ارجع للمنيو واطلب دلوقتي</span>
               <ArrowRight className="w-3.5 h-3.5 rotate-180" />
             </Link>
           </div>
@@ -414,7 +414,7 @@ export const OrderTrackingPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-border shadow-card">
             <div>
               <span className="text-xs font-bold text-medium-gray uppercase tracking-wider block">
-                متابعة حالة الطلب المباشرة
+                طلبك وصل لفين؟
               </span>
               <h1 className="text-2xl sm:text-3xl font-black text-primary mt-1 font-mono">
                 #{String(order.orderNumber || '').replace(/^#/, '')}
@@ -425,15 +425,15 @@ export const OrderTrackingPage: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-3 self-start sm:self-center">
-              <StatusBadge status={order.status} locale="ar" />
+              <StatusBadge status={order.status} locale="ar" audience="customer" />
               <button
                 type="button"
                 onClick={handleResetSearch}
                 className="px-3 py-1.5 rounded-xl border border-border text-xs font-bold text-dark hover:bg-light-gray flex items-center gap-1.5 transition-colors cursor-pointer"
-                title="البحث عن طلب آخر"
+                title="دور على طلب تاني"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">طلب آخر</span>
+                <span className="hidden sm:inline">طلب تاني</span>
               </button>
             </div>
           </div>
@@ -442,24 +442,25 @@ export const OrderTrackingPage: React.FC = () => {
             <div className="md:col-span-7 bg-white p-6 rounded-2xl border border-border shadow-card space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-base font-extrabold text-dark">
-                  مراحل تحضير الطلب
+                  مراحل طلبك
                 </h2>
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-success bg-success-light px-2.5 py-1 rounded-full border border-success/20">
                   <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                  <span>تحديث فوري</span>
+                  <span>تحديث مباشر</span>
                 </span>
               </div>
 
               <OrderTimeline
                 currentStatus={order.status}
                 statusHistory={order.statusHistory}
+                orderType={(order.type === 'delivery' || (order as any).deliveryType === 'delivery') ? 'delivery' : 'pickup'}
                 locale="ar"
               />
 
               {canCancel && (
                 <div className="pt-6 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <span className="text-xs text-medium-gray">
-                    يمكنك إلغاء الطلب قبل بدء تجهيز الطعام في المطبخ.
+                    تقدر تلغي الطلب قبل ما المطبخ يبدأ يجهزه.
                   </span>
                   <Button
                     variant="ghost"
@@ -467,7 +468,7 @@ export const OrderTrackingPage: React.FC = () => {
                     onClick={() => setIsCancelModalOpen(true)}
                     className="text-danger hover:bg-danger-light hover:text-danger shrink-0"
                   >
-                    إلغاء الطلب
+                    الغي الطلب
                   </Button>
                 </div>
               )}
@@ -479,10 +480,10 @@ export const OrderTrackingPage: React.FC = () => {
                   <div className="flex items-center justify-between pb-2 border-b border-primary-100">
                     <h3 className="text-sm font-black text-primary flex items-center gap-2">
                       <Truck className="w-4 h-4 text-primary" />
-                      <span>توصيل ديليفري لباب البيت</span>
+                      <span>Delivery – توصيل لحد عندك</span>
                     </h3>
                     <span className="text-[11px] font-bold text-primary bg-white px-2 py-0.5 rounded-full border border-primary-200">
-                      طلب ديليفري
+                      Delivery
                     </span>
                   </div>
 
@@ -497,7 +498,7 @@ export const OrderTrackingPage: React.FC = () => {
                       </p>
                       {(order.deliveryAddress.addressLine2 || order.deliveryAddress.building) && (
                         <p className="text-medium-gray">
-                          العقار / الشقة: {getLocalizedText(order.deliveryAddress.addressLine2 || order.deliveryAddress.building, '')}
+                          العمارة / الشقة: {getLocalizedText(order.deliveryAddress.addressLine2 || order.deliveryAddress.building, '')}
                         </p>
                       )}
                       {order.deliveryAddress.deliveryInstructions && (
@@ -507,13 +508,13 @@ export const OrderTrackingPage: React.FC = () => {
                       )}
                     </div>
                   ) : (
-                    <p className="text-xs text-medium-gray">تم تسجيل طلب التوصيل</p>
+                    <p className="text-xs text-medium-gray">طلب Delivery متسجل</p>
                   )}
 
                   <div className="flex items-center justify-between pt-2 border-t border-primary-100 text-xs">
                     <div className="flex items-center gap-1.5">
                       <Phone className="w-4 h-4 text-primary" />
-                      <span className="text-medium-gray">للتواصل مع المطعم:</span>
+                      <span className="text-medium-gray">لو احتجت تكلمنا:</span>
                     </div>
                     <a
                       href="tel:01025707026"
@@ -527,7 +528,7 @@ export const OrderTrackingPage: React.FC = () => {
                 <Card className="p-6 space-y-4 bg-light-gray/60 border-border">
                   <h3 className="text-sm font-black text-dark flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-primary" />
-                    <span>عنوان ومقر الاستلام</span>
+                    <span>Pickup – استلام من الفرع</span>
                   </h3>
                   <p className="text-xs text-dark leading-relaxed font-semibold">
                     حديقة الورد أمام الراية – فرع الكورنيش، أسوان
@@ -535,7 +536,7 @@ export const OrderTrackingPage: React.FC = () => {
                   <div className="flex items-center justify-between pt-2 border-t border-border text-xs">
                     <div className="flex items-center gap-1.5">
                       <Phone className="w-4 h-4 text-primary" />
-                      <span className="text-medium-gray">للتواصل مع الفرع:</span>
+                      <span className="text-medium-gray">لو احتجت تكلم الفرع:</span>
                     </div>
                     <a
                       href="tel:01025707026"
@@ -550,19 +551,19 @@ export const OrderTrackingPage: React.FC = () => {
               <Card className="p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-black text-dark">
-                    تفاصيل الفاتورة
+                    تفاصيل طلبك
                   </h3>
                   <button
                     onClick={() => window.print()}
                     className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
                   >
                     <Printer className="w-3.5 h-3.5" />
-                    <span>طباعة</span>
+                    <span>اطبع</span>
                   </button>
                 </div>
 
                 <div className="text-xs text-medium-gray pb-2 border-b border-border flex justify-between">
-                  <span>العميل: <strong className="text-dark">{getLocalizedText(order.customerName, '')}</strong></span>
+                  <span>الاسم: <strong className="text-dark">{getLocalizedText(order.customerName, '')}</strong></span>
                   <span className="number-ltr font-bold text-dark">{order.customerPhone}</span>
                 </div>
 
@@ -599,9 +600,15 @@ export const OrderTrackingPage: React.FC = () => {
 
                 <div className="border-t border-border pt-3 space-y-1 text-xs text-medium-gray">
                   <div className="flex justify-between">
-                    <span>المجموع الفرعي:</span>
+                    <span>المجموع:</span>
                     <CurrencyDisplay amount={order.subtotal} className="text-dark font-semibold" />
                   </div>
+                  {order.deliveryFee > 0 && (
+                    <div className="flex justify-between">
+                      <span>رسوم التوصيل:</span>
+                      <CurrencyDisplay amount={order.deliveryFee} className="text-dark font-semibold" />
+                    </div>
+                  )}
                   {order.discount > 0 && (
                     <div className="flex justify-between text-success">
                       <span>الخصم:</span>
@@ -609,7 +616,7 @@ export const OrderTrackingPage: React.FC = () => {
                     </div>
                   )}
                   <div className="pt-2 border-t border-border flex justify-between items-center text-sm font-black text-dark">
-                    <span>المطلوب كاش عند الاستلام:</span>
+                    <span>الإجمالي (كاش عند الاستلام):</span>
                     <CurrencyDisplay amount={order.total} className="text-base text-primary font-black" />
                   </div>
                 </div>
@@ -618,7 +625,7 @@ export const OrderTrackingPage: React.FC = () => {
               <div className="space-y-2">
                 <Link to={ROUTES.MENU} className="block text-center">
                   <Button variant="secondary" fullWidth size="md">
-                    طلب أصناف أخرى من المنيو
+                    شوف المنيو واطلب تاني
                   </Button>
                 </Link>
 
@@ -627,7 +634,7 @@ export const OrderTrackingPage: React.FC = () => {
                   onClick={handleResetSearch}
                   className="w-full py-2.5 text-center text-xs font-bold text-medium-gray hover:text-primary transition-colors cursor-pointer"
                 >
-                  البحث عن طلب آخر
+                  دور على طلب تاني
                 </button>
               </div>
             </div>
@@ -640,8 +647,9 @@ export const OrderTrackingPage: React.FC = () => {
         onClose={() => setIsCancelModalOpen(false)}
         onConfirm={handleConfirmCancel}
         title="تأكيد إلغاء الطلب"
-        message="هل أنت متأكد من رغبتك في إلغاء هذا الطلب؟ لن تتمكن من التراجع عن هذه الخطوة بمجرد بدء التحضير."
-        confirmText="نعم، قم بالإلغاء"
+        message="متأكد إنك عايز تلغي الطلب ده؟ مش هتقدر ترجع في الإلغاء بعد ما المطبخ يبدأ يجهزه."
+        confirmText="أيوه، الغي الطلب"
+        cancelText="لا، خلّيه"
         confirmVariant="danger"
         isLoading={isCancelling}
       />

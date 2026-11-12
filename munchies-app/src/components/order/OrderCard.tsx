@@ -33,7 +33,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
             <span className="tabular-nums">{formatDate(order.createdAt)}</span>
           </span>
         </div>
-        <StatusBadge status={order.status} locale="ar" />
+        <StatusBadge status={order.status} locale="ar" audience="customer" />
       </div>
 
       <div className="py-3 space-y-1.5">
@@ -47,7 +47,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
         ))}
         {order.items.length > 3 && (
           <p className="text-[11px] text-gray-400 font-medium">
-            +<span className="tabular-nums">{order.items.length - 3}</span> أصناف أخرى
+            +<span className="tabular-nums">{order.items.length - 3}</span> أصناف تانية
           </p>
         )}
       </div>
@@ -62,7 +62,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
           to={trackUrl}
           className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-dark"
         >
-          <span>متابعة الطلب</span>
+          <span>تابع طلبك</span>
           <ArrowLeft className="w-3.5 h-3.5 rtl:rotate-180" />
         </Link>
       </div>

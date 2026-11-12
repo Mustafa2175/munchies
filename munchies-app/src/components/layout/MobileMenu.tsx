@@ -27,12 +27,15 @@ export const MobileMenu: React.FC = () => {
   if (!isMobileMenuOpen) return null;
 
   const navLinks = [
+    { label: 'الرئيسية', path: ROUTES.HOME },
     { label: 'المنيو', path: ROUTES.MENU },
     { label: 'العروض', path: ROUTES.OFFERS },
     { label: 'اصنع ساندوتشك', path: '/build-your-own' },
-    { label: 'تتبع طلبك', path: ROUTES.TRACK_ORDER, icon: PackageSearch },
+    { label: 'تابع طلبك', path: ROUTES.TRACK_ORDER, icon: PackageSearch },
+    { label: 'حكايتنا', path: ROUTES.ABOUT },
+    { label: 'كلمنا', path: ROUTES.CONTACT },
     {
-      label: isAuthenticated ? 'حسابي وطلباتي' : 'حسابي',
+      label: 'حسابي',
       path: isAdmin ? ROUTES.ADMIN : ROUTES.ORDERS,
       icon: UserIcon,
     },
@@ -62,7 +65,7 @@ export const MobileMenu: React.FC = () => {
             to={ROUTES.HOME}
             onClick={handleLinkClick}
             className="inline-flex items-center shrink-0"
-            aria-label="مانشيز - الصفحة الرئيسية"
+            aria-label="Munchie's - الرئيسية"
           >
             <img
               src="/munchies-logo.png"

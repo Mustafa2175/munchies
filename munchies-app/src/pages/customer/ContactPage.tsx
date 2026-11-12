@@ -13,10 +13,10 @@ export const ContactPage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 space-y-12">
       <div className="text-center max-w-2xl mx-auto space-y-2">
         <h1 className="text-3xl sm:text-4xl font-black text-dark">
-          تواصل مع مانشيز
+          عندك سؤال؟ إحنا سامعينك!
         </h1>
         <p className="text-sm text-medium-gray">
-          نسعد دائماً باستقبالكم في فرعنا أو استقبال اتصالاتكم واستفساراتكم.
+          اقتراح، استفسار، أو حتى حابب تقولنا رأيك؟ كلمنا.
         </p>
       </div>
 
@@ -26,7 +26,7 @@ export const ContactPage: React.FC = () => {
             <MapPin className="w-6 h-6" />
           </div>
           <h3 className="font-bold text-base text-dark">
-            موقع الفرع
+            عنوان الفرع
           </h3>
           <p className="text-xs text-medium-gray leading-relaxed">
             حديقة الورد أمام الراية – فرع الكورنيش، أسوان
@@ -38,13 +38,13 @@ export const ContactPage: React.FC = () => {
             <Phone className="w-6 h-6" />
           </div>
           <h3 className="font-bold text-base text-dark">
-            الهاتف والواتساب
+            كلمنا على طول
           </h3>
           <p className="text-xs font-bold text-primary number-ltr">01025707026</p>
           <div className="pt-2">
             <a href="tel:01025707026">
               <Button size="sm" variant="secondary">
-                اتصال مباشر
+                اتصل بينا
               </Button>
             </a>
           </div>
@@ -55,10 +55,10 @@ export const ContactPage: React.FC = () => {
             <Clock className="w-6 h-6" />
           </div>
           <h3 className="font-bold text-base text-dark">
-            ساعات العمل
+            مواعيدنا
           </h3>
           <p className="text-xs text-medium-gray">
-            يومياً من 12:00 ظهراً حتى 3:00 فجراً
+            كل يوم من 12:00 الظهر لحد 3:00 الفجر
           </p>
         </Card>
       </div>
@@ -67,11 +67,11 @@ export const ContactPage: React.FC = () => {
       <Card className="p-6 border-border flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-12 h-12 rounded-xl bg-primary overflow-hidden flex items-center justify-center border-2 border-yellow shadow-xs shrink-0">
-            <img src="/fb_logo.jpg" alt="شعار مانشيز" className="w-full h-full object-cover" />
+            <img src="/fb_logo.jpg" alt="شعار Munchie's" className="w-full h-full object-cover" />
           </div>
           <div>
-            <h3 className="font-black text-base text-dark">تابع صفحتنا الرسمية على فيسبوك</h3>
-            <p className="text-xs text-medium-gray">عروض أسبوعية وتحديثات فورية من مطبخنا في أسوان</p>
+            <h3 className="font-black text-base text-dark">تابعنا على فيسبوك</h3>
+            <p className="text-xs text-medium-gray">عروضنا الجديدة وكل جديد من مطبخنا في أسوان</p>
           </div>
         </div>
         <a
@@ -80,7 +80,7 @@ export const ContactPage: React.FC = () => {
           rel="noopener noreferrer"
         >
           <Button variant="primary" size="md" className="font-bold shrink-0">
-            زيارة صفحة فيسبوك
+            صفحتنا على فيسبوك
           </Button>
         </a>
       </Card>
@@ -90,10 +90,10 @@ export const ContactPage: React.FC = () => {
         <div className="p-6 bg-primary text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h3 className="font-black text-xl text-yellow">
-              زورنا على الكورنيش في أسوان
+              نوّرنا على الكورنيش في أسوان
             </h3>
             <p className="text-xs text-purple-200 mt-1">
-              حديقة الورد أمام الراية – موقع متميز على كورنيش النيل
+              حديقة الورد أمام الراية – مستنيينك على كورنيش النيل
             </p>
           </div>
           <a
@@ -102,7 +102,7 @@ export const ContactPage: React.FC = () => {
             rel="noopener noreferrer"
           >
             <Button variant="yellow" size="md" className="font-bold">
-              فتح على خرائط جوجل
+              الموقع على خرائط جوجل
             </Button>
           </a>
         </div>

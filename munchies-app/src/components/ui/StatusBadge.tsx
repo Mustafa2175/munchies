@@ -9,6 +9,7 @@ import type { OrderStatus } from '@/types';
 export interface StatusBadgeProps {
   status: OrderStatus;
   locale?: string;
+  audience?: 'customer' | 'admin';
   className?: string;
 }
 
@@ -60,18 +61,35 @@ const STATUS_CONFIG: Record<OrderStatus, { bg: string; text: string; ar: string 
   },
 };
 
+const CUSTOMER_STATUS_LABELS: Record<OrderStatus, string> = {
+  pending: 'متقلقش، طلبك وصلنا!',
+  confirmed: 'المطعم وافق على طلبك',
+  preparing: 'طلبك بيتجهز دلوقتي 🔥',
+  ready: 'طلبك جاهز! 🍔',
+  out_for_delivery: 'طلبك في الطريق ليك 🛵',
+  delivered: 'بالهنا والشفا ❤️',
+  picked_up: 'بالهنا والشفا ❤️',
+  cancelled: 'الطلب اتلغى',
+  refunded: 'اتردّلك المبلغ',
+};
+
 export const StatusBadge: React.FC<StatusBadgeProps> = ({
   status,
+  audience = 'admin',
   className = '',
 }) => {
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
+  const label =
+    audience === 'customer'
+      ? CUSTOMER_STATUS_LABELS[status] || config.ar
+      : config.ar;
 
   return (
     <span
       className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${config.bg} ${className}`}
     >
       <span className="w-1.5 h-1.5 rounded-full bg-current me-1.5 opacity-75 animate-pulse" />
-      {config.ar}
+      {label}
     </span>
   );
 };

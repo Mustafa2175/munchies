@@ -77,7 +77,7 @@ export const BuildYourOwnPage: React.FC = () => {
 
   const handleAddToCart = () => {
     if (!selectedProtein || !selectedBread) {
-      toast.error('يرجى اختيار البروتين والعيش');
+      toast.error('اختار البروتين والعيش الأول');
       return;
     }
 
@@ -144,7 +144,7 @@ export const BuildYourOwnPage: React.FC = () => {
       specialInstructions: `${totalCalories} سعرة حرارية | ${totalProtein}جم بروتين`,
     });
 
-    toast.success('تمت إضافة ساندوتشك المخصص إلى السلة بنجاح!');
+    toast.success('ضيفنا ساندوتشك المخصص للسلة!');
     navigate(ROUTES.CART);
   };
 
@@ -153,13 +153,13 @@ export const BuildYourOwnPage: React.FC = () => {
       {/* Page Title */}
       <div className="text-center max-w-2xl mx-auto space-y-2">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-50 text-primary text-xs font-black">
-          <span>اصنع ساندوتشك بنفسك</span>
+          <span>اعمل ساندوتشك بنفسك</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-black text-dark">
-          اعمل ساندوتش على مزاجك
+          ظبط طلبك على مزاجك
         </h1>
         <p className="text-sm text-medium-gray">
-          اختر نوع البروتين، الخبز، الجبن، والصوصات مع حساب السعرات والقيم الغذائية لحظياً.
+          اختار البروتين، العيش، الجبن، والصوصات اللي بتحبها وشوف السعرات والقيم الغذائية أول بأول!
         </p>
       </div>
 
@@ -174,7 +174,7 @@ export const BuildYourOwnPage: React.FC = () => {
                   1
                 </span>
                 <h2 className="font-extrabold text-base text-dark">
-                  اختر البروتين (Protein)
+                  اختار البروتين
                 </h2>
               </div>
               <span className="text-xs text-danger font-bold">
@@ -236,7 +236,7 @@ export const BuildYourOwnPage: React.FC = () => {
                   2
                 </span>
                 <h2 className="font-extrabold text-base text-dark">
-                  اختر نوع العيش (Bread)
+                  اختار نوع العيش
                 </h2>
               </div>
               <span className="text-xs text-danger font-bold">
@@ -296,7 +296,7 @@ export const BuildYourOwnPage: React.FC = () => {
                   3
                 </span>
                 <h2 className="font-extrabold text-base text-dark">
-                  الجبن والدلي (Cheese & Deli)
+                  الجبن واللحوم الباردة
                 </h2>
               </div>
               <span className="text-xs text-medium-gray">
@@ -341,7 +341,7 @@ export const BuildYourOwnPage: React.FC = () => {
                   4
                 </span>
                 <h2 className="font-extrabold text-base text-dark">
-                  الإضافات والصوصات (Toppings & Sauces)
+                  الإضافات والصوصات
                 </h2>
               </div>
               <span className="text-xs text-medium-gray">
@@ -381,13 +381,13 @@ export const BuildYourOwnPage: React.FC = () => {
           {/* Name Your Creation */}
           <Card className="p-6 space-y-3">
             <h3 className="font-bold text-sm text-dark">
-              سمّي ابتكارك (اختياري)
+              سمِّ ابتكارك (اختياري)
             </h3>
             <input
               type="text"
               value={sandwichName}
               onChange={(e) => setSandwichName(e.target.value)}
-              placeholder="مثال: ساندوتش برجر فتنس، دوبل ميكس..."
+              placeholder="مثال: ساندوتش الوحش، ساندوتش دايت..."
               className="w-full text-xs rounded-xl border border-border bg-white p-3 focus:outline-none focus:border-primary"
             />
           </Card>
@@ -447,7 +447,7 @@ export const BuildYourOwnPage: React.FC = () => {
             <div className="flex items-center justify-between text-xs text-medium-gray px-1">
               <span className="flex items-center gap-1.5">
                 <Scale className="w-4 h-4 text-medium-gray" />
-                الوزن التقريبي الصافي:
+                الوزن التقريبي:
               </span>
               <span className="font-bold text-dark tabular-nums number-ltr">{totalGrams} جم</span>
             </div>
@@ -469,7 +469,7 @@ export const BuildYourOwnPage: React.FC = () => {
                 leftIcon={ShoppingBag}
                 className="font-black shadow-md"
               >
-                أضف ساندوتشك للسلة
+                ضيف ساندوتشك للسلة
               </Button>
             </div>
           </Card>

@@ -139,7 +139,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
       } else {
         const max = group.maxSelections || 10;
         if (current.length >= max) {
-          toast.error(`الحد الأقصى للاختيار هو ${max}`);
+          toast.error(`أقصى عدد للاختيار هو ${max}`);
           return;
         }
         setSelectedOptionsByGroup((prev) => ({
@@ -189,15 +189,15 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
 
   const handleAddToCart = () => {
     if (!isStoreOpen) {
-      toast.error('المطعم مغلق حالياً ولا يستقبل طلبات جديدة');
+      toast.error('معلش، إحنا قافلين دلوقتي. راجعنا قريب!');
       return;
     }
     if (!isCategoryActive) {
-      toast.error('عذراً، هذا القسم غير متاح للطلب حالياً');
+      toast.error('القسم ده مش متاح للطلب دلوقتي');
       return;
     }
     if (!isProductBaseAvailable) {
-      toast.error('عذراً، هذا الصنف غير متوفر للطلب حالياً');
+      toast.error('الصنف ده خلص مننا مؤقتًا');
       return;
     }
 
@@ -213,7 +213,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
 
         if (isRequiredGroup && selectedCount < minRequired) {
           setOpenGroups((prev) => ({ ...prev, [group.id]: true }));
-          toast.error(`يرجى تحديد "${group.name.ar}" (مطلوب) للمتابعة`);
+          toast.error(`اختار "${group.name.ar}" الأول (مطلوب) عشان تكمّل`);
           return;
         }
       }
@@ -229,7 +229,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
       specialInstructions: specialInstructions.trim() || undefined,
     });
 
-    toast.success(`تمت إضافة "${productName}" إلى السلة`);
+    toast.success(`ضيفنا "${productName}" للسلة!`);
     onClose();
   };
 
@@ -248,7 +248,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
         className="relative z-10 w-full sm:max-w-xl md:max-w-2xl h-[100dvh] sm:h-auto sm:max-h-[90vh] bg-white sm:rounded-2xl shadow-card-hover border-0 sm:border border-border flex flex-col overflow-hidden"
         role="dialog"
         aria-modal="true"
-        aria-label={`تخصيص ${productName}`}
+        aria-label={`ظبط طلبك: ${productName}`}
       >
         {/* Top Header */}
         <header className="bg-primary text-white px-4 py-3 sm:px-6 sm:py-3.5 flex items-center justify-between shrink-0 z-20">
@@ -287,17 +287,17 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
               {!isCategoryActive ? (
                 <span className="inline-flex items-center gap-1 text-xs font-bold text-white bg-danger px-3 py-1 rounded-full shadow-xs">
                   <Ban className="w-3.5 h-3.5" />
-                  <span>القسم غير متاح حالياً</span>
+                  <span>القسم مش متاح دلوقتي</span>
                 </span>
               ) : !isProductBaseAvailable ? (
                 <span className="inline-flex items-center gap-1 text-xs font-bold text-white bg-danger px-3 py-1 rounded-full shadow-xs">
                   <Ban className="w-3.5 h-3.5" />
-                  <span>غير متوفر حالياً</span>
+                  <span>خلص مننا مؤقتًا</span>
                 </span>
               ) : !isStoreOpen ? (
                 <span className="inline-flex items-center gap-1 text-xs font-bold text-white bg-warning-800 px-3 py-1 rounded-full shadow-xs">
                   <Clock className="w-3.5 h-3.5" />
-                  <span>المطعم مغلق حالياً</span>
+                  <span>قافلين دلوقتي</span>
                 </span>
               ) : null}
             </div>
@@ -341,8 +341,8 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                     selectedOpts.length > 0
                       ? selectedOpts.map((o) => o.name.ar).join('، ')
                       : isRequired
-                      ? 'يرجى الاختيار'
-                      : 'لا توجد إضافات مختارة';
+                      ? 'لازم تختار هنا'
+                      : 'من غير إضافات';
 
                   return (
                     <div
@@ -374,7 +374,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
 
                             {!isSingle && group.maxSelections && (
                               <span className="text-[11px] text-medium-gray font-medium">
-                                (اختر حتى {group.maxSelections})
+                                (اختار لحد {group.maxSelections})
                               </span>
                             )}
                           </div>
@@ -485,13 +485,13 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
             {/* Special Instructions */}
             <div className="bg-white rounded-2xl border border-border p-4 shadow-xs space-y-2">
               <label className="block text-xs sm:text-sm font-bold text-dark">
-                ملاحظات خاصة للمطبخ (اختياري)
+                عندك أي ملاحظات على الطلب؟ (اختياري)
               </label>
               <textarea
                 rows={2}
                 value={specialInstructions}
                 onChange={(e) => setSpecialInstructions(e.target.value)}
-                placeholder="مثال: بدون بصل، زيادة صوص، بدون مخلل..."
+                placeholder="مثال: من غير بصل، زوّد صوص، من غير مخلل..."
                 disabled={!isOrderable}
                 className="w-full text-xs sm:text-sm rounded-xl border border-border p-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 disabled:bg-light-gray disabled:text-medium-gray resize-none transition-all"
               />
@@ -554,14 +554,14 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
             }`}
           >
             {!isCategoryActive ? (
-              <span>القسم غير متاح حالياً</span>
+              <span>القسم مش متاح دلوقتي</span>
             ) : !isProductBaseAvailable ? (
-              <span>غير متوفر حالياً</span>
+              <span>خلص مننا مؤقتًا</span>
             ) : !isStoreOpen ? (
-              <span>المطعم مغلق حالياً</span>
+              <span>قافلين دلوقتي</span>
             ) : (
               <>
-                <span>أضف إلى السلة</span>
+                <span>ضيف للسلة</span>
                 <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
               </>
             )}

@@ -29,13 +29,13 @@ export const RegisterPage: React.FC = () => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      toast.error('كلمات المرور غير متطابقة');
+      toast.error('كلمة المرور وتأكيد كلمة المرور مش متطابقين');
       return;
     }
 
     const phoneRegex = /^(010|011|012|015)[0-9]{8}$/;
     if (!phoneRegex.test(mobile.trim())) {
-      toast.error('يرجى إدخال رقم موبايل مصري صحيح (مثال: 01025707026)');
+      toast.error('من فضلك اكتب رقم موبايل مصري صحيح (مثال: 01025707026)');
       return;
     }
 
@@ -59,10 +59,10 @@ export const RegisterPage: React.FC = () => {
         updatedAt: new Date().toISOString(),
       } as any);
 
-      toast.success('تم إنشاء الحساب بنجاح!');
+      toast.success('أهلاً بيك! عملنالك حسابك بنجاح');
       navigate(ROUTES.HOME);
     } catch (err: any) {
-      toast.error(err.message || 'فشل إنشاء الحساب');
+      toast.error(err.message || 'معرفناش نعمل الحساب، جرّب تاني');
     } finally {
       setIsLoading(false);
     }
@@ -72,20 +72,20 @@ export const RegisterPage: React.FC = () => {
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-black text-dark">
-          إنشاء حساب جديد
+          يلا نعمل حساب
         </h2>
         <p className="text-xs text-gray-500 mt-1">
-          أنشئ حسابك في ثوانٍ بدون كود تأكيد OTP وابدأ الطلب فوراً
+          اعمل حسابك في ثواني بدون كود تأكيد OTP واطلب على طول
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3.5">
         <Input
-          label="الاسم الكامل"
+          label="الاسم"
           leftIcon={User}
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
-          placeholder="أحمد محمد"
+          placeholder="اكتب اسمك"
           required
         />
 
@@ -100,12 +100,12 @@ export const RegisterPage: React.FC = () => {
         />
 
         <Input
-          label="البريد الإلكتروني"
+          label="الإيميل"
           type="email"
           leftIcon={Mail}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="name@example.com"
+          placeholder="name@domain.com"
           required
         />
 
@@ -138,14 +138,14 @@ export const RegisterPage: React.FC = () => {
           leftIcon={UserPlus}
           className="font-black mt-2"
         >
-          إنشاء الحساب
+          اعمل حسابك
         </Button>
       </form>
 
       <div className="text-center text-xs text-gray-500 pt-2 border-t border-gray-100">
-        <span>لديك حساب بالفعل؟ </span>
+        <span>عندك حساب؟ </span>
         <Link to={ROUTES.LOGIN} className="text-primary font-bold hover:underline">
-          تسجيل الدخول
+          سجل دخول
         </Link>
       </div>
     </div>

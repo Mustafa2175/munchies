@@ -6,12 +6,13 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { Mail, Lock, LogIn, Eye, EyeOff, AlertCircle, User, Phone, CheckCircle2 } from 'lucide-react';
+import { Mail, Lock, LogIn, Eye, EyeOff, AlertCircle, User, Phone, CheckCircle2, ShieldAlert } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/stores/authStore';
 import { mapAuthError } from '@/lib/authErrors';
 import { isValidEmail, normalizeEmail, validateProfileFields } from '@/lib/validators';
+import { logFailedLogin, clearLocalFailedAttempts } from '@/lib/auditLogger';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
@@ -39,6 +40,7 @@ export const LoginPage: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(true);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
+  const [securityAlert, setSecurityAlert] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
 
@@ -80,6 +82,10 @@ export const LoginPage: React.FC = () => {
     try {
       const result = await login(email, password, rememberMe);
 
+      // Successful login: clear failed attempts tracker and alerts
+      clearLocalFailedAttempts(email);
+      setSecurityAlert(null);
+
       if (!result.profileExists) {
         setRecoveryName(useAuthStore.getState().firebaseUser?.displayName || '');
         setFormError(
@@ -93,6 +99,14 @@ export const LoginPage: React.FC = () => {
       toast.success(isEn ? "Welcome back to Munchie's!" : 'أهلاً بيك في مانشيز!');
       navigate(targetRedirect, { replace: true });
     } catch (err: unknown) {
+      const errCode = (err as { code?: string })?.code || 'auth/invalid-credential';
+      const alertRes = await logFailedLogin(email, errCode);
+
+      if (alertRes.isRepeatedAlert && alertRes.alertMessage) {
+        setSecurityAlert(alertRes.alertMessage);
+        toast.error(alertRes.alertMessage, { duration: 6000 });
+      }
+
       const message = mapAuthError(err, locale);
       setFormError(message);
     } finally {
@@ -165,7 +179,22 @@ export const LoginPage: React.FC = () => {
           </p>
         </div>
 
-        {formError && (
+        {securityAlert && (
+        <div
+          role="alert"
+          className="p-4 rounded-xl bg-danger-50 border border-danger-200 text-danger-700 flex items-start gap-3 animate-shake"
+        >
+          <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5 text-danger" />
+          <div className="text-xs space-y-1">
+            <span className="font-black block text-danger-800">
+              {isEn ? 'Security Alert' : 'تحذير أمني عالي الأهمية'}
+            </span>
+            <p className="leading-relaxed">{securityAlert}</p>
+          </div>
+        </div>
+      )}
+
+      {formError && (
           <div
             role="alert"
             className="p-3 rounded-xl bg-danger-light border border-danger/25 text-danger text-xs font-semibold flex items-start gap-2"
@@ -244,6 +273,21 @@ export const LoginPage: React.FC = () => {
             : 'سجل دخولك في مانشيز عشان تكمل طلبك وتتابع كل طلباتك'}
         </p>
       </div>
+
+      {securityAlert && (
+        <div
+          role="alert"
+          className="p-4 rounded-xl bg-danger-50 border border-danger-200 text-danger-700 flex items-start gap-3 animate-shake"
+        >
+          <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5 text-danger" />
+          <div className="text-xs space-y-1">
+            <span className="font-black block text-danger-800">
+              {isEn ? 'Security Alert' : 'تحذير أمني عالي الأهمية'}
+            </span>
+            <p className="leading-relaxed">{securityAlert}</p>
+          </div>
+        </div>
+      )}
 
       {formError && (
         <div

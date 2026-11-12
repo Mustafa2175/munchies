@@ -37,6 +37,7 @@ import { AccountOrdersPage } from '@/pages/customer/AccountOrdersPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
+import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 import { AdminLoginPage } from '@/pages/auth/AdminLoginPage';
 
 // Admin Pages
@@ -188,9 +189,18 @@ export function App() {
               </GuestOnlyRoute>
             }
           />
+          <Route
+            path={ROUTES.RESET_PASSWORD}
+            element={
+              <GuestOnlyRoute>
+                <ResetPasswordPage />
+              </GuestOnlyRoute>
+            }
+          />
           <Route path="/auth/login" element={<Navigate to={ROUTES.LOGIN} replace />} />
           <Route path="/auth/register" element={<Navigate to={ROUTES.REGISTER} replace />} />
           <Route path="/auth/forgot-password" element={<Navigate to={ROUTES.FORGOT_PASSWORD} replace />} />
+          <Route path="/auth/reset-password" element={<Navigate to={ROUTES.RESET_PASSWORD} replace />} />
 
           {/* Dedicated Admin Portal Login */}
           <Route path={ROUTES.ADMIN_LOGIN} element={<AdminLoginPage />} />

@@ -79,6 +79,40 @@ function stripUndefined<T>(val: T): T {
   return val;
 }
 
+const CUSTOM_BUILDER_PRICES: Record<string, number> = {
+  // Proteins
+  prot_ch_grill: 65,
+  prot_crispy: 70,
+  prot_burger: 55,
+  prot_beef_steak: 45,
+  prot_hot_dog: 15,
+  prot_burger_ch_grill: 40,
+  // Breads
+  bread_kaiser: 15,
+  bread_french: 15,
+  bread_whole_grain: 15,
+  bread_fat_bun: 20,
+  bread_toast: 10,
+  bread_tortilla: 20,
+  // Cheeses & Deli
+  deli_red_cheddar: 10,
+  deli_american_cheese: 12,
+  deli_mozzarella: 10,
+  deli_turkey: 12,
+  deli_salami: 12,
+  deli_roast_beef: 12,
+  // Toppings & Sauces
+  top_jalapeno: 4,
+  top_pickles: 4,
+  top_mushroom: 10,
+  top_caramelized_onion: 7,
+  top_fried_egg: 10,
+  top_honey_cabbage: 10,
+  top_bell_pepper: 7,
+  top_sauce: 20,
+  top_chips: 20,
+};
+
 /**
  * Creates a new order in Cloud Firestore tied strictly to `auth.currentUser.uid`.
  * Revalidates product availability and base prices before persisting.
@@ -93,10 +127,12 @@ export async function callCreateOrder(
 
   // Validate live restaurant operating mode & schedule directly against Firestore
   let operatingStatus = getRestaurantOperationsStatus();
+  let restaurantSettings: Record<string, any> | null = null;
   try {
     const settingsSnap = await getDoc(doc(db, 'settings', 'restaurant'));
     if (settingsSnap.exists()) {
-      operatingStatus = evaluateRestaurantStatus(settingsSnap.data(), new Date());
+      restaurantSettings = settingsSnap.data();
+      operatingStatus = evaluateRestaurantStatus(restaurantSettings, new Date());
     }
   } catch {
     // Fall back to real-time synced store if offline
@@ -110,40 +146,57 @@ export async function callCreateOrder(
 
   const storeProducts = useProductStore.getState().products;
 
-  // Revalidate availability and authoritative prices for every cart line
+  // Revalidate availability and strictly recalculate prices from database for every cart line
   const validatedItems = await Promise.all(
     payload.items.map(async (item) => {
-      const quantity = Math.max(1, Number(item.quantity) || 1);
-      const optionSum = Array.isArray(item.customizations)
-        ? item.customizations.reduce(
-            (acc: number, group: any) =>
-              acc +
-              (Array.isArray(group.selectedOptions)
-                ? group.selectedOptions.reduce(
-                    (oAcc: number, opt: any) => oAcc + Number(opt.price || 0),
-                    0
-                  )
-                : 0),
-            0
-          )
-        : 0;
+      const quantity = Math.max(1, Math.min(50, Number(item.quantity) || 1));
 
+      // 1. If custom sandwich: recalculate unit price strictly from authoritative ingredient registry
       if (item.productId === 'custom_sandwich') {
-        const unitPrice = Number(item.basePrice || item.unitPrice || 50) + optionSum;
+        let customOptionsSum = 0;
+        const verifiedCustomizations: any[] = [];
+
+        if (Array.isArray(item.customizations)) {
+          for (const group of item.customizations) {
+            const groupId = group.id || group.groupId || '';
+            const verifiedOptions: any[] = [];
+            if (Array.isArray(group.selectedOptions)) {
+              for (const opt of group.selectedOptions) {
+                const optId = opt.id || opt.optionId || '';
+                const verifiedPrice = CUSTOM_BUILDER_PRICES[optId] !== undefined ? CUSTOM_BUILDER_PRICES[optId] : 0;
+                customOptionsSum += verifiedPrice;
+                verifiedOptions.push({
+                  id: optId,
+                  optionId: optId,
+                  name: opt.name || optId,
+                  price: verifiedPrice,
+                });
+              }
+            }
+            verifiedCustomizations.push({
+              id: groupId,
+              groupId,
+              groupName: group.groupName || group.name || groupId,
+              selectedOptions: verifiedOptions,
+            });
+          }
+        }
+
+        const unitPrice = customOptionsSum > 0 ? customOptionsSum : 50;
         return {
           id: item.id || `item_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
           productId: 'custom_sandwich',
-          name: typeof item.name === 'string' ? { ar: item.name, en: item.name } : item.name || { ar: '', en: '' },
-          image: item.image || '',
+          name: typeof item.name === 'string' ? { ar: item.name, en: item.name } : item.name || { ar: 'ساندوتش على مزاجك', en: 'Custom Sandwich' },
+          image: item.image || '/hero_burger_clean_cutout.png',
           unitPrice,
           quantity,
           totalPrice: unitPrice * quantity,
-          customizations: item.customizations || [],
+          customizations: verifiedCustomizations,
           specialInstructions: item.specialInstructions || '',
         };
       }
 
-      // Check Firestore product doc first, falling back to synced store
+      // 2. Standard catalog product: fetch directly from Firestore products collection
       let authoritativeProduct: Record<string, any> | undefined = storeProducts.find(
         (p) => p.id === item.productId
       );
@@ -156,7 +209,11 @@ export async function callCreateOrder(
         // Use store snapshot if offline
       }
 
-      if (authoritativeProduct && !isProductAvailable(authoritativeProduct)) {
+      if (!authoritativeProduct) {
+        throw new Error(`الصنف المطلوب (${item.productId}) غير موجود.`);
+      }
+
+      if (!isProductAvailable(authoritativeProduct)) {
         const name =
           typeof authoritativeProduct.name === 'object' && authoritativeProduct.name?.ar
             ? authoritativeProduct.name.ar
@@ -164,21 +221,57 @@ export async function callCreateOrder(
         throw new Error(`"${name}" غير متاح حالياً. من فضلك شيله من السلة.`);
       }
 
-      const basePrice =
-        authoritativeProduct && typeof authoritativeProduct.price === 'number'
-          ? authoritativeProduct.price
-          : Number(item.basePrice || item.unitPrice || 0);
+      // Base price strictly from Firestore
+      const basePrice = Number(authoritativeProduct.price || 0);
+
+      // Customization options verified against authoritative customizationGroups
+      let optionSum = 0;
+      const verifiedCustomizations: any[] = [];
+      const dbGroups: any[] = Array.isArray(authoritativeProduct.customizationGroups)
+        ? authoritativeProduct.customizationGroups
+        : [];
+
+      if (Array.isArray(item.customizations)) {
+        for (const group of item.customizations) {
+          const groupId = group.id || group.groupId || '';
+          const matchingDbGroup = dbGroups.find((g: any) => g.id === groupId);
+          const verifiedOptions: any[] = [];
+
+          if (Array.isArray(group.selectedOptions)) {
+            for (const opt of group.selectedOptions) {
+              const optId = opt.id || opt.optionId || '';
+              const matchingDbOpt = matchingDbGroup?.options?.find((o: any) => o.id === optId);
+              const verifiedPrice = matchingDbOpt ? Number(matchingDbOpt.price || 0) : 0;
+              optionSum += verifiedPrice;
+              verifiedOptions.push({
+                id: optId,
+                optionId: optId,
+                name: matchingDbOpt?.name || opt.name || optId,
+                price: verifiedPrice,
+              });
+            }
+          }
+
+          verifiedCustomizations.push({
+            id: groupId,
+            groupId,
+            groupName: matchingDbGroup?.name || group.groupName || group.name || groupId,
+            selectedOptions: verifiedOptions,
+          });
+        }
+      }
+
       const unitPrice = basePrice + optionSum;
 
       return {
         id: item.id || `item_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
         productId: item.productId || '',
         name: typeof item.name === 'string' ? { ar: item.name, en: item.name } : item.name || { ar: '', en: '' },
-        image: item.image || '',
+        image: authoritativeProduct.imageUrl || item.image || '',
         unitPrice,
         quantity,
         totalPrice: unitPrice * quantity,
-        customizations: item.customizations || [],
+        customizations: verifiedCustomizations,
         specialInstructions: item.specialInstructions || '',
       };
     })
@@ -192,12 +285,22 @@ export async function callCreateOrder(
   const orderId = orderRef.id;
 
   const subtotal = validatedItems.reduce((sum, item) => sum + item.totalPrice, 0);
-  const deliveryFee =
-    payload.orderType === 'delivery'
-      ? payload.deliveryFee !== undefined
-        ? payload.deliveryFee
-        : 25
-      : 0;
+
+  // Authoritative delivery fee from settings/restaurant
+  let deliveryFee = 0;
+  if (payload.orderType === 'delivery') {
+    if (restaurantSettings && restaurantSettings.deliveryEnabled === false) {
+      throw new Error('خدمة التوصيل غير مفعلة حالياً بالمطعم.');
+    }
+    const configuredFee = typeof restaurantSettings?.deliveryFee === 'number' ? restaurantSettings.deliveryFee : 25;
+    const freeMin = typeof restaurantSettings?.freeDeliveryMinimum === 'number' ? restaurantSettings.freeDeliveryMinimum : 0;
+    if (freeMin > 0 && subtotal >= freeMin) {
+      deliveryFee = 0;
+    } else {
+      deliveryFee = configuredFee;
+    }
+  }
+
   const discount = 0;
   const total = subtotal + deliveryFee - discount;
   const nowIso = new Date().toISOString();

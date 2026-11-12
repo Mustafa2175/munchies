@@ -59,32 +59,49 @@ export const AUDIT_ACTIONS = [
   'send_notification',
   'update_user',
   'disable_user',
+  'failed_login',
+  'repeated_failed_logins',
+  'password_change',
+  'password_reset_request',
+  'admin_login',
+  'record_payment',
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
+export type AuditSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 
 /**
  * An immutable audit-log entry stored in Firestore `auditLogs/{id}`.
  */
-export interface AuditLog extends FirestoreDocument {
+export interface AuditLog {
+  /** Firestore document ID */
+  id: string;
   /** The action that was performed. */
   action: AuditAction;
-  /** UID of the admin who performed the action. */
+  /** UID of the admin or system actor who performed the action. */
   actorId: string;
   /** Admin display name (snapshot for readability). */
   actorName: string;
-  /** Admin role at the time of action. */
-  actorRole: AdminRole;
+  /** Admin role or actor type at the time of action. */
+  actorRole: AdminRole | 'system' | 'customer' | 'anonymous';
   /** The Firestore collection affected (e.g. "products"). */
   targetCollection: string;
   /** The document ID affected. */
   targetId: string;
   /** Human-readable summary of the change. */
   summary: string;
-  /** JSON-serialisable diff / details (optional). */
+  /** JSON-serialisable diff / details (optional, strictly without sensitive data). */
   details?: Record<string, unknown>;
   /** Client IP address (captured server-side if available). */
   ipAddress?: string;
+  /** Event severity level */
+  severity?: AuditSeverity;
+  /** Flag indicating high-priority security alert (e.g. repeated failed logins) */
+  isAlert?: boolean;
   /** When the action occurred. */
-  timestamp: Timestamp;
+  timestamp?: Timestamp | string;
+  /** Creation timestamp */
+  createdAt?: Timestamp | string;
+  /** Update timestamp */
+  updatedAt?: Timestamp | string;
 }

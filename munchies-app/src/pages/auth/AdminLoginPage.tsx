@@ -5,13 +5,14 @@
 
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Mail, Lock, ShieldCheck, LogIn, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, ShieldCheck, LogIn, Eye, EyeOff, ShieldAlert } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/config/firebase';
 import { useAuthStore } from '@/stores/authStore';
 import { mapAuthError } from '@/lib/authErrors';
+import { logFailedLogin, clearLocalFailedAttempts, logAdminAction } from '@/lib/auditLogger';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { ROUTES } from '@/config/routes';
@@ -27,6 +28,7 @@ export const AdminLoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [securityAlert, setSecurityAlert] = useState<string | null>(null);
 
   const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname || ROUTES.ADMIN_DASHBOARD;
 
@@ -37,9 +39,11 @@ export const AdminLoginPage: React.FC = () => {
       return;
     }
 
+    const cleanEmail = email.trim().toLowerCase();
     setIsLoading(true);
+
     try {
-      const userCred = await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
+      const userCred = await signInWithEmailAndPassword(auth, cleanEmail, password);
       const uid = userCred.user.uid;
 
       const adminDocRef = doc(db, 'adminUsers', uid);
@@ -48,11 +52,22 @@ export const AdminLoginPage: React.FC = () => {
       if (adminSnap.exists()) {
         const adminData = { uid, ...adminSnap.data() } as AdminUser;
         if (adminData.isActive) {
+          // Successful login: clear failed tracker and log action
+          clearLocalFailedAttempts(cleanEmail);
+          setSecurityAlert(null);
+
+          logAdminAction(
+            'admin_login',
+            'adminUsers',
+            uid,
+            `تسجيل دخول ناجح إلى لوحة التحكم الإدارية`
+          ).catch(() => {});
+
           setAdminUser(adminData);
           setUser({
             uid,
             fullName: adminData.name || adminData.displayName || userCred.user.displayName || 'مدير مانشيز',
-            email: userCred.user.email || email.trim().toLowerCase(),
+            email: userCred.user.email || cleanEmail,
             phone: userCred.user.phoneNumber || adminData.phone || '01025707026',
             role: 'admin',
             preferredLanguage: 'ar',
@@ -73,10 +88,27 @@ export const AdminLoginPage: React.FC = () => {
       await signOut(auth);
       setAdminUser(null);
       setUser(null);
+
+      // Record failed login attempt for non-admin user trying to access admin portal
+      const alertRes = await logFailedLogin(cleanEmail, 'auth/unauthorized-admin-access');
+      if (alertRes.isRepeatedAlert && alertRes.alertMessage) {
+        setSecurityAlert(alertRes.alertMessage);
+      }
+
       toast.error('هذا الحساب ليس لديه صلاحيات المسؤول للوصول إلى لوحة الإدارة');
     } catch (err: unknown) {
       console.error('Admin login error:', err);
-      toast.error(mapAuthError(err, 'ar'));
+
+      // Extract error code without exposing raw password/tokens
+      const errCode = (err as { code?: string })?.code || 'auth/invalid-credential';
+      const alertRes = await logFailedLogin(cleanEmail, errCode);
+
+      if (alertRes.isRepeatedAlert && alertRes.alertMessage) {
+        setSecurityAlert(alertRes.alertMessage);
+        toast.error(alertRes.alertMessage, { duration: 6000 });
+      } else {
+        toast.error(mapAuthError(err, 'ar'));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -95,6 +127,16 @@ export const AdminLoginPage: React.FC = () => {
           لوحة تحكم مانشيز – يرجى تسجيل الدخول بحساب المسؤول
         </p>
       </div>
+
+      {securityAlert && (
+        <div className="p-4 rounded-xl bg-danger-50 border border-danger-200 text-danger-700 flex items-start gap-3 animate-shake">
+          <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5 text-danger" />
+          <div className="text-xs space-y-1">
+            <span className="font-black block text-danger-800">تحذير أمني عالي الأهمية</span>
+            <p className="leading-relaxed">{securityAlert}</p>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input

@@ -9,6 +9,7 @@ import React, { useState } from 'react';
 import { Plus, Edit2, Layers, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { logAdminAction } from '@/lib/auditLogger';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { useCategoryStore } from '@/stores/categoryStore';
@@ -43,12 +44,21 @@ export const CategoriesPage: React.FC = () => {
   const handleDelete = (id: string) => {
     if (window.confirm('هل أنت متأكد من حذف هذا القسم؟')) {
       removeCategory(id);
+      logAdminAction('delete_category', 'categories', id, 'حذف قسم من قائمة الطعام', { categoryId: id }).catch(() => {});
       toast.success('تم حذف القسم بنجاح');
     }
   };
 
   const handleToggleActive = (id: string, currentActive: boolean) => {
     toggleCategoryActive(id);
+    logAdminAction(
+      'update_category',
+      'categories',
+      id,
+      `${currentActive ? 'إيقاف' : 'تفعيل'} إتاحة القسم للزبائن`,
+      { categoryId: id, newStatus: !currentActive }
+    ).catch(() => {});
+
     if (currentActive) {
       toast.success('تم إيقاف القسم — لن يظهر كمتاح للطلب للزبائن الآن');
     } else {
@@ -68,6 +78,13 @@ export const CategoriesPage: React.FC = () => {
         name: { ar: categoryNameAr.trim(), en: categoryNameAr.trim() },
         isActive: editIsActive,
       });
+      logAdminAction(
+        'update_category',
+        'categories',
+        editingCategory.id,
+        `تعديل بيانات القسم: ${categoryNameAr.trim()}`,
+        { categoryId: editingCategory.id, name: categoryNameAr.trim() }
+      ).catch(() => {});
       toast.success('تم تعديل القسم بنجاح');
     } else {
       const newCat = {
@@ -80,6 +97,13 @@ export const CategoriesPage: React.FC = () => {
         updatedAt: new Date().toISOString(),
       } as any;
       addCategory(newCat);
+      logAdminAction(
+        'create_category',
+        'categories',
+        newCat.id,
+        `إضافة قسم جديد للمنيو: ${categoryNameAr.trim()}`,
+        { categoryId: newCat.id, name: categoryNameAr.trim() }
+      ).catch(() => {});
       toast.success('تمت إضافة القسم الجديد بنجاح');
     }
 

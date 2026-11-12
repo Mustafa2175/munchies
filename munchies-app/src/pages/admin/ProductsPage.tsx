@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { formatPrice } from '@/lib/currency';
 import { useProductStore } from '@/stores/productStore';
+import { logAdminAction } from '@/lib/auditLogger';
 import toast from 'react-hot-toast';
 
 export const ProductsPage: React.FC = () => {
@@ -66,6 +67,7 @@ export const ProductsPage: React.FC = () => {
   const handleDelete = (id: string) => {
     if (window.confirm('هل أنت متأكد من رغبتك في حذف هذا الصنف من المنيو؟')) {
       storeRemove(id);
+      logAdminAction('delete_product', 'products', id, 'حذف صنف من قائمة الطعام', { productId: id }).catch(() => {});
       toast.success('تم حذف الصنف من القائمة');
     }
   };
@@ -88,6 +90,13 @@ export const ProductsPage: React.FC = () => {
         isBestSeller,
         isNew,
       });
+      logAdminAction(
+        'update_product',
+        'products',
+        editingProduct.id,
+        `تعديل بيانات الصنف: ${nameAr.trim()} (${Number(price)} ج.م)`,
+        { productId: editingProduct.id, name: nameAr.trim(), price: Number(price), categoryId }
+      ).catch(() => {});
       toast.success('تم تحديث بيانات الصنف بنجاح!');
     } else {
       // Create new
@@ -108,6 +117,13 @@ export const ProductsPage: React.FC = () => {
         updatedAt: new Date().toISOString(),
       };
       storeAdd(newProduct);
+      logAdminAction(
+        'create_product',
+        'products',
+        newId,
+        `إضافة صنف جديد إلى المنيو: ${nameAr.trim()} (${Number(price)} ج.م)`,
+        { productId: newId, name: nameAr.trim(), price: Number(price), categoryId }
+      ).catch(() => {});
       toast.success('تمت إضافة الصنف الجديد إلى المنيو بنجاح!');
     }
 

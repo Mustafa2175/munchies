@@ -26,7 +26,8 @@ import {
   type User as FirebaseUser,
 } from 'firebase/auth';
 import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
-import { auth, db } from '@/config/firebase';
+import { httpsCallable } from 'firebase/functions';
+import { auth, db, functions } from '@/config/firebase';
 import { AuthAppError } from '@/lib/authErrors';
 import {
   isValidEgyptianPhone,
@@ -34,6 +35,7 @@ import {
   normalizeEmail,
   normalizeFullName,
 } from '@/lib/validators';
+import { logPasswordChange, logPasswordResetRequest } from '@/lib/auditLogger';
 import type { AdminPermission } from '@/config/constants';
 import type { AdminUser, User } from '@/types';
 
@@ -768,11 +770,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
+    // 1. Attempt server-side refresh token revocation via Cloud Function (fire-and-forget failsafe)
+    if (auth.currentUser) {
+      try {
+        const revokeFn = httpsCallable(functions, 'revokeUserSession');
+        await withTimeout(revokeFn().catch(() => {}), 1500, null);
+      } catch {
+        // Non-blocking: proceed with client-side credential destruction
+      }
+    }
+
+    // 2. Invalidate local session credentials from IndexedDB and memory
     try {
       await signOut(auth);
     } catch {
       // Ignore signOut errors if offline
     }
+
+    // 3. Purge all authenticated state from client memory
     set({
       firebaseUser: null,
       user: null,
@@ -788,7 +803,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   resetPassword: async (email) => {
     const cleanEmail = normalizeEmail(email);
-    await sendPasswordResetEmail(auth, cleanEmail);
+    try {
+      const requestReset = httpsCallable(functions, 'requestPasswordResetToken');
+      await requestReset({ email: cleanEmail });
+    } catch (fnErr) {
+      // Fallback to standard Firebase sendPasswordResetEmail if callable function is unavailable
+      await sendPasswordResetEmail(auth, cleanEmail);
+    }
+    logPasswordResetRequest(cleanEmail).catch(() => {});
   },
 
   updateCustomerProfile: async ({ fullName, phone }) => {
@@ -844,6 +866,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const credential = EmailAuthProvider.credential(fbUser.email, currentPassword);
     await reauthenticateWithCredential(fbUser, credential);
     await updatePassword(fbUser, newPassword);
+
+    // Invalidate any active password reset tokens for this user
+    try {
+      const invalidateFn = httpsCallable(functions, 'invalidateUserPasswordResetTokens');
+      await invalidateFn();
+    } catch {
+      // Non-blocking
+    }
+
+    logPasswordChange(fbUser.email).catch(() => {});
   },
 
   requestEmailChange: async (newEmail, currentPassword) => {

@@ -27,17 +27,22 @@ import {
 } from 'firebase/functions';
 
 /**
- * Firebase configuration sourced from Vite environment variables.
- * Provides fallback dummy strings so the app works seamlessly in local/offline demo mode.
+ * Firebase client configuration sourced strictly from Vite environment variables.
+ * Never hard-code live API keys, project identifiers, or secrets in source files.
  */
+const metaEnv =
+  typeof import.meta !== 'undefined' && import.meta.env
+    ? import.meta.env
+    : (typeof globalThis !== 'undefined' && (globalThis as { process?: { env?: Record<string, string> } }).process?.env) || {};
+
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyDwMPEoN2HXR7bwsadLsAuJ2yl5iIMPuVE',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'munchies-9a7b7.firebaseapp.com',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'munchies-9a7b7',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'munchies-9a7b7.firebasestorage.app',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '365206142749',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:365206142749:web:55d21fa70c0e027601abf4',
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || 'G-1NDXR9HJXR',
+  apiKey: metaEnv.VITE_FIREBASE_API_KEY || 'AIzaSy_DEV_TEST_PLACEHOLDER',
+  authDomain: metaEnv.VITE_FIREBASE_AUTH_DOMAIN || 'munchies-dev.firebaseapp.com',
+  projectId: metaEnv.VITE_FIREBASE_PROJECT_ID || 'munchies-dev',
+  storageBucket: metaEnv.VITE_FIREBASE_STORAGE_BUCKET || 'munchies-dev.appspot.com',
+  messagingSenderId: metaEnv.VITE_FIREBASE_MESSAGING_SENDER_ID || '000000000000',
+  appId: metaEnv.VITE_FIREBASE_APP_ID || '1:000000000000:web:0000000000000000000000',
+  measurementId: metaEnv.VITE_FIREBASE_MEASUREMENT_ID || '',
 };
 
 let appInstance: FirebaseApp;
@@ -66,7 +71,7 @@ export const storage: FirebaseStorage = getStorage(app);
 export const functions: Functions = getFunctions(app);
 
 // Connect to emulators if explicitly enabled
-if (import.meta.env.DEV && import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true') {
+if (metaEnv.DEV && metaEnv.VITE_USE_FIREBASE_EMULATORS === 'true') {
   try {
     connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
     connectFirestoreEmulator(db, 'localhost', 8080);

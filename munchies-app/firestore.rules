@@ -74,14 +74,69 @@ service cloud.firestore {
     //   - createdAt: timestamp | ISO-8601 string (required, immutable)
     //   - updatedAt: timestamp | ISO-8601 string (required)
     //
+    // Collection: products
+    // Document ID: {productId}
+    // Fields:
+    //   - id: string (optional, 1..128 chars)
+    //   - slug: string (optional, 1..128 chars)
+    //   - name: LocalizedText map | string (required, Arabic name 1..100 chars, English <= 100 chars)
+    //   - description: LocalizedText map | string (optional, <= 1000 chars)
+    //   - price: number (required, 0..10000)
+    //   - originalPrice / compareAtPrice: number (optional, 0..10000)
+    //   - categoryId: string (required, 1..128 chars)
+    //   - image / imageUrl: string (optional, <= 1000 chars)
+    //   - images / galleryUrls: list (optional, <= 20 items)
+    //   - isAvailable: bool (required)
+    //   - is_available / available / inStock / isActive: bool (optional)
+    //   - isBestSeller / isFeatured / isPopular / isNew: bool (optional)
+    //   - hasCustomization: bool (optional)
+    //   - sortOrder: int | number (optional, 0..10000)
+    //   - prepTimeMinutes / preparationTime: int | number (optional, 0..1000)
+    //   - calories: int | number (optional, 0..10000)
+    //   - tags: list (optional, <= 30 items)
+    //   - badges: list (optional, <= 10 items)
+    //   - variants / customizationGroups: list (optional, <= 50 items)
+    //   - createdAt / updatedAt: timestamp | ISO-8601 string (optional)
+    //
+    // Collection: categories
+    // Document ID: {categoryId}
+    // Fields:
+    //   - id: string (optional, 1..128 chars)
+    //   - slug: string (optional, 1..128 chars)
+    //   - name: LocalizedText map | string (required, Arabic name 1..100 chars, English <= 100 chars)
+    //   - description: LocalizedText map | string (optional, <= 1000 chars)
+    //   - image / imageUrl / icon: string (optional, <= 1000 chars)
+    //   - sortOrder: int | number (required, >= 0 and <= 10000)
+    //   - isActive: bool (required)
+    //   - productCount: int | number (optional, 0..100000)
+    //   - createdAt / updatedAt: timestamp | ISO-8601 string (optional)
+    //
+    // Collection: offers
+    // Document ID: {offerId}
+    // Fields:
+    //   - id: string (optional, 1..128 chars)
+    //   - title: LocalizedText map | string (required, 1..100 chars)
+    //   - description: LocalizedText map | string (optional, <= 1000 chars)
+    //   - badge / badgeText: LocalizedText map | string (optional, <= 100 chars)
+    //   - price / originalPrice: number (optional, 0..100000)
+    //   - discountType: string (optional, 'percentage' | 'fixed')
+    //   - discountValue: number (optional, 0..100000)
+    //   - minOrderAmount / minimumOrder / maxDiscountAmount: number (optional, 0..100000)
+    //   - applicableProductIds / productIds: list (optional, <= 100 items)
+    //   - applicableCategoryIds / categoryIds: list (optional, <= 50 items)
+    //   - image / imageUrl: string (optional, <= 1000 chars)
+    //   - code / couponCode: string (optional, 1..50 chars)
+    //   - sortOrder: int | number (optional, 0..10000)
+    //   - isActive: bool (required)
+    //   - startDate / endDate: timestamp | ISO-8601 string (optional)
+    //   - createdAt / updatedAt: timestamp | ISO-8601 string (optional)
+    //
     // Collection: settings
     // Document ID: orderCounter (authenticated checkout counter)
     //   - lastOrderNumber: int (required, >= 1001; increments by +1 on non-admin update)
     //   - updatedAt: timestamp | ISO-8601 string (optional)
     // Document ID: {docId} != 'orderCounter' (publicly readable, admin-writable)
-    //
-    // Public Catalog Collections: products, categories, offers
-    //   - Publicly readable, admin-writable
+    //   - Branch operational settings, working hours, ordering mode, delivery settings, contact info
     //
     // Admin-Only Collection: auditLogs
     //   - Admin read and create only (immutable)
@@ -101,11 +156,9 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isAuthenticated() && (
-        ('email' in request.auth.token && request.auth.token.email == 'admin@munchies.com') ||
-        (exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid)) &&
-         get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.isActive == true)
-      );
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.isActive == true;
     }
 
     function hasRequiredFields(fields) {
@@ -151,6 +204,21 @@ service cloud.firestore {
       return val is timestamp ||
         (val is string && val.size() >= 10 && val.size() <= 40 &&
          val.matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.*$"));
+    }
+
+    function isValidLocalizedText(val, minLen, maxLen) {
+      return (
+        val is string &&
+        val.size() >= minLen &&
+        val.size() <= maxLen
+      ) || (
+        val is map &&
+        ('ar' in val) &&
+        val.ar is string &&
+        val.ar.size() >= minLen &&
+        val.ar.size() <= maxLen &&
+        (!('en' in val) || (val.en is string && val.en.size() <= maxLen))
+      );
     }
 
     function isOrderOwner() {
@@ -264,6 +332,7 @@ service cloud.firestore {
         (!('discount' in data) || (data.discount is number && data.discount >= 0 && data.discount <= 1000000)) &&
         (!('discountAmount' in data) || (data.discountAmount is number && data.discountAmount >= 0 && data.discountAmount <= 1000000)) &&
         data.total is number && data.total >= 0 && data.total <= 1000000 &&
+        data.total == data.subtotal + data.deliveryFee - (!('discount' in data) || data.discount == null ? 0 : data.discount) &&
         isValidOptionalString('notes', 0, 500) &&
         isValidOptionalString('adminNotes', 0, 500) &&
         (!('couponCode' in data) || data.couponCode == null || (data.couponCode is string && data.couponCode.size() <= 50)) &&
@@ -284,6 +353,169 @@ service cloud.firestore {
         (!('updatedAt' in data) || isValidTimestampValue(data.updatedAt));
     }
 
+    function isValidProduct(data) {
+      return hasOnlyAllowedFields([
+          'id', 'slug', 'name', 'description', 'price', 'originalPrice', 'compareAtPrice',
+          'categoryId', 'image', 'imageUrl', 'images', 'galleryUrls',
+          'isAvailable', 'is_available', 'available', 'inStock', 'isActive',
+          'isBestSeller', 'isFeatured', 'isPopular', 'isNew', 'hasCustomization',
+          'sortOrder', 'prepTimeMinutes', 'preparationTime', 'calories',
+          'tags', 'badges', 'variants', 'customizationGroups',
+          'createdAt', 'updatedAt'
+        ]) &&
+        hasRequiredFields(['name', 'price', 'categoryId', 'isAvailable']) &&
+        isValidLocalizedText(data.name, 1, 100) &&
+        data.price is number && data.price >= 0 && data.price <= 10000 &&
+        data.categoryId is string && data.categoryId.size() >= 1 && data.categoryId.size() <= 128 &&
+        data.isAvailable is bool &&
+        isValidOptionalString('id', 1, 128) &&
+        isValidOptionalString('slug', 1, 128) &&
+        (!('description' in data) || isValidLocalizedText(data.description, 0, 1000)) &&
+        (!('originalPrice' in data) || (data.originalPrice is number && data.originalPrice >= 0 && data.originalPrice <= 10000)) &&
+        (!('compareAtPrice' in data) || (data.compareAtPrice is number && data.compareAtPrice >= 0 && data.compareAtPrice <= 10000)) &&
+        (!('image' in data) || (data.image is string && data.image.size() <= 1000)) &&
+        (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1000)) &&
+        (!('images' in data) || isValidList(data.images, 20)) &&
+        (!('galleryUrls' in data) || isValidList(data.galleryUrls, 20)) &&
+        (!('is_available' in data) || data.is_available is bool) &&
+        (!('available' in data) || data.available is bool) &&
+        (!('inStock' in data) || data.inStock is bool) &&
+        (!('isActive' in data) || data.isActive is bool) &&
+        (!('isBestSeller' in data) || data.isBestSeller is bool) &&
+        (!('isFeatured' in data) || data.isFeatured is bool) &&
+        (!('isPopular' in data) || data.isPopular is bool) &&
+        (!('isNew' in data) || data.isNew is bool) &&
+        (!('hasCustomization' in data) || data.hasCustomization is bool) &&
+        (!('sortOrder' in data) || ((data.sortOrder is int || data.sortOrder is number) && data.sortOrder >= 0 && data.sortOrder <= 10000)) &&
+        (!('prepTimeMinutes' in data) || ((data.prepTimeMinutes is int || data.prepTimeMinutes is number) && data.prepTimeMinutes >= 0 && data.prepTimeMinutes <= 1000)) &&
+        (!('preparationTime' in data) || ((data.preparationTime is int || data.preparationTime is number) && data.preparationTime >= 0 && data.preparationTime <= 1000)) &&
+        (!('calories' in data) || ((data.calories is int || data.calories is number) && data.calories >= 0 && data.calories <= 10000)) &&
+        (!('tags' in data) || isValidList(data.tags, 30)) &&
+        (!('badges' in data) || isValidList(data.badges, 10)) &&
+        (!('variants' in data) || isValidList(data.variants, 50)) &&
+        (!('customizationGroups' in data) || isValidList(data.customizationGroups, 50)) &&
+        (!('createdAt' in data) || isValidTimestampValue(data.createdAt)) &&
+        (!('updatedAt' in data) || isValidTimestampValue(data.updatedAt));
+    }
+
+    function isValidCategory(data) {
+      return hasOnlyAllowedFields([
+          'id', 'slug', 'name', 'description', 'image', 'imageUrl', 'icon',
+          'sortOrder', 'isActive', 'productCount', 'createdAt', 'updatedAt'
+        ]) &&
+        hasRequiredFields(['name', 'isActive', 'sortOrder']) &&
+        isValidLocalizedText(data.name, 1, 100) &&
+        data.isActive is bool &&
+        ((data.sortOrder is int || data.sortOrder is number) && data.sortOrder >= 0 && data.sortOrder <= 10000) &&
+        isValidOptionalString('id', 1, 128) &&
+        isValidOptionalString('slug', 1, 128) &&
+        (!('description' in data) || isValidLocalizedText(data.description, 0, 1000)) &&
+        (!('image' in data) || (data.image is string && data.image.size() <= 1000)) &&
+        (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1000)) &&
+        (!('icon' in data) || (data.icon is string && data.icon.size() <= 1000)) &&
+        (!('productCount' in data) || ((data.productCount is int || data.productCount is number) && data.productCount >= 0 && data.productCount <= 100000)) &&
+        (!('createdAt' in data) || isValidTimestampValue(data.createdAt)) &&
+        (!('updatedAt' in data) || isValidTimestampValue(data.updatedAt));
+    }
+
+    function isValidOffer(data) {
+      return hasOnlyAllowedFields([
+          'id', 'title', 'description', 'badge', 'badgeText',
+          'price', 'originalPrice', 'discountType', 'discountValue',
+          'minOrderAmount', 'minimumOrder', 'maxDiscountAmount',
+          'applicableProductIds', 'applicableCategoryIds', 'productIds', 'categoryIds',
+          'image', 'imageUrl', 'code', 'couponCode',
+          'sortOrder', 'isActive', 'startDate', 'endDate',
+          'createdAt', 'updatedAt'
+        ]) &&
+        hasRequiredFields(['title', 'isActive']) &&
+        isValidLocalizedText(data.title, 1, 100) &&
+        data.isActive is bool &&
+        isValidOptionalString('id', 1, 128) &&
+        (!('description' in data) || isValidLocalizedText(data.description, 0, 1000)) &&
+        (!('badge' in data) || isValidLocalizedText(data.badge, 0, 100)) &&
+        (!('badgeText' in data) || isValidLocalizedText(data.badgeText, 0, 100)) &&
+        (!('price' in data) || (data.price is number && data.price >= 0 && data.price <= 100000)) &&
+        (!('originalPrice' in data) || (data.originalPrice is number && data.originalPrice >= 0 && data.originalPrice <= 100000)) &&
+        (!('discountType' in data) || (data.discountType is string && data.discountType in ['percentage', 'fixed'])) &&
+        (!('discountValue' in data) || (data.discountValue is number && data.discountValue >= 0 && data.discountValue <= 100000)) &&
+        (!('minOrderAmount' in data) || (data.minOrderAmount is number && data.minOrderAmount >= 0 && data.minOrderAmount <= 100000)) &&
+        (!('minimumOrder' in data) || (data.minimumOrder is number && data.minimumOrder >= 0 && data.minimumOrder <= 100000)) &&
+        (!('maxDiscountAmount' in data) || (data.maxDiscountAmount is number && data.maxDiscountAmount >= 0 && data.maxDiscountAmount <= 100000)) &&
+        (!('applicableProductIds' in data) || isValidList(data.applicableProductIds, 100)) &&
+        (!('applicableCategoryIds' in data) || isValidList(data.applicableCategoryIds, 50)) &&
+        (!('productIds' in data) || isValidList(data.productIds, 100)) &&
+        (!('categoryIds' in data) || isValidList(data.categoryIds, 50)) &&
+        (!('image' in data) || (data.image is string && data.image.size() <= 1000)) &&
+        (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 1000)) &&
+        isValidOptionalString('code', 1, 50) &&
+        isValidOptionalString('couponCode', 1, 50) &&
+        (!('sortOrder' in data) || ((data.sortOrder is int || data.sortOrder is number) && data.sortOrder >= 0 && data.sortOrder <= 10000)) &&
+        (!('startDate' in data) || isValidTimestampValue(data.startDate)) &&
+        (!('endDate' in data) || isValidTimestampValue(data.endDate)) &&
+        (!('createdAt' in data) || isValidTimestampValue(data.createdAt)) &&
+        (!('updatedAt' in data) || isValidTimestampValue(data.updatedAt));
+    }
+
+    function isValidSettings(data) {
+      return hasOnlyAllowedFields([
+          'id', 'name', 'tagline', 'description', 'logoUrl', 'faviconUrl',
+          'phone', 'email', 'address', 'location',
+          'operatingMode', 'openingTime', 'closingTime',
+          'manualOpen', 'manualOverrideClosed', 'manualOverrideUntil',
+          'closureMessage', 'useCustomDailySchedule', 'workingHours',
+          'isManualClosed', 'isOrderingPaused', 'pauseReason',
+          'orderAcceptanceEnabled', 'isOpen',
+          'deliveryEnabled', 'deliveryFee', 'freeDeliveryMinimum',
+          'minOrderAmount', 'minimumOrderAmount', 'defaultPrepTimeMinutes',
+          'deliveryZones', 'announcements', 'announcement',
+          'socialLinks', 'seo', 'createdAt', 'updatedAt'
+        ]) &&
+        isValidOptionalString('id', 1, 128) &&
+        (!('name' in data) || isValidLocalizedText(data.name, 1, 100)) &&
+        (!('tagline' in data) || isValidLocalizedText(data.tagline, 0, 200)) &&
+        (!('description' in data) || isValidLocalizedText(data.description, 0, 1000)) &&
+        (!('logoUrl' in data) || (data.logoUrl is string && data.logoUrl.size() <= 1000)) &&
+        (!('faviconUrl' in data) || (data.faviconUrl is string && data.faviconUrl.size() <= 1000)) &&
+        (!('phone' in data) || (data.phone is string && data.phone.size() >= 7 && data.phone.size() <= 30)) &&
+        (!('email' in data) || isValidEmail(data.email)) &&
+        (!('address' in data) || isValidLocalizedText(data.address, 0, 500)) &&
+        (!('location' in data) || (
+          data.location is map &&
+          ('lat' in data.location) &&
+          ('lng' in data.location) &&
+          data.location.lat is number &&
+          data.location.lng is number
+        )) &&
+        (!('operatingMode' in data) || data.operatingMode in ['automatic', 'manual']) &&
+        (!('openingTime' in data) || (data.openingTime is string && data.openingTime.size() >= 1 && data.openingTime.size() <= 10)) &&
+        (!('closingTime' in data) || (data.closingTime is string && data.closingTime.size() >= 1 && data.closingTime.size() <= 10)) &&
+        (!('manualOpen' in data) || data.manualOpen is bool) &&
+        (!('manualOverrideClosed' in data) || data.manualOverrideClosed is bool) &&
+        (!('manualOverrideUntil' in data) || data.manualOverrideUntil == null || isValidTimestampValue(data.manualOverrideUntil)) &&
+        (!('isManualClosed' in data) || data.isManualClosed is bool) &&
+        (!('closureMessage' in data) || isValidLocalizedText(data.closureMessage, 0, 500)) &&
+        (!('useCustomDailySchedule' in data) || data.useCustomDailySchedule is bool) &&
+        (!('workingHours' in data) || (data.workingHours is map || (data.workingHours is list && data.workingHours.size() <= 20))) &&
+        (!('isOrderingPaused' in data) || data.isOrderingPaused is bool) &&
+        (!('pauseReason' in data) || isValidLocalizedText(data.pauseReason, 0, 500)) &&
+        (!('orderAcceptanceEnabled' in data) || data.orderAcceptanceEnabled is bool) &&
+        (!('isOpen' in data) || data.isOpen is bool) &&
+        (!('deliveryEnabled' in data) || data.deliveryEnabled is bool) &&
+        (!('deliveryFee' in data) || (data.deliveryFee is number && data.deliveryFee >= 0 && data.deliveryFee <= 10000)) &&
+        (!('freeDeliveryMinimum' in data) || (data.freeDeliveryMinimum is number && data.freeDeliveryMinimum >= 0 && data.freeDeliveryMinimum <= 100000)) &&
+        (!('minOrderAmount' in data) || (data.minOrderAmount is number && data.minOrderAmount >= 0 && data.minOrderAmount <= 100000)) &&
+        (!('minimumOrderAmount' in data) || (data.minimumOrderAmount is number && data.minimumOrderAmount >= 0 && data.minimumOrderAmount <= 100000)) &&
+        (!('defaultPrepTimeMinutes' in data) || ((data.defaultPrepTimeMinutes is int || data.defaultPrepTimeMinutes is number) && data.defaultPrepTimeMinutes >= 0 && data.defaultPrepTimeMinutes <= 1000)) &&
+        (!('deliveryZones' in data) || isValidList(data.deliveryZones, 50)) &&
+        (!('announcements' in data) || isValidList(data.announcements, 20)) &&
+        (!('announcement' in data) || isValidLocalizedText(data.announcement, 0, 500)) &&
+        (!('socialLinks' in data) || (data.socialLinks is map && data.socialLinks.keys().size() <= 20)) &&
+        (!('seo' in data) || (data.seo is map && data.seo.keys().size() <= 20)) &&
+        (!('createdAt' in data) || isValidTimestampValue(data.createdAt)) &&
+        (!('updatedAt' in data) || isValidTimestampValue(data.updatedAt));
+    }
+
     // ===============================================================
     // Collection Rules
     // ===============================================================
@@ -291,17 +523,20 @@ service cloud.firestore {
     // Public catalog collections
     match /products/{productId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create, update: if isAdmin() && isValidProduct(request.resource.data);
+      allow delete: if isAdmin();
     }
 
     match /categories/{categoryId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create, update: if isAdmin() && isValidCategory(request.resource.data);
+      allow delete: if isAdmin();
     }
 
     match /offers/{offerId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create, update: if isAdmin() && isValidOffer(request.resource.data);
+      allow delete: if isAdmin();
     }
 
     // Order counter used in authenticated checkout transactions
@@ -321,7 +556,7 @@ service cloud.firestore {
     // Public settings (excluding orderCounter so authenticated restriction cannot be bypassed)
     match /settings/{docId} {
       allow read: if docId != 'orderCounter';
-      allow write: if docId != 'orderCounter' && isAdmin();
+      allow write: if docId != 'orderCounter' && isAdmin() && isValidSettings(request.resource.data);
     }
 
     // Customer profile collection (owner-only PII protection + admin management)
@@ -355,7 +590,8 @@ service cloud.firestore {
           request.resource.data.customerId == request.auth.uid &&
           request.resource.data.userId == request.auth.uid &&
           request.resource.data.status == 'pending' &&
-          request.resource.data.paymentStatus == 'pending'
+          request.resource.data.paymentStatus == 'pending' &&
+          request.resource.data.paymentMethod in ['cash', 'card']
         )
       );
       allow update: if isAuthenticated() && isValidOrder(request.resource.data) && (

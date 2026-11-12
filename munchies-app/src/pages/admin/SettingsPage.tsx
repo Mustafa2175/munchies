@@ -11,6 +11,7 @@ import { getLocalizedText } from '@/lib/i18n';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { logAdminAction } from '@/lib/auditLogger';
 import toast from 'react-hot-toast';
 
 export const SettingsPage: React.FC = () => {
@@ -66,6 +67,19 @@ export const SettingsPage: React.FC = () => {
         },
         { merge: true }
       );
+
+      logAdminAction(
+        'update_settings',
+        'settings',
+        'restaurant',
+        'تحديث إعدادات الفرع والتوصيل',
+        {
+          deliveryEnabled,
+          deliveryFee: Number(deliveryFee) || 25,
+          phone: phone.trim(),
+        }
+      ).catch(() => {});
+
       toast.success('تم حفظ إعدادات المطعم والتوصيل بنجاح');
     } catch (err: any) {
       console.error('Failed to save settings:', err);

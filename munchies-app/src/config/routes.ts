@@ -23,8 +23,6 @@ export const ROUTES = {
   PROFILE: '/account',
   ADDRESSES: '/account/addresses',
   OFFERS: '/offers',
-  ABOUT: '/about',
-  CONTACT: '/contact',
   NOT_FOUND: '/404',
 
   /** Authentication */

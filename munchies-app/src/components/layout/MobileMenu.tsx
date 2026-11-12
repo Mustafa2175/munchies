@@ -32,8 +32,6 @@ export const MobileMenu: React.FC = () => {
     { label: 'المنيو', path: ROUTES.MENU },
     { label: 'العروض', path: ROUTES.OFFERS },
     { label: 'اعمل ساندوتشك', path: '/build-your-own' },
-    { label: 'حكايتنا', path: ROUTES.ABOUT },
-    { label: 'كلمنا', path: ROUTES.CONTACT },
     ...(isAuthenticated
       ? isAdmin
         ? [{ label: 'لوحة التحكم', path: ROUTES.ADMIN, icon: UserIcon }]

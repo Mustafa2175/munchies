@@ -30,8 +30,6 @@ import { CheckoutPage } from '@/pages/customer/CheckoutPage';
 import { OrderTrackingPage } from '@/pages/customer/OrderTrackingPage';
 import { OffersPage } from '@/pages/customer/OffersPage';
 import { BuildYourOwnPage } from '@/pages/customer/BuildYourOwnPage';
-import { AboutPage } from '@/pages/customer/AboutPage';
-import { ContactPage } from '@/pages/customer/ContactPage';
 import { AccountPage } from '@/pages/customer/AccountPage';
 import { AccountOrdersPage } from '@/pages/customer/AccountOrdersPage';
 
@@ -87,8 +85,6 @@ export function App() {
           <Route path="/product/:slug" element={<ProductDetailsPage />} />
           <Route path={ROUTES.OFFERS} element={<OffersPage />} />
           <Route path="/build-your-own" element={<BuildYourOwnPage />} />
-          <Route path={ROUTES.ABOUT} element={<AboutPage />} />
-          <Route path={ROUTES.CONTACT} element={<ContactPage />} />
           <Route path={ROUTES.CART} element={<CartPage />} />
 
           {/* Customer Protected Routes */}

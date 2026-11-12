@@ -18,7 +18,7 @@ import { FullMenuCTA } from '@/components/home/FullMenuCTA';
 
 export const HomePage: React.FC = () => {
   return (
-    <div className="space-y-8 sm:space-y-12 pb-12 w-full overflow-x-hidden">
+    <div className="space-y-10 sm:space-y-14 pb-12 w-full overflow-x-clip">
       {/* ─── 1. Hero Section ─── */}
       <HeroSection />
 

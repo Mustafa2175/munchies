@@ -14,13 +14,14 @@ export const CartIcon: React.FC<{ className?: string }> = ({ className = '' }) =
 
   return (
     <button
+      type="button"
       onClick={openCartDrawer}
-      className={`relative p-2.5 rounded-full text-gray-700 hover:text-[#512080] hover:bg-gray-100 transition-all cursor-pointer select-none active:scale-95 ${className}`}
-      aria-label="Shopping Cart"
+      className={`relative w-10 h-10 flex items-center justify-center rounded-xl text-white hover:text-[#FFDA35] hover:bg-white/10 transition-colors cursor-pointer select-none active:scale-95 ${className}`}
+      aria-label="سلة المشتريات"
     >
       <ShoppingBag className="w-5 h-5" />
       {itemCount > 0 && (
-        <span className="absolute -top-1 -end-1 flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-[#FFDA35] text-[#26212B] text-[11px] font-black shadow-xs ring-2 ring-white animate-scale-in number-ltr">
+        <span className="absolute -top-0.5 -end-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[#FFDA35] text-[#26212B] text-[10px] font-black shadow-sm border border-[#260840]/30 animate-scale-in number-ltr">
           {itemCount}
         </span>
       )}

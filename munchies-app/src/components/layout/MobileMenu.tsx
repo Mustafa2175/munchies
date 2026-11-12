@@ -1,28 +1,41 @@
 /**
  * @module components/layout/MobileMenu
- * @description Slide-in drawer for mobile navigation strictly in Arabic.
+ * @description Slide-in drawer for mobile navigation matching simplified navbar routes in Arabic.
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { X, Phone, MapPin, PackageSearch } from 'lucide-react';
+import { X, Phone, MapPin, PackageSearch, User as UserIcon } from 'lucide-react';
 import { useUIStore } from '@/stores/uiStore';
+import { useAuthStore } from '@/stores/authStore';
 import { ROUTES } from '@/config/routes';
 
 export const MobileMenu: React.FC = () => {
   const location = useLocation();
   const { isMobileMenuOpen, closeMobileMenu } = useUIStore();
+  const { isAdmin, isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeMobileMenu();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMobileMenuOpen, closeMobileMenu]);
 
   if (!isMobileMenuOpen) return null;
 
   const navLinks = [
-    { label: 'الرئيسية', path: ROUTES.HOME },
-    { label: 'تتبع طلبك', path: ROUTES.TRACK_ORDER, icon: PackageSearch },
     { label: 'المنيو', path: ROUTES.MENU },
-    { label: 'اصنع ساندوتشك', path: '/build-your-own' },
     { label: 'العروض', path: ROUTES.OFFERS },
-    { label: 'عن مانشيز', path: ROUTES.ABOUT },
-    { label: 'تواصل معنا', path: ROUTES.CONTACT },
+    { label: 'اصنع ساندوتشك', path: '/build-your-own' },
+    { label: 'تتبع طلبك', path: ROUTES.TRACK_ORDER, icon: PackageSearch },
+    {
+      label: isAuthenticated ? 'حسابي وطلباتي' : 'حسابي',
+      path: isAdmin ? ROUTES.ADMIN : ROUTES.ORDERS,
+      icon: UserIcon,
+    },
   ];
 
   const handleLinkClick = () => {
@@ -30,7 +43,12 @@ export const MobileMenu: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden md:hidden">
+    <div
+      className="fixed inset-0 z-50 overflow-hidden md:hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-label="القائمة الجانبية"
+    >
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-dark/50 backdrop-blur-xs transition-opacity"
@@ -39,19 +57,23 @@ export const MobileMenu: React.FC = () => {
 
       <div className="fixed inset-y-0 start-0 max-w-xs w-full bg-white shadow-2xl flex flex-col z-10 animate-slide-in-right">
         {/* Top Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border bg-light-gray">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-primary overflow-hidden flex items-center justify-center border border-yellow/40 shadow-xs">
-              <img src="/fb_logo.jpg" alt="شعار مانشيز" className="w-full h-full object-cover" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-black text-primary text-base leading-tight">مانشيز MUNCHIE'S</span>
-              <span className="text-[10px] text-medium-gray font-bold">لو كبير عليك، اضغطه!</span>
-            </div>
-          </div>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-[#512080]">
+          <Link
+            to={ROUTES.HOME}
+            onClick={handleLinkClick}
+            className="inline-flex items-center shrink-0"
+            aria-label="مانشيز - الصفحة الرئيسية"
+          >
+            <img
+              src="/munchies-logo.png"
+              alt="Munchie's"
+              className="h-11 w-auto object-contain select-none"
+            />
+          </Link>
           <button
+            type="button"
             onClick={closeMobileMenu}
-            className="p-1.5 rounded-lg text-medium-gray hover:text-dark hover:bg-white transition-colors cursor-pointer"
+            className="w-10 h-10 rounded-xl text-white/90 hover:text-[#FFDA35] hover:bg-white/10 transition-colors flex items-center justify-center cursor-pointer"
             aria-label="إغلاق القائمة"
           >
             <X className="w-5 h-5" />
@@ -59,27 +81,45 @@ export const MobileMenu: React.FC = () => {
         </div>
 
         {/* Links */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-1">
+        <nav className="flex-1 overflow-y-auto p-3 space-y-1.5" aria-label="قائمة الجوال">
           {navLinks.map((link) => {
-            const isActive = location.pathname === link.path;
+            const isActive =
+              link.path === ROUTES.MENU
+                ? location.pathname.startsWith(ROUTES.MENU) ||
+                  location.pathname.startsWith('/product')
+                : location.pathname === link.path;
             const Icon = link.icon;
             return (
               <Link
                 key={link.path}
                 to={link.path}
                 onClick={handleLinkClick}
-                className={`flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
                   isActive
                     ? 'bg-primary text-white shadow-xs'
                     : 'text-dark hover:bg-light-gray'
                 }`}
               >
                 <span>{link.label}</span>
-                {Icon && <Icon className={`w-4 h-4 ${isActive ? 'text-yellow' : 'text-medium-gray'}`} />}
+                {Icon && (
+                  <Icon
+                    className={`w-4 h-4 ${isActive ? 'text-yellow' : 'text-medium-gray'}`}
+                  />
+                )}
               </Link>
             );
           })}
-        </div>
+
+          <div className="pt-3 px-1">
+            <Link
+              to={ROUTES.MENU}
+              onClick={handleLinkClick}
+              className="flex items-center justify-center w-full py-3 rounded-xl bg-[#FFDA35] hover:bg-[#FFE35A] text-[#260840] font-black text-sm shadow-sm transition-colors"
+            >
+              اطلب دلوقتي
+            </Link>
+          </div>
+        </nav>
 
         {/* Footer info in drawer */}
         <div className="p-4 border-t border-border bg-light-gray text-xs text-medium-gray space-y-2">

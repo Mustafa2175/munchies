@@ -1,11 +1,10 @@
 /**
  * @module components/layout/CustomerLayout
- * @description Layout wrapper for customer pages with announcements, restaurant closed banner, navbar, mobile menu, and cart drawer.
+ * @description Layout wrapper for customer pages with restaurant closed banner, navbar, mobile menu, and cart drawer.
  */
 
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import { AnnouncementBar } from './AnnouncementBar';
 import { RestaurantClosedBanner } from './RestaurantClosedBanner';
 import { Navbar } from './Navbar';
 import { MobileMenu } from './MobileMenu';
@@ -14,9 +13,8 @@ import { CartDrawer } from '@/components/cart/CartDrawer';
 
 export const CustomerLayout: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-[#FDFCFE] w-full overflow-x-hidden">
+    <div className="min-h-screen flex flex-col bg-[#FDFCFE] w-full overflow-x-clip">
       <RestaurantClosedBanner />
-      <AnnouncementBar />
       <Navbar />
       <MobileMenu />
       <CartDrawer />

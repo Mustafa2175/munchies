@@ -127,7 +127,7 @@ export const CategoryShortcuts: React.FC = () => {
   };
 
   return (
-    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4 sm:-mt-6 relative z-20">
+    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-3 relative z-20">
       <div className="w-full overflow-x-auto no-scrollbar scroll-smooth py-2">
         <div className="flex items-center sm:justify-center gap-2.5 sm:gap-3.5 min-w-max px-1">
           {displayList.map((category) => {

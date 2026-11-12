@@ -1,105 +1,80 @@
 /**
  * @module components/home/HeroSection
- * @description Munchie's high-impact brand hero section.
- * Clean, bold typography, authentic food photography, and clear primary/secondary CTAs.
+ * @description Spacious, balanced Munchie's Hero section designed beneath a floating glass navbar.
+ * Highlights the brand headline, supporting description, ordering CTAs, and prominent burger showcase.
  */
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, MapPin, ShoppingBag, UtensilsCrossed } from 'lucide-react';
+import { ArrowLeft, UtensilsCrossed } from 'lucide-react';
 import { ROUTES } from '@/config/routes';
 
 export const HeroSection: React.FC = () => {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-[#451773] via-[#37115E] to-[#25083F] text-white pt-10 sm:pt-14 pb-12 sm:pb-20 select-none w-full">
-      {/* Clean geometric brand accent in top corner (contained, zero overflow) */}
+    <section
+      id="hero-section"
+      className="relative overflow-hidden bg-gradient-to-br from-[#512080] via-[#3A1262] to-[#21073B] text-white pt-24 sm:pt-32 lg:pt-36 pb-16 sm:pb-24 lg:pb-28 lg:min-h-[700px] xl:min-h-[750px] flex items-center select-none w-full"
+    >
+      {/* Subtle seamless ambient depth across the Hero canvas */}
       <div
-        className="absolute top-0 right-0 w-48 h-48 sm:w-80 sm:h-80 pointer-events-none select-none opacity-30 overflow-hidden"
+        className="absolute inset-0 pointer-events-none select-none bg-[radial-gradient(ellipse_at_top_center,rgba(123,58,196,0.28),transparent_65%)]"
         aria-hidden="true"
-      >
-        <div className="w-full h-full bg-gradient-to-br from-[#FFDA35] to-transparent rounded-bl-full" />
-      </div>
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center w-full" dir="ltr">
-          {/* Column 1 (Left on Desktop, Right in RTL): Headline, CTAs, Info */}
-          <div
-            className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-start space-y-5 sm:space-y-6 w-full min-w-0"
-            dir="rtl"
-          >
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center w-full">
+          {/* Column 1 (Start side: Right in RTL, Left in LTR): Headline, description & CTAs */}
+          <div className="lg:col-span-6 flex flex-col items-center lg:items-start text-center lg:text-start space-y-6 sm:space-y-7 w-full min-w-0">
             {/* Headline Block */}
-            <div className="space-y-2 mt-2 sm:mt-0">
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
+            <div className="space-y-3.5 sm:space-y-4">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.15]">
                 مش أي برجر...
               </h1>
 
-              <div className="inline-block">
-                <span className="inline-block px-4 sm:px-6 py-1.5 sm:py-2 rounded-2xl bg-[#FFDA35] text-[#260840] text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight shadow-md">
+              <div>
+                <span className="inline-block px-5 sm:px-7 py-2 sm:py-2.5 rounded-2xl bg-[#FFDA35] text-[#260840] text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight shadow-lg shadow-black/20">
                   ده مانشيز!
                 </span>
               </div>
             </div>
 
             {/* Supporting Copy */}
-            <p className="text-white/90 text-sm sm:text-lg font-medium max-w-lg leading-relaxed">
+            <p className="text-white/90 text-[15px] sm:text-lg lg:text-xl font-medium max-w-lg leading-relaxed">
               لحوم بلدية طازجة، صوصات خاصة، وألذ إضافات محضرة يومياً في أسوان.
             </p>
 
             {/* CTA Buttons */}
-            <div
-              className="flex flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-2 w-full max-w-md"
-              dir="ltr"
-            >
-              {/* Primary CTA (Left): "اطلب دلوقتي" */}
+            <div className="flex flex-wrap sm:flex-nowrap items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-1 sm:pt-2 w-full max-w-md lg:max-w-none">
               <Link
                 to={ROUTES.MENU}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl bg-[#FFDA35] hover:bg-[#FFE35A] text-[#260840] font-black text-sm sm:text-base shadow-lg shadow-[#FFDA35]/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group cursor-pointer whitespace-nowrap"
+                className="flex-1 sm:flex-initial min-w-[140px] inline-flex items-center justify-center gap-2 px-5 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-[#FFDA35] hover:bg-[#FFE35A] text-[#260840] font-black text-sm sm:text-base shadow-lg shadow-[#FFDA35]/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group cursor-pointer whitespace-nowrap"
               >
-                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:-translate-x-1 stroke-[2.5]" />
                 <span>اطلب دلوقتي</span>
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:-translate-x-1 ltr:rotate-180 ltr:group-hover:translate-x-1 stroke-[2.5]" />
               </Link>
 
-              {/* Secondary CTA (Right): "تصفح المنيو" */}
               <Link
                 to={ROUTES.MENU}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-3.5 sm:py-4 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-sm sm:text-base border border-white/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap"
+                className="flex-1 sm:flex-initial min-w-[140px] inline-flex items-center justify-center gap-2 px-5 sm:px-7 py-3.5 sm:py-4 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-sm sm:text-base border border-white/25 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap"
               >
-                <span>تصفح المنيو</span>
                 <UtensilsCrossed className="w-4 h-4 sm:w-5 sm:h-5 text-[#FFDA35]" />
+                <span>تصفح المنيو</span>
               </Link>
-            </div>
-
-            {/* Bottom Info Row: Branch location & fulfillment */}
-            <div
-              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-6 pt-4 border-t border-white/10 text-white/90 text-xs sm:text-sm w-full max-w-lg"
-              dir="rtl"
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-[#FFDA35]/20 flex items-center justify-center shrink-0">
-                  <MapPin className="w-3.5 h-3.5 text-[#FFDA35]" />
-                </div>
-                <span className="font-medium">أسوان - كورنيش النيل - حديقة الورد</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-[#FFDA35]/20 flex items-center justify-center shrink-0">
-                  <ShoppingBag className="w-3.5 h-3.5 text-[#FFDA35]" />
-                </div>
-                <span className="font-medium">توصيل واستلام من المطعم</span>
-              </div>
             </div>
           </div>
 
-          {/* Column 2 (Right on Desktop): Real Burger Photography */}
-          <div
-            className="hidden lg:flex lg:col-span-5 relative items-center justify-center lg:justify-end w-full min-w-0"
-            dir="ltr"
-          >
-            <div className="relative w-full max-w-lg">
+          {/* Column 2 (End side: Left in RTL, Right in LTR): Prominent Burger Showcase */}
+          <div className="lg:col-span-6 relative flex items-center justify-center lg:justify-end w-full min-w-0">
+            <div className="relative w-full max-w-[290px] sm:max-w-[380px] lg:max-w-[540px] xl:max-w-[580px] mx-auto lg:mx-0">
+              {/* Soft integrated warm glow behind the burger */}
+              <div
+                className="absolute inset-0 -m-6 rounded-full pointer-events-none bg-[radial-gradient(circle,rgba(255,218,53,0.16)_0%,rgba(123,58,196,0.18)_45%,transparent_72%)]"
+                aria-hidden="true"
+              />
               <img
                 src="/hero_burger_clean_cutout.png"
                 alt="برجر مانشيز الطازج بالجبنة الذائبة"
-                className="w-full h-auto object-contain filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.5)] select-none pointer-events-none"
+                className="relative z-10 w-full h-auto object-contain filter drop-shadow-[0_24px_38px_rgba(0,0,0,0.5)] select-none pointer-events-none"
                 loading="eager"
                 fetchPriority="high"
                 decoding="async"

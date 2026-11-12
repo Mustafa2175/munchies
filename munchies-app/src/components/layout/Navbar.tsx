@@ -70,7 +70,7 @@ export const Navbar: React.FC = () => {
   const navLinks = [
     { label: 'المنيو', path: ROUTES.MENU },
     { label: 'العروض', path: ROUTES.OFFERS },
-    { label: 'اصنع ساندوتشك', path: '/build-your-own' },
+    { label: 'اعمل ساندوتشك', path: '/build-your-own' },
   ];
 
   const userAccountRoute = isAdmin ? ROUTES.ADMIN : ROUTES.ORDERS;

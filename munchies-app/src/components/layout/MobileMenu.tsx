@@ -30,7 +30,7 @@ export const MobileMenu: React.FC = () => {
     { label: 'الرئيسية', path: ROUTES.HOME },
     { label: 'المنيو', path: ROUTES.MENU },
     { label: 'العروض', path: ROUTES.OFFERS },
-    { label: 'اصنع ساندوتشك', path: '/build-your-own' },
+    { label: 'اعمل ساندوتشك', path: '/build-your-own' },
     { label: 'تابع طلبك', path: ROUTES.TRACK_ORDER, icon: PackageSearch },
     { label: 'حكايتنا', path: ROUTES.ABOUT },
     { label: 'كلمنا', path: ROUTES.CONTACT },

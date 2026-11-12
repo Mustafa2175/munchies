@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, MapPin, Clock, Heart } from 'lucide-react';
+import { Phone, MapPin, Clock } from 'lucide-react';
 import { ROUTES } from '@/config/routes';
 
 export const Footer: React.FC = () => {
@@ -105,13 +105,8 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Bottom bar */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-3">
+        <div className="pt-6 flex items-center justify-center text-xs text-gray-500">
           <p>جميع الحقوق محفوظة لـ Munchie's © 2026</p>
-          <p className="flex items-center gap-1.5">
-            <span>صُنع بكل</span>
-            <Heart className="w-3.5 h-3.5 text-danger fill-current" />
-            <span>في أسوان</span>
-          </p>
         </div>
       </div>
     </footer>

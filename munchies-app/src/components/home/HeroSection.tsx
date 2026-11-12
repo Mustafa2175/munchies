@@ -82,7 +82,7 @@ export const HeroSection: React.FC = () => {
 
             {/* Desktop supporting copy */}
             <p className="hidden lg:block text-white/90 text-xl font-medium max-w-lg leading-relaxed">
-              لحوم بلدية طازة، صوصات خاصة، وألذ إضافات بتتحضر كل يوم في أسوان.
+              أول لقمة كفاية تعرفك الفرق!
             </p>
 
             {/* CTA Buttons (Single primary button on mobile; Primary + Secondary on desktop) */}

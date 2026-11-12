@@ -17,7 +17,7 @@ export const resources = {
       nav: {
         home: "الرئيسية",
         menu: "المنيو",
-        buildYourOwn: "اصنع ساندوتشك",
+        buildYourOwn: "اعمل ساندوتشك",
         offers: "العروض",
         about: "حكايتنا",
         contact: "كلمنا",

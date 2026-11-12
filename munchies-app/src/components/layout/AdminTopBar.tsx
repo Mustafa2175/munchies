@@ -47,41 +47,41 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = ({
   };
 
   return (
-    <header className="h-16 bg-white border-b border-border px-4 lg:px-6 flex items-center justify-between gap-2 shrink-0">
+    <header className="sticky top-0 z-30 h-16 bg-white border-b border-border px-6 max-md:px-4 flex items-center justify-between gap-4 shrink-0">
       <div className="flex items-center gap-3 min-w-0">
         {onMenuClick && (
           <button
             onClick={onMenuClick}
-            className="p-2 -ms-2 rounded-xl text-dark hover:bg-gray-100 lg:hidden cursor-pointer shrink-0"
+            className="p-2 -ms-2 rounded-xl text-dark hover:bg-gray-100 md:hidden cursor-pointer shrink-0"
             aria-label="فتح القائمة"
           >
             <Menu className="w-5 h-5" />
           </button>
         )}
-        <h1 className="text-xs sm:text-sm font-extrabold text-dark truncate">
+        <h1 className="text-sm max-sm:text-xs font-extrabold text-dark truncate">
           لوحة تحكم وإدارة طلبات مانشيز
         </h1>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+      <div className="flex items-center gap-4 max-sm:gap-2 shrink-0">
         <Link
           to={ROUTES.HOME}
           target="_blank"
           className="flex items-center gap-1.5 text-xs font-bold text-primary hover:underline px-2 py-1.5 rounded-lg hover:bg-primary-50/50 transition-colors"
           title="عرض موقع الزبائن"
         >
-          <span className="hidden sm:inline">عرض موقع الزبائن</span>
-          <ExternalLink className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+          <span className="max-sm:hidden">عرض موقع الزبائن</span>
+          <ExternalLink className="w-3.5 h-3.5 max-sm:w-4 max-sm:h-4" />
         </Link>
 
         {/* Test sound button */}
         <button
           onClick={handleTestSound}
-          className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] font-bold text-primary bg-primary-50 hover:bg-primary-100 transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 px-3 max-sm:px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-primary bg-primary-50 hover:bg-primary-100 transition-colors cursor-pointer"
           title="تجربة الصوت"
         >
           <Volume2 className="w-3.5 h-3.5 shrink-0" />
-          <span className="hidden sm:inline">تجربة الصوت</span>
+          <span className="max-sm:hidden">تجربة الصوت</span>
         </button>
 
         {/* Notification bell with badge + pulse */}

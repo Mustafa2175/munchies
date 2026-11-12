@@ -16,7 +16,7 @@ export const AdminLayout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-light-gray w-full overflow-x-hidden">
+    <div className="flex min-h-screen bg-light-gray w-full overflow-x-clip">
       <AdminSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0">
         <AdminTopBar
@@ -24,7 +24,7 @@ export const AdminLayout: React.FC = () => {
           onClearUnread={clearUnread}
           onMenuClick={() => setIsSidebarOpen(true)}
         />
-        <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
+        <main className="flex-1 p-6 max-md:p-4">
           <Outlet />
         </main>
       </div>

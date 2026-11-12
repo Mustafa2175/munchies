@@ -32,7 +32,7 @@ export const SoundTogglePill: React.FC = () => {
     <button
       onClick={handleToggle}
       className={`
-        fixed bottom-5 start-5 z-50
+        fixed bottom-5 end-5 z-40
         flex items-center gap-2 px-4 py-2.5
         rounded-full text-xs font-bold
         shadow-lg border transition-all duration-300

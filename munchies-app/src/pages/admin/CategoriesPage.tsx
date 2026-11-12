@@ -174,7 +174,7 @@ export const CategoriesPage: React.FC = () => {
             label="اسم القسم بالعربية"
             value={categoryNameAr}
             onChange={(e) => setCategoryNameAr(e.target.value)}
-            placeholder="مثال: مشروبات منعشة، صصوصات إضافية..."
+            placeholder="مثال: مشروبات منعشة، صوصات إضافية..."
             required
           />
 

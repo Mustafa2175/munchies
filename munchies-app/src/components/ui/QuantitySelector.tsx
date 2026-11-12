@@ -45,7 +45,7 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
 
   return (
     <div
-      className={`inline-flex items-center rounded-xl border border-gray-200 bg-[#F5F3F7] p-1 select-none ${
+      className={`inline-flex items-center rounded-xl border border-border bg-light-gray p-1 select-none ${
         disabled ? 'opacity-50 cursor-not-allowed' : ''
       }`}
     >
@@ -53,19 +53,19 @@ export const QuantitySelector: React.FC<QuantitySelectorProps> = ({
         type="button"
         onClick={handleDecrement}
         disabled={disabled || value <= min}
-        className={`${btnSize} flex items-center justify-center rounded-lg bg-white text-gray-700 shadow-xs hover:bg-gray-50 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all`}
+        className={`${btnSize} flex items-center justify-center rounded-lg bg-white text-dark shadow-xs hover:bg-gray-50 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all`}
         aria-label="Decrease quantity"
       >
         <Minus className={iconSize} />
       </button>
-      <span className={`${textSize} font-bold text-[#26212B] min-w-6 text-center number-ltr`}>
+      <span className={`${textSize} font-bold text-dark min-w-6 text-center tabular-nums number-ltr`}>
         {value}
       </span>
       <button
         type="button"
         onClick={handleIncrement}
         disabled={disabled || value >= max}
-        className={`${btnSize} flex items-center justify-center rounded-lg bg-[#512080] text-white shadow-xs hover:bg-[#461C6E] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all`}
+        className={`${btnSize} flex items-center justify-center rounded-lg bg-primary text-white shadow-xs hover:bg-primary-600 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all`}
         aria-label="Increase quantity"
       >
         <Plus className={iconSize} />

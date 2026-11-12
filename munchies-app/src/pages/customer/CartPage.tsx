@@ -28,10 +28,8 @@ export const CartPage: React.FC = () => {
   const closureMessage = useRestaurantStore((state) => state.closureMessage);
   const isManualClosed = useRestaurantStore((state) => state.isManualClosed);
   const todayHours = getTodayWorkingHoursText();
-  // Subscribe to category changes
   useCategoryStore((state) => state.categories);
 
-  // Check if any cart item belongs to a disabled category
   const disabledCategoryItem = items.find((item) => {
     const prod = products.find((p) => p.id === item.productId);
     if (!prod) return false;
@@ -95,10 +93,10 @@ export const CartPage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
       {/* Restaurant Closed Warning Alert */}
       {!isStoreOpen && (
-        <div className="mb-6 p-4 rounded-2xl bg-red-50 border-2 border-red-200 flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-          <div className="text-xs sm:text-sm text-red-700">
-            <h4 className="font-black text-red-800 text-sm">
+        <div className="mb-6 p-4 rounded-2xl bg-danger-light border border-danger/30 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-danger shrink-0 mt-0.5" />
+          <div className="text-xs sm:text-sm text-danger">
+            <h4 className="font-black text-danger text-sm">
               المطعم مغلق حالياً ولا يستقبل طلبات جديدة
             </h4>
             <p className="mt-0.5 leading-relaxed">
@@ -116,11 +114,11 @@ export const CartPage: React.FC = () => {
 
       {/* Inactive Category Warning Alert */}
       {hasDisabledCategoryItems && (
-        <div className="mb-6 p-4 rounded-2xl bg-amber-50 border-2 border-amber-300 flex items-start gap-3">
+        <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-300 flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div className="text-xs sm:text-sm text-amber-900">
             <h4 className="font-black text-amber-900 text-sm">
-              ⚠️ تنبيه: أصناف غير متاحة للطلب حالياً
+              تنبيه: أصناف غير متاحة للطلب حالياً
             </h4>
             <p className="mt-0.5 leading-relaxed text-amber-800">
               يوجد في السلة أصناف تتبع قسم <span className="font-bold">"{disabledCategoryName}"</span> وهو غير متاح للطلب حالياً. يرجى حذفها لإتمام الطلب.
@@ -131,17 +129,17 @@ export const CartPage: React.FC = () => {
 
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-[#26212B]">
+          <h1 className="text-2xl sm:text-3xl font-black text-dark">
             سلة المشتريات
           </h1>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-medium-gray mt-1">
             لديك {itemCount} أصناف في السلة
           </p>
         </div>
 
         <button
           onClick={clearCart}
-          className="text-xs text-[#E84D45] font-bold hover:underline cursor-pointer"
+          className="text-xs text-danger font-bold hover:underline cursor-pointer"
         >
           تفريغ السلة
         </button>
@@ -149,15 +147,15 @@ export const CartPage: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Items list */}
-        <div className="lg:col-span-8 bg-white rounded-3xl p-6 border border-gray-100 shadow-xs space-y-2">
+        <div className="lg:col-span-8 bg-white rounded-2xl p-6 border border-border shadow-card space-y-2">
           {items.map((item) => (
             <CartItem key={item.id} item={item} />
           ))}
         </div>
 
         {/* Summary */}
-        <div className="lg:col-span-4 bg-white rounded-3xl p-6 border border-gray-100 shadow-xs space-y-6 sticky top-28">
-          <h3 className="font-bold text-base text-[#26212B]">
+        <div className="lg:col-span-4 bg-white rounded-2xl p-6 border border-border shadow-card space-y-6 sticky top-28">
+          <h3 className="font-bold text-base text-dark">
             ملخص الحساب
           </h3>
           <CartSummary orderType="pickup" />
@@ -171,9 +169,9 @@ export const CartPage: React.FC = () => {
               onClick={handleProceedToCheckout}
               className={
                 !isStoreOpen
-                  ? 'bg-red-50 text-red-600 border border-red-200 cursor-not-allowed font-black text-sm opacity-90 hover:bg-red-50 hover:text-red-600'
+                  ? 'bg-danger-light text-danger border border-danger/30 cursor-not-allowed font-black text-sm opacity-90'
                   : hasDisabledCategoryItems
-                  ? 'bg-amber-50 text-amber-700 border border-amber-200 cursor-not-allowed font-black text-sm opacity-90 hover:bg-amber-50 hover:text-amber-700'
+                  ? 'bg-warning-light text-warning-800 border border-warning/30 cursor-not-allowed font-black text-sm opacity-90'
                   : 'font-black'
               }
             >

@@ -24,11 +24,11 @@ export const Badge: React.FC<BadgeProps> = ({
   }[size];
 
   const variantClasses = {
-    'best-seller': 'bg-[#FFDA35] text-[#26212B] shadow-xs',
-    new: 'bg-[#512080] text-white shadow-xs',
-    offer: 'bg-[#E84D45] text-white shadow-xs',
-    success: 'bg-[#27834B] text-white shadow-xs',
-    default: 'bg-[#F5F3F7] text-[#26212B] border border-gray-200',
+    'best-seller': 'bg-yellow text-dark',
+    new: 'bg-primary text-white',
+    offer: 'bg-danger text-white',
+    success: 'bg-success text-white',
+    default: 'bg-light-gray text-dark border border-border',
   }[variant];
 
   return (

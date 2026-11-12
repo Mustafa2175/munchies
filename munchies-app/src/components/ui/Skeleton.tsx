@@ -16,7 +16,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 }) => {
   if (variant === 'card') {
     return (
-      <div className={`bg-white rounded-2xl border border-gray-100 p-4 space-y-3 ${className}`}>
+      <div className={`bg-white rounded-2xl border border-border p-4 space-y-3 ${className}`}>
         <div className="w-full h-44 rounded-xl skeleton" />
         <div className="h-5 w-3/4 rounded-md skeleton" />
         <div className="h-4 w-full rounded-md skeleton" />

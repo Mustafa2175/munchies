@@ -28,14 +28,14 @@ export const CartItem: React.FC<CartItemProps> = ({ item }) => {
 
   return (
     <div
-      className={`flex gap-3 py-3 border-b border-gray-100 last:border-0 items-start transition-all ${
-        !isAvailable ? 'bg-red-50/40 p-2 rounded-xl -mx-2 border-red-100' : ''
+      className={`flex gap-3 py-3 border-b border-border last:border-0 items-start transition-all ${
+        !isAvailable ? 'bg-danger-light/50 p-2 rounded-xl -mx-2 border-danger/20' : ''
       }`}
     >
       <img
         src={item.image}
         alt={productName}
-        className={`w-16 h-16 rounded-xl object-cover shrink-0 bg-gray-50 border border-gray-100 ${
+        className={`w-16 h-16 rounded-xl object-cover shrink-0 bg-light-gray border border-border ${
           !isAvailable ? 'grayscale opacity-60' : ''
         }`}
       />
@@ -44,18 +44,18 @@ export const CartItem: React.FC<CartItemProps> = ({ item }) => {
           <div>
             <h4
               className={`text-sm font-bold truncate ${
-                isAvailable ? 'text-[#26212B]' : 'text-gray-500 line-through'
+                isAvailable ? 'text-dark' : 'text-medium-gray line-through'
               }`}
             >
               {productName}
             </h4>
             {!isCategoryEnabled ? (
-              <span className="inline-flex items-center gap-1 text-[10px] font-black text-amber-800 mt-0.5 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                <AlertCircle className="w-3 h-3 text-amber-600" />
+              <span className="inline-flex items-center gap-1 text-[10px] font-black text-warning-800 mt-0.5 bg-warning-light px-2 py-0.5 rounded-full border border-warning/30">
+                <AlertCircle className="w-3 h-3 text-warning-700" />
                 <span>القسم غير متاح حالياً</span>
               </span>
             ) : !isBaseAvailable ? (
-              <span className="inline-flex items-center gap-1 text-[10px] font-black text-red-600 mt-0.5">
+              <span className="inline-flex items-center gap-1 text-[10px] font-black text-danger mt-0.5">
                 <AlertCircle className="w-3 h-3" />
                 <span>غير متوفر حالياً</span>
               </span>
@@ -63,8 +63,9 @@ export const CartItem: React.FC<CartItemProps> = ({ item }) => {
           </div>
           <button
             onClick={() => removeItem(item.id)}
-            className="p-1 text-gray-400 hover:text-[#E84D45] transition-colors rounded-lg hover:bg-red-50 cursor-pointer"
+            className="p-1 text-medium-gray hover:text-danger transition-colors rounded-lg hover:bg-danger-light cursor-pointer"
             title="حذف الصنف"
+            aria-label={`حذف ${productName}`}
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -82,8 +83,8 @@ export const CartItem: React.FC<CartItemProps> = ({ item }) => {
                     .join('، ')
                 : getLocalizedText((group as any).optionName, '');
               return (
-                <p key={group.groupId} className="text-[11px] text-gray-500 truncate">
-                  {gTitle && <span className="font-medium text-gray-600">{gTitle}: </span>}
+                <p key={group.groupId} className="text-[11px] text-medium-gray truncate">
+                  {gTitle && <span className="font-medium text-dark">{gTitle}: </span>}
                   {opts}
                 </p>
               );
@@ -92,7 +93,7 @@ export const CartItem: React.FC<CartItemProps> = ({ item }) => {
         )}
 
         {item.specialInstructions && (
-          <p className="mt-1 text-[11px] text-amber-700 italic bg-amber-50 px-2 py-0.5 rounded">
+          <p className="mt-1 text-[11px] text-warning-800 bg-warning-light px-2 py-0.5 rounded">
             "{item.specialInstructions}"
           </p>
         )}
@@ -104,7 +105,7 @@ export const CartItem: React.FC<CartItemProps> = ({ item }) => {
             onChange={(q) => updateQuantity(item.id, q)}
             disabled={!isAvailable}
           />
-          <CurrencyDisplay amount={item.lineTotal} className="text-sm text-[#512080]" />
+          <CurrencyDisplay amount={item.lineTotal} className="text-sm font-bold text-primary" />
         </div>
       </div>
     </div>

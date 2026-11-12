@@ -6,6 +6,7 @@
  */
 
 import React, { useState } from 'react';
+import { Volume2, VolumeX } from 'lucide-react';
 import {
   isSoundEnabled,
   toggleSoundEnabled,
@@ -33,20 +34,24 @@ export const SoundTogglePill: React.FC = () => {
       className={`
         fixed bottom-5 start-5 z-50
         flex items-center gap-2 px-4 py-2.5
-        rounded-full text-xs font-extrabold
+        rounded-full text-xs font-bold
         shadow-lg border transition-all duration-300
         cursor-pointer select-none
         hover:scale-105 active:scale-95
         ${
           enabled
-            ? 'bg-[#512080] text-white border-purple-400/40 shadow-purple-500/25'
-            : 'bg-gray-700 text-gray-300 border-gray-600 shadow-gray-800/30'
+            ? 'bg-primary text-white border-primary-light/40 shadow-primary/25'
+            : 'bg-dark text-gray-300 border-gray-700 shadow-dark/30'
         }
       `}
       title={enabled ? 'اضغط لكتم صوت التنبيه' : 'اضغط لتفعيل صوت التنبيه'}
     >
-      <span className="text-base leading-none">{enabled ? '🔊' : '🔇'}</span>
-      <span>{enabled ? 'الصوت مفعّل - نغمة التنبيه' : 'الصوت مكتوم'}</span>
+      {enabled ? (
+        <Volume2 className="w-4 h-4 text-yellow shrink-0" />
+      ) : (
+        <VolumeX className="w-4 h-4 text-gray-400 shrink-0" />
+      )}
+      <span>{enabled ? 'الصوت مفعّل' : 'الصوت مكتوم'}</span>
     </button>
   );
 };

@@ -36,8 +36,8 @@ export const ProductDetailsPage: React.FC = () => {
   if (!product) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-        <h2 className="text-xl font-bold text-gray-800">الصنف غير موجود</h2>
-        <Link to={ROUTES.MENU} className="mt-4 inline-block text-[#512080] font-bold">
+        <h2 className="text-xl font-bold text-dark">الصنف غير موجود</h2>
+        <Link to={ROUTES.MENU} className="mt-4 inline-block text-primary font-bold">
           العودة للمنيو
         </Link>
       </div>
@@ -49,6 +49,10 @@ export const ProductDetailsPage: React.FC = () => {
   const isOrderable = isAvailable && isStoreOpen;
   const productName = product.name.ar;
   const productDesc = product.description.ar;
+  const displayImage =
+    product.image && !product.image.includes('unsplash.com')
+      ? product.image
+      : '/hero_burger_clean_cutout.png';
 
   const breadGroup = COMMON_CUSTOMIZATIONS.find((g) => g.id === 'bread_type');
   const additionsGroup = COMMON_CUSTOMIZATIONS.find((g) => g.id === 'additions');
@@ -117,7 +121,7 @@ export const ProductDetailsPage: React.FC = () => {
     addItem({
       productId: product.id,
       name: product.name,
-      image: product.image,
+      image: displayImage,
       basePrice: product.price,
       quantity,
       customizations,
@@ -133,7 +137,7 @@ export const ProductDetailsPage: React.FC = () => {
       <div className="mb-6">
         <Link
           to={ROUTES.MENU}
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-[#512080] transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-medium-gray hover:text-primary transition-colors"
         >
           <ArrowRight className="w-4 h-4" />
           <span>العودة للمنيو</span>
@@ -143,9 +147,9 @@ export const ProductDetailsPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
         {/* Product Image */}
         <div className="lg:col-span-6 sticky top-28">
-          <div className="relative aspect-4/3 rounded-3xl overflow-hidden bg-gray-100 shadow-xl border-4 border-white">
+          <div className="relative aspect-4/3 rounded-2xl overflow-hidden bg-light-gray shadow-card border border-border">
             <img
-              src={product.image}
+              src={displayImage}
               alt={productName}
               className={`w-full h-full object-cover transition-all duration-300 ${
                 !isAvailable
@@ -157,17 +161,17 @@ export const ProductDetailsPage: React.FC = () => {
             />
             <div className="absolute top-4 start-4 flex flex-col gap-1.5">
               {!isCategoryActive ? (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-red-600 text-white shadow-md">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-danger text-white shadow-xs">
                   <Ban className="w-4 h-4" />
                   <span>القسم غير متاح حالياً</span>
                 </span>
               ) : !isProductBaseAvailable ? (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-red-600 text-white shadow-md">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-danger text-white shadow-xs">
                   <Ban className="w-4 h-4" />
                   <span>غير متوفر حالياً</span>
                 </span>
               ) : !isStoreOpen ? (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-amber-600 text-white shadow-md">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-warning text-dark shadow-xs">
                   <Clock className="w-4 h-4" />
                   <span>المطعم مغلق</span>
                 </span>
@@ -186,34 +190,28 @@ export const ProductDetailsPage: React.FC = () => {
         {/* Product Details & Form */}
         <div className="lg:col-span-6 space-y-6">
           <div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-2xl sm:text-3xl font-black text-[#26212B]">
-                {productName}
-              </h1>
-              {!isAvailable ? (
-                <span className="text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2.5 py-1 rounded-full">
-                  غير متوفر
-                </span>
-              ) : !isStoreOpen ? (
-                <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
-                  المطعم مغلق حالياً
-                </span>
-              ) : null}
-            </div>
-            <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+            <h1 className="text-2xl sm:text-3xl font-black text-dark">
+              {productName}
+            </h1>
+            <p className="text-sm text-medium-gray mt-2 leading-relaxed">
               {productDesc}
             </p>
-            <div className="mt-4 text-2xl font-black text-[#512080]">
+            <div className="mt-4 text-2xl font-black text-primary">
               <CurrencyDisplay amount={product.price} />
             </div>
           </div>
 
           {/* Bread Selection */}
           {breadGroup && (
-            <div className="space-y-3 pt-4 border-t border-gray-100">
-              <h3 className="text-sm font-bold text-[#26212B]">
-                {breadGroup.name.ar}
-              </h3>
+            <div className="space-y-3 pt-4 border-t border-border">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-dark">
+                  {breadGroup.name.ar}
+                </h3>
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-danger-light text-danger border border-danger/20">
+                  مطلوب
+                </span>
+              </div>
               <div className="grid grid-cols-2 gap-2.5">
                 {breadGroup.options?.map((opt) => (
                   <button
@@ -221,10 +219,10 @@ export const ProductDetailsPage: React.FC = () => {
                     type="button"
                     disabled={!isOrderable}
                     onClick={() => setSelectedBread(opt.id)}
-                    className={`flex items-center justify-between p-3 rounded-2xl border text-xs font-bold transition-all text-start cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${
+                    className={`flex items-center justify-between p-3 rounded-xl border text-xs font-bold transition-all text-start cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${
                       selectedBread === opt.id
-                        ? 'border-[#512080] bg-[#F3EDFA] text-[#512080] shadow-xs'
-                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                        ? 'border-primary bg-primary-50 text-primary shadow-xs'
+                        : 'border-border bg-white text-dark hover:border-gray-300'
                     }`}
                   >
                     <span>{opt.name.ar}</span>
@@ -237,10 +235,15 @@ export const ProductDetailsPage: React.FC = () => {
 
           {/* Additions */}
           {additionsGroup && (
-            <div className="space-y-3 pt-4 border-t border-gray-100">
-              <h3 className="text-sm font-bold text-[#26212B]">
-                {additionsGroup.name.ar}
-              </h3>
+            <div className="space-y-3 pt-4 border-t border-border">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-dark">
+                  {additionsGroup.name.ar}
+                </h3>
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-warning-light text-warning-800 border border-warning/20">
+                  اختياري
+                </span>
+              </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                 {additionsGroup.options?.map((opt) => {
                   const isChecked = selectedAdditions.includes(opt.id);
@@ -250,17 +253,17 @@ export const ProductDetailsPage: React.FC = () => {
                       type="button"
                       disabled={!isOrderable}
                       onClick={() => handleToggleAddition(opt.id)}
-                      className={`flex flex-col justify-between p-3 rounded-2xl border text-xs font-bold transition-all text-start cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${
+                      className={`flex flex-col justify-between p-3 rounded-xl border text-xs font-bold transition-all text-start cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 ${
                         isChecked
-                          ? 'border-[#512080] bg-[#F3EDFA] text-[#512080] shadow-xs'
-                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                          ? 'border-primary bg-primary-50 text-primary shadow-xs'
+                          : 'border-border bg-white text-dark hover:border-gray-300'
                       }`}
                     >
                       <div className="flex items-center justify-between w-full">
                         <span className="truncate">{opt.name.ar}</span>
-                        {isChecked && <Check className="w-3.5 h-3.5 text-[#512080]" />}
+                        {isChecked && <Check className="w-3.5 h-3.5 text-primary" />}
                       </div>
-                      <span className="text-[11px] text-gray-500 mt-1">
+                      <span className="text-[11px] text-medium-gray mt-1">
                         +<CurrencyDisplay amount={opt.price} />
                       </span>
                     </button>
@@ -271,8 +274,8 @@ export const ProductDetailsPage: React.FC = () => {
           )}
 
           {/* Notes */}
-          <div className="space-y-1.5 pt-4 border-t border-gray-100">
-            <label className="text-xs font-bold text-[#26212B]">
+          <div className="space-y-1.5 pt-4 border-t border-border">
+            <label className="text-xs font-bold text-dark">
               ملاحظات خاصة للمطبخ
             </label>
             <input
@@ -281,12 +284,12 @@ export const ProductDetailsPage: React.FC = () => {
               disabled={!isOrderable}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="مثال: بدون بصل، زيادة صوص..."
-              className="w-full text-xs rounded-xl border border-gray-200 p-3 focus:outline-none focus:border-[#512080] disabled:bg-gray-50 disabled:text-gray-400"
+              className="w-full text-xs rounded-xl border border-border p-3 focus:outline-none focus:border-primary disabled:bg-light-gray disabled:text-medium-gray"
             />
           </div>
 
           {/* Quantity & CTA */}
-          <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
+          <div className="flex items-center gap-4 pt-4 border-t border-border">
             <QuantitySelector value={quantity} onChange={setQuantity} disabled={!isOrderable} />
             <Button
               variant={isOrderable ? 'yellow' : 'ghost'}
@@ -296,9 +299,9 @@ export const ProductDetailsPage: React.FC = () => {
               onClick={handleAddToCart}
               className={
                 !isAvailable
-                  ? 'bg-red-50 text-red-600 border border-red-200 cursor-not-allowed font-black text-sm opacity-90 hover:bg-red-50 hover:text-red-600'
+                  ? 'bg-danger-light text-danger border border-danger/30 cursor-not-allowed font-black text-sm opacity-90'
                   : !isStoreOpen
-                  ? 'bg-amber-50 text-amber-700 border border-amber-200 cursor-not-allowed font-black text-sm opacity-90 hover:bg-amber-50 hover:text-amber-700'
+                  ? 'bg-warning-light text-warning-800 border border-warning/30 cursor-not-allowed font-black text-sm opacity-90'
                   : 'font-black text-sm shadow-md'
               }
             >

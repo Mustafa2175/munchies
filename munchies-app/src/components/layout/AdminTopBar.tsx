@@ -6,7 +6,7 @@
  */
 
 import React, { useState } from 'react';
-import { Bell, ExternalLink, Volume2 } from 'lucide-react';
+import { Bell, ExternalLink, Volume2, Menu } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
 import {
@@ -20,11 +20,14 @@ interface AdminTopBarProps {
   unreadCount?: number;
   /** Clear the unread badge counter */
   onClearUnread?: () => void;
+  /** Open mobile sidebar drawer */
+  onMenuClick?: () => void;
 }
 
 export const AdminTopBar: React.FC<AdminTopBarProps> = ({
   unreadCount = 0,
   onClearUnread,
+  onMenuClick,
 }) => {
   const [justClicked, setJustClicked] = useState(false);
 
@@ -44,31 +47,41 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = ({
   };
 
   return (
-    <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <h1 className="text-sm font-extrabold text-[#26212B]">
+    <header className="h-16 bg-white border-b border-border px-4 lg:px-6 flex items-center justify-between gap-2 shrink-0">
+      <div className="flex items-center gap-3 min-w-0">
+        {onMenuClick && (
+          <button
+            onClick={onMenuClick}
+            className="p-2 -ms-2 rounded-xl text-dark hover:bg-gray-100 lg:hidden cursor-pointer shrink-0"
+            aria-label="فتح القائمة"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        )}
+        <h1 className="text-xs sm:text-sm font-extrabold text-dark truncate">
           لوحة تحكم وإدارة طلبات مانشيز
         </h1>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4 shrink-0">
         <Link
           to={ROUTES.HOME}
           target="_blank"
-          className="flex items-center gap-1.5 text-xs font-bold text-[#512080] hover:underline"
+          className="flex items-center gap-1.5 text-xs font-bold text-primary hover:underline px-2 py-1.5 rounded-lg hover:bg-primary-50/50 transition-colors"
+          title="عرض موقع الزبائن"
         >
-          <span>عرض موقع الزبائن</span>
-          <ExternalLink className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">عرض موقع الزبائن</span>
+          <ExternalLink className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
         </Link>
 
         {/* Test sound button */}
         <button
           onClick={handleTestSound}
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-[#512080] bg-[#F3EDFA] hover:bg-purple-100 transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] font-bold text-primary bg-primary-50 hover:bg-primary-100 transition-colors cursor-pointer"
           title="تجربة الصوت"
         >
-          <Volume2 className="w-3.5 h-3.5" />
-          <span>تجربة الصوت</span>
+          <Volume2 className="w-3.5 h-3.5 shrink-0" />
+          <span className="hidden sm:inline">تجربة الصوت</span>
         </button>
 
         {/* Notification bell with badge + pulse */}
@@ -83,11 +96,11 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = ({
         >
           <Bell
             className={`w-5 h-5 transition-colors ${
-              unreadCount > 0 ? 'text-[#512080]' : ''
+              unreadCount > 0 ? 'text-primary' : ''
             }`}
           />
           {unreadCount > 0 ? (
-            <span className="absolute -top-0.5 -end-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full bg-[#E84D45] text-white text-[10px] font-black px-1 shadow-sm animate-bounce">
+            <span className="absolute -top-0.5 -end-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full bg-danger text-white text-[10px] font-bold px-1 shadow-xs tabular-nums animate-bounce">
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           ) : (

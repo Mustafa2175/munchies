@@ -90,7 +90,7 @@ export const CategoriesPage: React.FC = () => {
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-[#26212B]">أقسام المنيو</h1>
+          <h1 className="text-2xl font-black text-dark">أقسام المنيو</h1>
           <p className="text-xs text-gray-500 mt-1">
             تنظيم وتنسيق أقسام قائمة الطعام وترتيب ظهورها في الموقع للزبائن
           </p>
@@ -107,11 +107,11 @@ export const CategoriesPage: React.FC = () => {
           return (
             <div key={cat.id} className="p-4 flex items-center justify-between hover:bg-gray-50/50">
               <div className="flex items-center gap-3">
-                <span className="w-6 text-xs text-gray-400 font-bold">{idx + 1}</span>
+                <span className="w-6 text-xs text-gray-400 font-bold tabular-nums">{idx + 1}</span>
                 <div
                   className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
                     isActive
-                      ? 'bg-[#F5F3F7] text-[#512080]'
+                      ? 'bg-light-gray text-primary'
                       : 'bg-red-50 text-red-400'
                   }`}
                 >
@@ -120,12 +120,12 @@ export const CategoriesPage: React.FC = () => {
                 <div>
                   <h4
                     className={`font-bold text-xs transition-colors ${
-                      isActive ? 'text-[#26212B]' : 'text-gray-400 line-through decoration-red-300'
+                      isActive ? 'text-dark' : 'text-gray-400 line-through decoration-red-300'
                     }`}
                   >
                     {cat.name.ar}
                   </h4>
-                  <span className="text-[11px] text-gray-400">{cat.productCount || 0} صنف</span>
+                  <span className="text-[11px] text-gray-400 tabular-nums">{cat.productCount || 0} صنف</span>
                 </div>
               </div>
 
@@ -136,7 +136,7 @@ export const CategoriesPage: React.FC = () => {
                   className={`px-2.5 py-0.5 rounded-full font-bold text-[10px] cursor-pointer transition-all duration-200 select-none active:scale-95 ${
                     isActive
                       ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:ring-2 hover:ring-emerald-200'
-                      : 'bg-red-50 text-red-600 hover:bg-red-100 hover:ring-2 hover:ring-red-200'
+                      : 'bg-red-50 text-danger hover:bg-red-100 hover:ring-2 hover:ring-red-200'
                   }`}
                   title={isActive ? 'اضغط لإيقاف هذا القسم' : 'اضغط لتفعيل هذا القسم'}
                 >
@@ -144,14 +144,14 @@ export const CategoriesPage: React.FC = () => {
                 </button>
                 <button
                   onClick={() => handleOpenEdit(cat)}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-[#512080] hover:bg-purple-50 cursor-pointer"
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-primary-50 cursor-pointer"
                   title="تعديل"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => handleDelete(cat.id)}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 cursor-pointer"
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-danger hover:bg-red-50 cursor-pointer"
                   title="حذف"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -174,23 +174,23 @@ export const CategoriesPage: React.FC = () => {
             label="اسم القسم بالعربية"
             value={categoryNameAr}
             onChange={(e) => setCategoryNameAr(e.target.value)}
-            placeholder="مثال: مشروبات منعشة، صوصات إضافية..."
+            placeholder="مثال: مشروبات منعشة، صصوصات إضافية..."
             required
           />
 
           {/* Active Toggle inside modal */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-200">
-            <span className="text-xs font-bold text-[#26212B]">حالة القسم</span>
+          <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-border">
+            <span className="text-xs font-bold text-dark">حالة القسم</span>
             <button
               type="button"
               onClick={() => setEditIsActive(!editIsActive)}
               className={`px-3 py-1 rounded-full font-bold text-[11px] cursor-pointer transition-all duration-200 select-none active:scale-95 ${
                 editIsActive
                   ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:ring-2 hover:ring-emerald-200 border border-emerald-200'
-                  : 'bg-red-50 text-red-600 hover:bg-red-100 hover:ring-2 hover:ring-red-200 border border-red-200'
+                  : 'bg-red-50 text-danger hover:bg-red-100 hover:ring-2 hover:ring-red-200 border border-red-200'
               }`}
             >
-              {editIsActive ? 'مفعل ✓' : 'غير مفعل ✕'}
+              {editIsActive ? 'مفعل' : 'غير مفعل'}
             </button>
           </div>
 

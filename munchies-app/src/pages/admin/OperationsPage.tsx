@@ -65,7 +65,7 @@ export const OperationsPage: React.FC = () => {
   return (
     <div className="space-y-8 max-w-4xl">
       <div>
-        <h1 className="text-2xl font-black text-[#26212B]">تشغيل المطعم وساعات العمل</h1>
+        <h1 className="text-2xl font-black text-dark">تشغيل المطعم وساعات العمل</h1>
         <p className="text-xs text-gray-500 mt-1">
           جدولة مواعيد العمل الأسبوعية (توقيت مصر / القاهرة) مع مفتاح الإغلاق اليدوي الطارئ والربط اللحظي بموقع الزبائن
         </p>
@@ -77,15 +77,15 @@ export const OperationsPage: React.FC = () => {
           <div className="flex items-start gap-3">
             <div
               className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs ${
-                storeIsManualClosed ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white'
+                storeIsManualClosed ? 'bg-danger text-white' : 'bg-emerald-600 text-white'
               }`}
             >
               <Power className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-[#26212B]">
+              <h3 className="text-base font-extrabold text-dark">
                 حالة استقبال طلبات الزبائن:{' '}
-                <span className={storeIsManualClosed ? 'text-red-600' : 'text-emerald-700'}>
+                <span className={storeIsManualClosed ? 'text-danger' : 'text-emerald-700'}>
                   {storeIsManualClosed ? 'مغلق يدوياً (متوقف)' : 'مفتوح ويستقبل طلبات (تلقائي)'}
                 </span>
               </h3>
@@ -114,12 +114,12 @@ export const OperationsPage: React.FC = () => {
               <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
               <span>الرسالة التي ستظهر للزبائن في الشريط العلوي أثناء الإغلاق:</span>
             </label>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
                 value={closureMessage}
                 onChange={(e) => setClosureMessage(e.target.value)}
-                className="flex-1 text-xs rounded-xl border border-gray-200 bg-white p-2.5 focus:outline-none focus:border-[#512080]"
+                className="flex-1 text-xs rounded-xl border border-border bg-white p-2.5 focus:outline-none focus:border-primary"
                 placeholder="أدخل رسالة الإغلاق للزبائن..."
               />
               <Button
@@ -141,8 +141,8 @@ export const OperationsPage: React.FC = () => {
       <Card className="p-6 space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-gray-100">
           <div>
-            <h3 className="font-bold text-base text-[#26212B] flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[#512080]" />
+            <h3 className="font-bold text-base text-dark flex items-center gap-2">
+              <Clock className="w-4 h-4 text-primary" />
               <span>ساعات العمل الأسبوعية</span>
             </h3>
             <span className="text-xs text-gray-400">التوقيت: أفريقيا / القاهرة (توقيت مصر)</span>
@@ -161,9 +161,9 @@ export const OperationsPage: React.FC = () => {
 
         <div className="divide-y divide-gray-100">
           {schedule.map((item, idx) => (
-            <div key={item.day} className="py-3 flex items-center justify-between gap-4 text-xs">
-              <div className="w-28 font-bold text-gray-700">{item.day}</div>
-              <div className="flex items-center gap-2">
+            <div key={item.day} className="py-3 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 sm:gap-4 text-xs">
+              <div className="w-24 sm:w-28 font-bold text-gray-700">{item.day}</div>
+              <div className="flex items-center gap-2 order-3 sm:order-2 w-full sm:w-auto justify-between sm:justify-start">
                 <input
                   type="time"
                   value={item.open}
@@ -172,7 +172,7 @@ export const OperationsPage: React.FC = () => {
                     next[idx].open = e.target.value;
                     setSchedule(next);
                   }}
-                  className="rounded-lg border border-gray-200 p-1.5 text-xs number-ltr"
+                  className="flex-1 sm:flex-none rounded-lg border border-border p-1.5 text-xs number-ltr tabular-nums focus:outline-none focus:border-primary"
                 />
                 <span className="text-gray-400 font-bold">إلى</span>
                 <input
@@ -183,10 +183,10 @@ export const OperationsPage: React.FC = () => {
                     next[idx].close = e.target.value;
                     setSchedule(next);
                   }}
-                  className="rounded-lg border border-gray-200 p-1.5 text-xs number-ltr"
+                  className="flex-1 sm:flex-none rounded-lg border border-border p-1.5 text-xs number-ltr tabular-nums focus:outline-none focus:border-primary"
                 />
               </div>
-              <div>
+              <div className="order-2 sm:order-3">
                 <button
                   type="button"
                   onClick={() => {

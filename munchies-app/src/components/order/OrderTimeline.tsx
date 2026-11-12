@@ -60,8 +60,8 @@ export const OrderTimeline: React.FC<OrderTimelineProps> = ({
               className={`absolute -start-6 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-xs ${
                 isDone
                   ? isCurrent
-                    ? 'bg-[#512080] text-white ring-4 ring-[#512080]/20'
-                    : 'bg-[#27834B] text-white'
+                    ? 'bg-primary text-white ring-4 ring-primary/20'
+                    : 'bg-success text-white'
                   : 'bg-white border-2 border-gray-300 text-gray-400'
               }`}
             >
@@ -72,13 +72,13 @@ export const OrderTimeline: React.FC<OrderTimelineProps> = ({
             <div className="min-w-0">
               <h5
                 className={`text-sm font-bold leading-none ${
-                  isCurrent ? 'text-[#512080]' : isDone ? 'text-[#26212B]' : 'text-gray-400'
+                  isCurrent ? 'text-primary' : isDone ? 'text-dark' : 'text-gray-400'
                 }`}
               >
                 {step.labelAr}
               </h5>
               {event?.timestamp && (
-                <span className="text-[11px] text-gray-400 mt-1 block">
+                <span className="text-[11px] text-gray-400 mt-1 block tabular-nums">
                   {formatTime(event.timestamp)}
                 </span>
               )}

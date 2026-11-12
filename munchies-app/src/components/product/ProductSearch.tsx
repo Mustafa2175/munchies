@@ -19,7 +19,7 @@ export const ProductSearch: React.FC<ProductSearchProps> = ({
 }) => {
   return (
     <div className={`relative w-full ${className}`}>
-      <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3.5 text-gray-400">
+      <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3.5 text-medium-gray">
         <Search className="w-4 h-4" />
       </div>
       <input
@@ -27,13 +27,14 @@ export const ProductSearch: React.FC<ProductSearchProps> = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="ابحث في السندوتشات، البرجر، الإضافات..."
-        className="w-full rounded-2xl border border-gray-200 bg-white py-2.5 ps-10 pe-9 text-sm text-[#26212B] placeholder:text-gray-400 focus:outline-none focus:border-[#512080] focus:ring-2 focus:ring-[#512080]/10 transition-all shadow-2xs"
+        className="w-full rounded-xl border border-border bg-white py-2.5 ps-10 pe-9 text-sm text-dark placeholder:text-medium-gray focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all shadow-xs"
       />
       {value && (
         <button
           type="button"
           onClick={() => onChange('')}
-          className="absolute inset-y-0 end-0 flex items-center pe-3 text-gray-400 hover:text-gray-600 cursor-pointer"
+          className="absolute inset-y-0 end-0 flex items-center pe-3 text-medium-gray hover:text-dark cursor-pointer"
+          aria-label="مسح البحث"
         >
           <X className="w-4 h-4" />
         </button>
@@ -41,4 +42,3 @@ export const ProductSearch: React.FC<ProductSearchProps> = ({
     </div>
   );
 };
-

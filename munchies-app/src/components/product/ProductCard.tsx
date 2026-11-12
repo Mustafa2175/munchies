@@ -1,18 +1,19 @@
 /**
  * @module components/product/ProductCard
- * @description Product card with badge overlay, quick-add or customization trigger. Strictly Arabic.
- * Evaluates both individual product availability and global restaurant open/closed status.
+ * @description Compact horizontal product card inspired by Arabic food ordering apps.
+ * Features:
+ * - Fixed-size product image on the RIGHT (in RTL)
+ * - Prominent product title, description, and price in the CENTER
+ * - Dedicated shopping cart icon button on the LEFT (in RTL)
+ * - Direct add-to-cart when no required customization, or opens CustomizationModal when required
  */
 
 import React, { useState } from 'react';
-import { Plus, Ban, Clock } from 'lucide-react';
-import type { Product } from '@/types';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { ShoppingCart } from 'lucide-react';
+import type { Product, CustomizationGroup } from '@/types';
 import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
 import { CustomizationModal } from './CustomizationModal';
-import { useCartStore } from '@/stores/cartStore';
+import { useCartStore, type SelectedCustomization } from '@/stores/cartStore';
 import { isProductAvailable } from '@/stores/productStore';
 import { useIsStoreOpen } from '@/stores/restaurantStore';
 import { useIsCategoryActive } from '@/stores/categoryStore';
@@ -33,8 +34,27 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const isOrderable = isAvailable && isStoreOpen;
   const productName = product.name.ar;
   const productDesc = product.description.ar;
-  const hasCustomizations =
-    product.customizationGroups && product.customizationGroups.length > 0;
+
+  // Determine if the product requires customization before adding
+  const hasRequiredCustomization = Boolean(
+    product.customizationGroups &&
+    product.customizationGroups.some((group: CustomizationGroup) => {
+      return Boolean(
+        group.isRequired ||
+        (group.minSelections && group.minSelections > 0) ||
+        (group.minSelect && group.minSelect > 0)
+      );
+    })
+  );
+
+  const hasAnyCustomizations = Boolean(
+    product.customizationGroups && product.customizationGroups.length > 0
+  );
+
+  const displayImage =
+    product.image && !product.image.includes('unsplash.com')
+      ? product.image
+      : '/hero_burger_clean_cutout.png';
 
   const handleCardClick = () => {
     if (!isStoreOpen) {
@@ -55,11 +75,25 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       });
       return;
     }
-    setIsModalOpen(true);
+
+    if (hasAnyCustomizations) {
+      setIsModalOpen(true);
+    } else {
+      addItem({
+        productId: product.id,
+        name: product.name,
+        image: displayImage,
+        basePrice: product.price,
+        quantity: 1,
+        customizations: [],
+      });
+      toast.success(`تمت إضافة "${productName}" إلى السلة`);
+    }
   };
 
-  const handleActionClick = (e: React.MouseEvent) => {
+  const handleCartButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+
     if (!isStoreOpen) {
       toast.error('المطعم مغلق حالياً ولا يستقبل طلبات جديدة', {
         id: 'store-closed-toast',
@@ -79,144 +113,151 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       return;
     }
 
-    if (hasCustomizations) {
+    if (hasRequiredCustomization) {
       setIsModalOpen(true);
-    } else {
-      addItem({
-        productId: product.id,
-        name: product.name,
-        image: product.image,
-        basePrice: product.price,
-        quantity: 1,
-        customizations: [],
-      });
-      toast.success(`تمت إضافة "${productName}" إلى السلة`);
+      return;
     }
-  };
 
-  // Determine button label and styling
-  let buttonLabel = 'إضافة';
-  if (!isCategoryActive) {
-    buttonLabel = 'غير متاح حالياً';
-  } else if (!isProductBaseAvailable) {
-    buttonLabel = 'غير متوفر';
-  } else if (!isStoreOpen) {
-    buttonLabel = 'المطعم مغلق حالياً';
-  } else if (hasCustomizations) {
-    buttonLabel = 'تخصيص';
-  }
+    const defaultCustomizations: SelectedCustomization[] = [];
+
+    if (product.customizationGroups) {
+      product.customizationGroups.forEach((group: CustomizationGroup) => {
+        const defaultOpt = group.options?.find((o) => o.isDefault);
+        if (defaultOpt) {
+          defaultCustomizations.push({
+            groupId: group.id,
+            groupName: group.name,
+            selectedOptions: [
+              {
+                optionId: defaultOpt.id,
+                name: defaultOpt.name,
+                price: defaultOpt.price,
+              },
+            ],
+          });
+        }
+      });
+    }
+
+    addItem({
+      productId: product.id,
+      name: product.name,
+      image: displayImage,
+      basePrice: product.price,
+      quantity: 1,
+      customizations: defaultCustomizations,
+    });
+
+    toast.success(`تمت إضافة "${productName}" إلى السلة`);
+  };
 
   return (
     <>
-      <Card
-        hoverable={isOrderable}
-        className={`flex flex-col h-full group transition-all duration-300 border ${
-          !isAvailable
-            ? 'cursor-not-allowed border-red-100/70 bg-gray-50/40 opacity-90'
-            : !isStoreOpen
-            ? 'cursor-pointer border-amber-100/70 bg-stone-50/40'
-            : 'cursor-pointer border-gray-100 hover:border-[#512080]/30'
-        }`}
+      <article
         onClick={handleCardClick}
+        dir="rtl"
+        className={`group relative bg-white rounded-2xl border transition-all duration-200 flex flex-row items-center p-3 sm:p-3.5 gap-3 sm:gap-4 select-none cursor-pointer ${
+          !isAvailable
+            ? 'border-danger/20 bg-gray-50/60 opacity-75 cursor-not-allowed'
+            : !isStoreOpen
+            ? 'border-warning/20 bg-stone-50/50 cursor-pointer'
+            : 'border-border hover:border-primary-200 shadow-card hover:shadow-card-hover'
+        }`}
       >
-        {/* Image Container with Badges */}
-        <div className="relative aspect-4/3 overflow-hidden bg-gray-100">
+        {/* 1. RIGHT SIDE in RTL: Fixed-size Image with Badges */}
+        <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden bg-light-gray shrink-0 select-none">
           <img
-            src={product.image}
+            src={displayImage}
             alt={productName}
             loading="lazy"
-            className={`w-full h-full object-cover transition-all duration-500 ${
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src = '/hero_burger_clean_cutout.png';
+            }}
+            className={`w-full h-full object-cover transition-transform duration-300 ${
               !isAvailable
-                ? 'grayscale opacity-60 contrast-75'
+                ? 'grayscale opacity-60'
                 : isAvailable && isStoreOpen
                 ? 'group-hover:scale-105'
                 : 'opacity-90'
             }`}
           />
-          <div className="absolute top-2.5 start-2.5 flex flex-col gap-1 z-10">
+
+          {/* Badges Overlay on Image */}
+          <div className="absolute top-1.5 start-1.5 flex flex-col gap-1 z-10 pointer-events-none">
             {!isCategoryActive ? (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-red-600 text-white shadow-md">
-                <Ban className="w-3 h-3" />
-                <span>القسم غير متاح حالياً</span>
+              <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black bg-danger text-white">
+                غير متاح
               </span>
             ) : !isProductBaseAvailable ? (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-red-600 text-white shadow-md">
-                <Ban className="w-3 h-3" />
-                <span>غير متوفر حالياً</span>
+              <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black bg-danger text-white">
+                غير متوفر
               </span>
             ) : !isStoreOpen ? (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-600 text-white shadow-md">
-                <Clock className="w-3 h-3" />
-                <span>المطعم مغلق</span>
+              <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black bg-warning text-dark">
+                مغلق
               </span>
-            ) : (
-              <>
-                {product.isBestSeller && (
-                  <Badge variant="best-seller">الأكثر طلباً</Badge>
-                )}
-                {product.isNew && <Badge variant="new">جديد</Badge>}
-              </>
-            )}
+            ) : product.isBestSeller ? (
+              <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black bg-yellow text-dark">
+                الأكثر طلباً
+              </span>
+            ) : product.isNew ? (
+              <span className="px-1.5 py-0.5 rounded-md text-[9px] font-black bg-primary text-white">
+                جديد
+              </span>
+            ) : null}
           </div>
         </div>
 
-        {/* Info */}
-        <div className="p-4 flex flex-col flex-1 justify-between">
+        {/* 2. CENTER in RTL: Product Info (Name, Description, Price) */}
+        <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch py-0.5 text-start">
           <div>
-            <div className="flex items-start justify-between gap-2">
-              <h3
-                className={`font-extrabold text-base transition-colors line-clamp-1 ${
-                  !isAvailable
-                    ? 'text-gray-500 line-through decoration-red-400/60'
-                    : isAvailable && isStoreOpen
-                    ? 'text-[#26212B] group-hover:text-[#512080]'
-                    : 'text-[#26212B]'
-                }`}
-              >
-                {productName}
-              </h3>
-            </div>
-            <p className="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">
+            <h3
+              className={`font-black text-sm sm:text-base leading-snug line-clamp-1 transition-colors ${
+                !isAvailable
+                  ? 'text-medium-gray line-through decoration-danger/40'
+                  : isAvailable && isStoreOpen
+                  ? 'text-dark group-hover:text-primary'
+                  : 'text-dark'
+              }`}
+            >
+              {productName}
+            </h3>
+            <p className="text-xs text-medium-gray line-clamp-2 leading-relaxed mt-1">
               {productDesc}
             </p>
           </div>
 
-          <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-50 gap-2">
+          {/* Price */}
+          <div className="mt-2 flex items-baseline gap-1">
             <CurrencyDisplay
               amount={product.price}
-              className={`text-base shrink-0 ${
-                isOrderable ? 'text-[#512080]' : 'text-gray-400'
+              className={`font-black text-sm sm:text-base ${
+                isOrderable ? 'text-primary' : 'text-medium-gray'
               }`}
             />
-
-            <Button
-              size="sm"
-              variant={
-                !isOrderable
-                  ? 'ghost'
-                  : hasCustomizations
-                  ? 'secondary'
-                  : 'yellow'
-              }
-              disabled={!isOrderable}
-              onClick={handleActionClick}
-              leftIcon={
-                !isOrderable ? undefined : hasCustomizations ? undefined : Plus
-              }
-              className={
-                !isAvailable
-                  ? 'bg-red-50 text-red-600 border border-red-200 cursor-not-allowed opacity-90 font-bold hover:bg-red-50 hover:text-red-600'
-                  : !isStoreOpen
-                  ? 'bg-amber-50 text-amber-700 border border-amber-200 cursor-not-allowed opacity-90 font-bold hover:bg-amber-50 hover:text-amber-700 text-[11px]'
-                  : 'shadow-2xs'
-              }
-            >
-              {buttonLabel}
-            </Button>
           </div>
         </div>
-      </Card>
 
+        {/* 3. LEFT SIDE in RTL: Dedicated Shopping Cart Button */}
+        <div className="shrink-0 flex items-center justify-center self-end sm:self-center mb-0.5 sm:mb-0">
+          <button
+            type="button"
+            onClick={handleCartButtonClick}
+            disabled={!isOrderable}
+            className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-90 ${
+              isOrderable
+                ? 'bg-yellow hover:bg-yellow-dark text-dark hover:scale-105 shadow-xs'
+                : 'bg-light-gray text-medium-gray cursor-not-allowed'
+            }`}
+            aria-label={`إضافة ${productName} إلى السلة`}
+            title={`إضافة ${productName} إلى السلة`}
+          >
+            <ShoppingCart className="w-4 h-4 sm:w-4.5 sm:h-4.5 stroke-[2.2]" />
+          </button>
+        </div>
+      </article>
+
+      {/* Customization Modal */}
       <CustomizationModal
         product={product}
         isOpen={isModalOpen}

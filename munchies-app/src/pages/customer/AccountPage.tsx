@@ -22,22 +22,22 @@ export const AccountPage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
       {/* Profile Header */}
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+      <div className="bg-white p-6 sm:p-8 rounded-2xl border border-border shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-[#512080] text-[#FFDA35] flex items-center justify-center font-black text-2xl shadow-md">
+          <div className="w-14 h-14 rounded-xl bg-primary text-yellow flex items-center justify-center font-black text-xl shadow-xs">
             {user?.fullName?.charAt(0) || 'م'}
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-[#26212B]">
+            <h1 className="text-xl sm:text-2xl font-black text-dark">
               {user?.fullName || 'عميل مانشيز'}
             </h1>
-            <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 mt-1">
+            <div className="flex flex-wrap items-center gap-4 text-xs text-medium-gray mt-1">
               <span className="flex items-center gap-1">
-                <Mail className="w-3.5 h-3.5 text-[#512080]" />
+                <Mail className="w-3.5 h-3.5 text-primary" />
                 {user?.email || 'customer@example.com'}
               </span>
               <span className="flex items-center gap-1 number-ltr">
-                <Phone className="w-3.5 h-3.5 text-[#512080]" />
+                <Phone className="w-3.5 h-3.5 text-primary" />
                 {user?.phone || '01025707026'}
               </span>
             </div>
@@ -48,7 +48,7 @@ export const AccountPage: React.FC = () => {
           variant="ghost"
           size="sm"
           onClick={() => logout()}
-          className="text-[#E84D45] hover:bg-red-50 self-start sm:self-center"
+          className="text-danger hover:bg-danger-light self-start sm:self-center"
           leftIcon={LogOut}
         >
           تسجيل الخروج
@@ -58,10 +58,10 @@ export const AccountPage: React.FC = () => {
       {/* Orders Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-black text-[#26212B]">
+          <h2 className="text-xl font-black text-dark">
             سجل طلباتي
           </h2>
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-medium-gray">
             {orders.length} طلب
           </span>
         </div>

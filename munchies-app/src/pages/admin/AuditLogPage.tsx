@@ -42,7 +42,7 @@ export const AuditLogPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-4xl">
       <div>
-        <h1 className="text-2xl font-black text-[#26212B]">سجل الأمان والعمليات الإدارية</h1>
+        <h1 className="text-2xl font-black text-dark">سجل الأمان والعمليات الإدارية</h1>
         <p className="text-xs text-gray-500 mt-1">
           سجل تتبعي لكافة العمليات الحساسة وقرارات المطبخ والإدارة
         </p>
@@ -50,22 +50,22 @@ export const AuditLogPage: React.FC = () => {
 
       <Card className="divide-y divide-gray-100">
         {logs.map((log) => (
-          <div key={log.id} className="p-4 flex items-center justify-between text-xs">
+          <div key={log.id} className="p-4 flex items-center justify-between text-xs hover:bg-gray-50/50 transition-colors">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-purple-50 text-[#512080] flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-primary-50 text-primary flex items-center justify-center shrink-0">
                 <ShieldCheck className="w-4 h-4" />
               </div>
               <div>
-                <span className="font-bold text-[#26212B] block">{log.action}</span>
+                <span className="font-bold text-dark block">{log.action}</span>
                 <span className="text-[11px] text-gray-500">
-                  {log.actor} • {log.target}
+                  {log.actor} • <span className="tabular-nums font-mono">{log.target}</span>
                 </span>
               </div>
             </div>
 
             <div className="flex items-center gap-1.5 text-gray-400 text-[11px]">
               <Clock className="w-3.5 h-3.5" />
-              <span>{log.time}</span>
+              <span className="tabular-nums">{log.time}</span>
             </div>
           </div>
         ))}

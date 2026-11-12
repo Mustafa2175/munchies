@@ -38,6 +38,7 @@ export interface CustomizationOption {
   name: LocalizedText;
   price: number;
   isDefault?: boolean;
+  isAvailable?: boolean;
 }
 
 export interface CustomizationGroup {

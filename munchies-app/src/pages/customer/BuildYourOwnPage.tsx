@@ -6,7 +6,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Sparkles,
   Flame,
   Dumbbell,
   Scale,
@@ -138,8 +137,7 @@ export const BuildYourOwnPage: React.FC = () => {
     addItem({
       productId: 'custom_sandwich',
       name: { ar: customTitle, en: customTitle },
-      image:
-        'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80',
+      image: '/hero_burger_clean_cutout.png',
       basePrice: selectedProtein.price,
       quantity: 1,
       customizations,
@@ -154,34 +152,33 @@ export const BuildYourOwnPage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10">
       {/* Page Title */}
       <div className="text-center max-w-2xl mx-auto space-y-2">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFDA35]/30 text-[#512080] text-xs font-black">
-          <Sparkles className="w-4 h-4 text-[#512080]" />
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-50 text-primary text-xs font-black">
           <span>اصنع ساندوتشك بنفسك</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-black text-[#26212B]">
+        <h1 className="text-3xl sm:text-4xl font-black text-dark">
           اعمل ساندوتش على مزاجك
         </h1>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-medium-gray">
           اختر نوع البروتين، الخبز، الجبن، والصوصات مع حساب السعرات والقيم الغذائية لحظياً.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Step-by-Step Selection Form */}
-        <div className="lg:col-span-8 space-y-8">
+        <div className="lg:col-span-8 space-y-6">
           {/* Step 1: Protein */}
           <Card className="p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-[#512080] text-[#FFDA35] font-black text-xs flex items-center justify-center">
+                <span className="w-6 h-6 rounded-full bg-primary text-yellow font-black text-xs flex items-center justify-center">
                   1
                 </span>
-                <h2 className="font-extrabold text-base text-[#26212B]">
+                <h2 className="font-extrabold text-base text-dark">
                   اختر البروتين (Protein)
                 </h2>
               </div>
-              <span className="text-xs text-red-500 font-bold">
-                إجباري
+              <span className="text-xs text-danger font-bold">
+                مطلوب
               </span>
             </div>
 
@@ -192,20 +189,20 @@ export const BuildYourOwnPage: React.FC = () => {
                   <div
                     key={item.id}
                     onClick={() => setSelectedProtein(item)}
-                    className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+                    className={`p-4 rounded-xl border cursor-pointer transition-all ${
                       isSelected
-                        ? 'border-[#512080] bg-[#F3EDFA] ring-2 ring-[#512080]/20 shadow-xs'
-                        : 'border-gray-200 bg-white hover:border-gray-300'
+                        ? 'border-primary bg-primary-50 ring-1 ring-primary/20 shadow-xs'
+                        : 'border-border bg-white hover:border-gray-300'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-xs text-[#26212B]">
+                      <span className="font-bold text-xs text-dark">
                         {item.name.ar}
                       </span>
                       <div
                         className={`w-4 h-4 rounded-full flex items-center justify-center border ${
                           isSelected
-                            ? 'border-[#512080] bg-[#512080] text-white'
+                            ? 'border-primary bg-primary text-white'
                             : 'border-gray-300'
                         }`}
                       >
@@ -213,17 +210,17 @@ export const BuildYourOwnPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-100/60 text-[11px]">
-                      <div className="flex items-center gap-2 text-gray-500">
+                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/60 text-[11px]">
+                      <div className="flex items-center gap-2 text-medium-gray">
                         <span>{item.nutrition.grams}جم</span>
                         <span>•</span>
                         <span>{item.nutrition.calories} كالوري</span>
                         <span>•</span>
-                        <span className="font-bold text-[#512080]">
+                        <span className="font-bold text-primary">
                           {item.nutrition.protein}جم بروتين
                         </span>
                       </div>
-                      <CurrencyDisplay amount={item.price} className="text-xs text-[#512080]" />
+                      <CurrencyDisplay amount={item.price} className="text-xs text-primary" />
                     </div>
                   </div>
                 );
@@ -233,17 +230,17 @@ export const BuildYourOwnPage: React.FC = () => {
 
           {/* Step 2: Bread */}
           <Card className="p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-[#512080] text-[#FFDA35] font-black text-xs flex items-center justify-center">
+                <span className="w-6 h-6 rounded-full bg-primary text-yellow font-black text-xs flex items-center justify-center">
                   2
                 </span>
-                <h2 className="font-extrabold text-base text-[#26212B]">
+                <h2 className="font-extrabold text-base text-dark">
                   اختر نوع العيش (Bread)
                 </h2>
               </div>
-              <span className="text-xs text-red-500 font-bold">
-                إجباري
+              <span className="text-xs text-danger font-bold">
+                مطلوب
               </span>
             </div>
 
@@ -254,20 +251,20 @@ export const BuildYourOwnPage: React.FC = () => {
                   <div
                     key={item.id}
                     onClick={() => setSelectedBread(item)}
-                    className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+                    className={`p-4 rounded-xl border cursor-pointer transition-all ${
                       isSelected
-                        ? 'border-[#512080] bg-[#F3EDFA] ring-2 ring-[#512080]/20 shadow-xs'
-                        : 'border-gray-200 bg-white hover:border-gray-300'
+                        ? 'border-primary bg-primary-50 ring-1 ring-primary/20 shadow-xs'
+                        : 'border-border bg-white hover:border-gray-300'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-xs text-[#26212B]">
+                      <span className="font-bold text-xs text-dark">
                         {item.name.ar}
                       </span>
                       <div
                         className={`w-4 h-4 rounded-full flex items-center justify-center border ${
                           isSelected
-                            ? 'border-[#512080] bg-[#512080] text-white'
+                            ? 'border-primary bg-primary text-white'
                             : 'border-gray-300'
                         }`}
                       >
@@ -275,13 +272,13 @@ export const BuildYourOwnPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-100/60 text-[11px]">
-                      <div className="flex items-center gap-2 text-gray-500">
+                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/60 text-[11px]">
+                      <div className="flex items-center gap-2 text-medium-gray">
                         <span>{item.nutrition.grams}جم</span>
                         <span>•</span>
                         <span>{item.nutrition.calories} كالوري</span>
                       </div>
-                      <span className="font-bold text-xs text-[#512080]">
+                      <span className="font-bold text-xs text-primary">
                         +<CurrencyDisplay amount={item.price} />
                       </span>
                     </div>
@@ -293,16 +290,16 @@ export const BuildYourOwnPage: React.FC = () => {
 
           {/* Step 3: Cheese & Deli */}
           <Card className="p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-[#512080] text-[#FFDA35] font-black text-xs flex items-center justify-center">
+                <span className="w-6 h-6 rounded-full bg-primary text-yellow font-black text-xs flex items-center justify-center">
                   3
                 </span>
-                <h2 className="font-extrabold text-base text-[#26212B]">
+                <h2 className="font-extrabold text-base text-dark">
                   الجبن والدلي (Cheese & Deli)
                 </h2>
               </div>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-medium-gray">
                 اختياري
               </span>
             </div>
@@ -314,19 +311,19 @@ export const BuildYourOwnPage: React.FC = () => {
                   <div
                     key={item.id}
                     onClick={() => toggleCheese(item)}
-                    className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between ${
+                    className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
                       isSelected
-                        ? 'border-[#512080] bg-[#F3EDFA] text-[#512080] font-bold shadow-xs'
-                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                        ? 'border-primary bg-primary-50 text-primary font-bold shadow-xs'
+                        : 'border-border bg-white text-dark hover:border-gray-300'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs truncate">{item.name.ar}</span>
-                      {isSelected && <Check className="w-3.5 h-3.5 text-[#512080]" />}
+                      {isSelected && <Check className="w-3.5 h-3.5 text-primary" />}
                     </div>
-                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 text-[11px] text-gray-500">
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-border text-[11px] text-medium-gray">
                       <span>{item.nutrition.calories} كالوري</span>
-                      <span className="font-bold text-[#512080]">
+                      <span className="font-bold text-primary">
                         +<CurrencyDisplay amount={item.price} />
                       </span>
                     </div>
@@ -338,16 +335,16 @@ export const BuildYourOwnPage: React.FC = () => {
 
           {/* Step 4: Toppings & Sauces */}
           <Card className="p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-[#512080] text-[#FFDA35] font-black text-xs flex items-center justify-center">
+                <span className="w-6 h-6 rounded-full bg-primary text-yellow font-black text-xs flex items-center justify-center">
                   4
                 </span>
-                <h2 className="font-extrabold text-base text-[#26212B]">
+                <h2 className="font-extrabold text-base text-dark">
                   الإضافات والصوصات (Toppings & Sauces)
                 </h2>
               </div>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-medium-gray">
                 اختياري
               </span>
             </div>
@@ -359,19 +356,19 @@ export const BuildYourOwnPage: React.FC = () => {
                   <div
                     key={item.id}
                     onClick={() => toggleTopping(item)}
-                    className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between ${
+                    className={`p-3.5 rounded-xl border cursor-pointer transition-all flex flex-col justify-between ${
                       isSelected
-                        ? 'border-[#512080] bg-[#F3EDFA] text-[#512080] font-bold shadow-xs'
-                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                        ? 'border-primary bg-primary-50 text-primary font-bold shadow-xs'
+                        : 'border-border bg-white text-dark hover:border-gray-300'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs truncate">{item.name.ar}</span>
-                      {isSelected && <Check className="w-3.5 h-3.5 text-[#512080]" />}
+                      {isSelected && <Check className="w-3.5 h-3.5 text-primary" />}
                     </div>
-                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 text-[11px] text-gray-500">
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-border text-[11px] text-medium-gray">
                       <span>{item.nutrition.calories} كالوري</span>
-                      <span className="font-bold text-[#512080]">
+                      <span className="font-bold text-primary">
                         +<CurrencyDisplay amount={item.price} />
                       </span>
                     </div>
@@ -383,86 +380,85 @@ export const BuildYourOwnPage: React.FC = () => {
 
           {/* Name Your Creation */}
           <Card className="p-6 space-y-3">
-            <h3 className="font-bold text-sm text-[#26212B]">
+            <h3 className="font-bold text-sm text-dark">
               سمّي ابتكارك (اختياري)
             </h3>
             <input
               type="text"
               value={sandwichName}
               onChange={(e) => setSandwichName(e.target.value)}
-              placeholder="مثال: ساندوتش الوحش، فتنس برجر..."
-              className="w-full text-xs rounded-xl border border-gray-200 bg-white p-3 focus:outline-none focus:border-[#512080]"
+              placeholder="مثال: ساندوتش برجر فتنس، دوبل ميكس..."
+              className="w-full text-xs rounded-xl border border-border bg-white p-3 focus:outline-none focus:border-primary"
             />
           </Card>
         </div>
 
         {/* Sticky Live Nutrition & Price Summary */}
         <div className="lg:col-span-4 sticky top-28 space-y-6">
-          <Card className="p-6 space-y-6 border-2 border-[#FFDA35]">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <h3 className="font-black text-base text-[#26212B]">
+          <Card className="p-6 space-y-6 border border-border shadow-card">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <h3 className="font-black text-base text-dark">
                 القيم الغذائية لساندوتشك
               </h3>
-              <Sparkles className="w-4 h-4 text-[#FFDA35]" />
             </div>
 
             {/* Macros Grid */}
             <div className="grid grid-cols-2 gap-3 text-center">
-              <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/50">
+              <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/50">
                 <Flame className="w-5 h-5 text-amber-500 mx-auto mb-1" />
-                <span className="text-xl font-black text-amber-700 block number-ltr">
+                <span className="text-xl font-black text-amber-700 block tabular-nums number-ltr">
                   {totalCalories}
                 </span>
-                <span className="text-[10px] text-gray-500 font-bold uppercase">
+                <span className="text-[10px] text-medium-gray font-bold uppercase">
                   سعرة حرارية (Cal)
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-purple-50/70 border border-purple-200/50">
-                <Dumbbell className="w-5 h-5 text-[#512080] mx-auto mb-1" />
-                <span className="text-xl font-black text-[#512080] block number-ltr">
+              <div className="p-3.5 rounded-xl bg-primary-50/70 border border-primary-200/50">
+                <Dumbbell className="w-5 h-5 text-primary mx-auto mb-1" />
+                <span className="text-xl font-black text-primary block tabular-nums number-ltr">
                   {totalProtein}g
                 </span>
-                <span className="text-[10px] text-gray-500 font-bold uppercase">
+                <span className="text-[10px] text-medium-gray font-bold uppercase">
                   بروتين (Protein)
                 </span>
               </div>
 
-              <div className="p-3 rounded-2xl bg-blue-50/70 border border-blue-200/50">
-                <span className="text-base font-black text-blue-700 block number-ltr">
+              <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-200/50">
+                <span className="text-base font-black text-blue-700 block tabular-nums number-ltr">
                   {totalCarbs}g
                 </span>
-                <span className="text-[10px] text-gray-500 font-bold uppercase">
+                <span className="text-[10px] text-medium-gray font-bold uppercase">
                   كاربوهيدرات
                 </span>
               </div>
 
-              <div className="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200/50">
-                <span className="text-base font-black text-emerald-700 block number-ltr">
+              <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200/50">
+                <span className="text-base font-black text-emerald-700 block tabular-nums number-ltr">
                   {totalFat}g
                 </span>
-                <span className="text-[10px] text-gray-500 font-bold uppercase">
+                <span className="text-[10px] text-medium-gray font-bold uppercase">
                   دهون
                 </span>
               </div>
             </div>
 
             {/* Weight */}
-            <div className="flex items-center justify-between text-xs text-gray-500 px-1">
+            <div className="flex items-center justify-between text-xs text-medium-gray px-1">
               <span className="flex items-center gap-1.5">
-                <Scale className="w-4 h-4 text-gray-400" />
+                <Scale className="w-4 h-4 text-medium-gray" />
                 الوزن التقريبي الصافي:
               </span>
-              <span className="font-bold text-gray-700 number-ltr">{totalGrams} جم</span>
+              <span className="font-bold text-dark tabular-nums number-ltr">{totalGrams} جم</span>
             </div>
 
             {/* Price & Submit */}
-            <div className="pt-4 border-t border-gray-100 space-y-4">
+            <div className="pt-4 border-t border-border space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-bold text-gray-700">
+                <span className="text-sm font-bold text-dark">
                   سعر الساندوتش:
                 </span>
-                <CurrencyDisplay amount={totalPrice} className="text-2xl text-[#512080]" />
+                <CurrencyDisplay amount={totalPrice} className="text-2xl text-primary font-black" />
               </div>
 
               <Button
@@ -471,7 +467,7 @@ export const BuildYourOwnPage: React.FC = () => {
                 fullWidth
                 onClick={handleAddToCart}
                 leftIcon={ShoppingBag}
-                className="font-black shadow-lg shadow-[#FFDA35]/30"
+                className="font-black shadow-md"
               >
                 أضف ساندوتشك للسلة
               </Button>

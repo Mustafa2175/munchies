@@ -12,7 +12,6 @@ import {
   Clock,
   MapPin,
   ShieldCheck,
-  Building,
   Navigation,
   AlertTriangle,
 } from 'lucide-react';
@@ -50,11 +49,9 @@ export const CheckoutPage: React.FC = () => {
   const isManualClosed = useRestaurantStore((s) => s.isManualClosed);
   const closureMessage = useRestaurantStore((s) => s.closureMessage);
   const todayHours = getTodayWorkingHoursText();
-  // Subscribe to category changes
   useCategoryStore((s) => s.categories);
   const currentProducts = useProductStore((s) => s.products);
 
-  // Check if any cart item belongs to a disabled category
   const disabledCategoryItem = items.find((item) => {
     const prod = currentProducts.find((p) => p.id === item.productId);
     if (!prod) return false;
@@ -70,22 +67,17 @@ export const CheckoutPage: React.FC = () => {
 
   const hasDisabledCategoryItems = Boolean(disabledCategoryItem);
 
-  // Restaurant Settings synced live from Firestore settings/restaurant
   const [deliveryEnabled, setDeliveryEnabled] = useState(false);
   const [deliveryFee, setDeliveryFee] = useState(25);
-  const [branchPhone, setBranchPhone] = useState('01025707026');
   const [branchAddress, setBranchAddress] = useState('حديقة الورد أمام الراية – فرع الكورنيش، أسوان');
 
-  // Customer choice: 'pickup' | 'delivery'
   const [orderType, setOrderType] = useState<'pickup' | 'delivery'>('pickup');
 
-  // Customer Contact Details
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [notes, setNotes] = useState('');
 
-  // Delivery Address Fields (Active when orderType === 'delivery')
   const [area, setArea] = useState('');
   const [street, setStreet] = useState('');
   const [buildingApt, setBuildingApt] = useState('');
@@ -95,7 +87,6 @@ export const CheckoutPage: React.FC = () => {
   const [submittedOrder, setSubmittedOrder] = useState<Order | null>(null);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
 
-  // 1. Real-time listener for restaurant settings (Delivery Flag, Fee & Branch Info)
   useEffect(() => {
     const unsub = onSnapshot(
       doc(db, 'settings', 'restaurant'),
@@ -110,7 +101,6 @@ export const CheckoutPage: React.FC = () => {
           if (typeof data.deliveryFee === 'number') {
             setDeliveryFee(data.deliveryFee);
           }
-          if (data.phone) setBranchPhone(String(data.phone));
           if (data.address) {
             setBranchAddress(
               getLocalizedText(data.address, 'حديقة الورد أمام الراية – فرع الكورنيش، أسوان')
@@ -126,7 +116,6 @@ export const CheckoutPage: React.FC = () => {
     return () => unsub();
   }, []);
 
-  // 2. If cart is empty and no modal is active, redirect to menu
   useEffect(() => {
     if (items.length === 0 && !submittedOrder) {
       navigate(ROUTES.MENU);
@@ -136,13 +125,11 @@ export const CheckoutPage: React.FC = () => {
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Check restaurant operational status before proceeding
     if (!isStoreCurrentlyOpen()) {
       toast.error('عذراً، المطعم مغلق حالياً ولا يستقبل طلبات جديدة في الوقت الحالي');
       return;
     }
 
-    // Check if any cart item belongs to a disabled category
     if (hasDisabledCategoryItems) {
       const itemName = disabledCategoryItem
         ? (typeof disabledCategoryItem.name === 'object' && disabledCategoryItem.name?.ar
@@ -153,7 +140,6 @@ export const CheckoutPage: React.FC = () => {
       return;
     }
 
-    // Check item availability before proceeding
     const currentProducts = useProductStore.getState().products;
     const unavailable = items.find((item) => {
       const prod = currentProducts.find((p) => p.id === item.productId);
@@ -174,14 +160,12 @@ export const CheckoutPage: React.FC = () => {
       return;
     }
 
-    // Egyptian phone validation
     const phoneRegex = /^(010|011|012|015)[0-9]{8}$/;
     if (!phoneRegex.test(phone.trim())) {
       toast.error('يرجى إدخال رقم موبايل مصري صحيح (مثال: 01025707026)');
       return;
     }
 
-    // Delivery Address Validation via Zod
     let constructedAddress: any = null;
     if (orderType === 'delivery') {
       const addressValidation = deliveryAddressSchema.safeParse({
@@ -246,10 +230,10 @@ export const CheckoutPage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12" dir="rtl">
       <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-black text-[#26212B]">
+        <h1 className="text-2xl sm:text-3xl font-black text-dark">
           إتمام الطلب
         </h1>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-medium-gray mt-1">
           {orderType === 'delivery'
             ? 'خطوة واحدة بسيطة لتأكيد طلبك وتوصيله لباب بيتك في أسوان'
             : 'خطوة واحدة بسيطة لتأكيد طلبك والاستلام من فرع أسوان'}
@@ -258,10 +242,10 @@ export const CheckoutPage: React.FC = () => {
 
       {/* Restaurant Closed Warning Alert */}
       {!isStoreOpen && (
-        <div className="mb-6 p-4 rounded-2xl bg-red-50 border-2 border-red-200 flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-          <div className="text-xs sm:text-sm text-red-700">
-            <h4 className="font-black text-red-800 text-sm">
+        <div className="mb-6 p-4 rounded-2xl bg-danger-light border border-danger/30 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-danger shrink-0 mt-0.5" />
+          <div className="text-xs sm:text-sm text-danger">
+            <h4 className="font-black text-danger text-sm">
               المطعم مغلق حالياً ولا يستقبل طلبات
             </h4>
             <p className="mt-0.5 leading-relaxed">
@@ -279,11 +263,11 @@ export const CheckoutPage: React.FC = () => {
 
       {/* Inactive Category Warning Alert */}
       {hasDisabledCategoryItems && (
-        <div className="mb-6 p-4 rounded-2xl bg-amber-50 border-2 border-amber-300 flex items-start gap-3">
+        <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-300 flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div className="text-xs sm:text-sm text-amber-900">
             <h4 className="font-black text-amber-900 text-sm">
-              ⚠️ لا يمكن إتمام الطلب: بعض الأصناف غير متاحة حالياً
+              لا يمكن إتمام الطلب: بعض الأصناف غير متاحة حالياً
             </h4>
             <p className="mt-0.5 leading-relaxed text-amber-800">
               يحتوي طلبك على أصناف تتبع قسم <span className="font-bold">"{disabledCategoryName}"</span> وهو غير متاح للطلب في الوقت الحالي. يرجى إزالة هذه الأصناف لمتابعة إتمام الطلب.
@@ -298,7 +282,7 @@ export const CheckoutPage: React.FC = () => {
           <div className="lg:col-span-8 space-y-6">
             {/* Step 1: Fulfillment Type */}
             <Card className="p-6">
-              <h2 className="text-base font-extrabold text-[#26212B] mb-4">
+              <h2 className="text-base font-extrabold text-dark mb-4">
                 ١. طريقة الاستلام
               </h2>
 
@@ -308,33 +292,33 @@ export const CheckoutPage: React.FC = () => {
                   onClick={() => setOrderType('pickup')}
                   className={`p-4 rounded-2xl border-2 flex items-start gap-3 cursor-pointer transition-all ${
                     orderType === 'pickup'
-                      ? 'border-[#512080] bg-[#F3EDFA]/50 shadow-xs ring-2 ring-[#512080]/10'
-                      : 'border-gray-200 bg-white hover:border-[#512080]/40'
+                      ? 'border-primary bg-primary-50 shadow-xs ring-1 ring-primary/20'
+                      : 'border-border bg-white hover:border-primary/40'
                   }`}
                 >
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
                       orderType === 'pickup'
-                        ? 'bg-[#512080] text-white shadow-xs'
-                        : 'bg-gray-100 text-gray-500'
+                        ? 'bg-primary text-white shadow-xs'
+                        : 'bg-light-gray text-medium-gray'
                     }`}
                   >
                     <Store className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-sm text-[#26212B]">
+                    <h3 className="font-extrabold text-sm text-dark">
                       استلام من المطعم (Pickup)
                     </h3>
-                    <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                    <p className="text-xs text-medium-gray mt-0.5 leading-relaxed">
                       حديقة الورد أمام الراية – فرع الكورنيش
                     </p>
-                    <span className="inline-block mt-2 text-[10px] font-bold text-[#27834B] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    <span className="inline-block mt-2 text-[10px] font-bold text-success bg-success-light px-2 py-0.5 rounded-full border border-success/20">
                       متاح ومجاني
                     </span>
                   </div>
                 </div>
 
-                {/* Delivery Option (Controlled dynamically by deliveryEnabled) */}
+                {/* Delivery Option */}
                 <div
                   onClick={() => {
                     if (deliveryEnabled) {
@@ -343,28 +327,28 @@ export const CheckoutPage: React.FC = () => {
                   }}
                   className={`p-4 rounded-2xl border-2 flex items-start gap-3 transition-all ${
                     !deliveryEnabled
-                      ? 'border-gray-200 bg-gray-50/70 opacity-75 cursor-not-allowed relative'
+                      ? 'border-border bg-light-gray/60 opacity-75 cursor-not-allowed relative'
                       : orderType === 'delivery'
-                      ? 'border-[#512080] bg-[#F3EDFA]/50 shadow-xs ring-2 ring-[#512080]/10 cursor-pointer'
-                      : 'border-gray-200 bg-white hover:border-[#512080]/40 cursor-pointer'
+                      ? 'border-primary bg-primary-50 shadow-xs ring-1 ring-primary/20 cursor-pointer'
+                      : 'border-border bg-white hover:border-primary/40 cursor-pointer'
                   }`}
                 >
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
                       !deliveryEnabled
-                        ? 'bg-gray-200 text-gray-400'
+                        ? 'bg-gray-200 text-medium-gray'
                         : orderType === 'delivery'
-                        ? 'bg-[#512080] text-[#FFDA35] shadow-xs'
-                        : 'bg-gray-100 text-gray-500'
+                        ? 'bg-primary text-yellow shadow-xs'
+                        : 'bg-light-gray text-medium-gray'
                     }`}
                   >
                     <Truck className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-sm text-[#26212B]">
+                    <h3 className="font-extrabold text-sm text-dark">
                       توصيل ديليفري (Delivery)
                     </h3>
-                    <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                    <p className="text-xs text-medium-gray mt-0.5 leading-relaxed">
                       {deliveryEnabled
                         ? `توصيل سريع لباب بيتك (رسوم التوصيل: ${deliveryFee} ج.م)`
                         : 'خدمة التوصيل غير مفعلة حالياً ومتاحة قريباً في أسوان'}
@@ -372,8 +356,8 @@ export const CheckoutPage: React.FC = () => {
                     <span
                       className={`inline-block mt-2 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                         deliveryEnabled
-                          ? 'text-[#27834B] bg-emerald-50 border-emerald-200'
-                          : 'text-amber-700 bg-amber-50 border-amber-200'
+                          ? 'text-success bg-success-light border-success/20'
+                          : 'text-warning-800 bg-warning-light border-warning/20'
                       }`}
                     >
                       {deliveryEnabled ? 'متاح في أسوان' : 'قريباً في أسوان'}
@@ -385,25 +369,25 @@ export const CheckoutPage: React.FC = () => {
 
             {/* Step 2: Dynamic Delivery Address or Pickup Details */}
             {orderType === 'delivery' ? (
-              <Card className="p-6 space-y-4 border-2 border-[#512080]/20 bg-[#FAF7FC]/40">
-                <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+              <Card className="p-6 space-y-4 border border-border bg-[#FAF7FC]/40">
+                <div className="flex items-center justify-between pb-2 border-b border-border">
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-[#512080] text-[#FFDA35] flex items-center justify-center">
+                    <div className="w-7 h-7 rounded-lg bg-primary text-yellow flex items-center justify-center">
                       <Navigation className="w-4 h-4" />
                     </div>
-                    <h2 className="text-base font-extrabold text-[#26212B]">
+                    <h2 className="text-base font-extrabold text-dark">
                       ٢. عنوان وتفاصيل التوصيل في أسوان
                     </h2>
                   </div>
-                  <span className="text-xs font-bold text-[#512080] bg-white px-2.5 py-1 rounded-full border border-[#512080]/20">
+                  <span className="text-xs font-bold text-primary bg-white px-2.5 py-1 rounded-full border border-primary/20">
                     رسوم التوصيل: {deliveryFee} ج.م
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-[#26212B] mb-1.5">
-                      المنطقة / الحي بأسوان <span className="text-red-500">*</span>
+                    <label className="block text-xs font-semibold text-dark mb-1.5">
+                      المنطقة / الحي بأسوان <span className="text-danger">*</span>
                     </label>
                     <Input
                       value={area}
@@ -414,8 +398,8 @@ export const CheckoutPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#26212B] mb-1.5">
-                      اسم الشارع بالتفصيل <span className="text-red-500">*</span>
+                    <label className="block text-xs font-semibold text-dark mb-1.5">
+                      اسم الشارع بالتفصيل <span className="text-danger">*</span>
                     </label>
                     <Input
                       value={street}
@@ -428,8 +412,8 @@ export const CheckoutPage: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-[#26212B] mb-1.5">
-                      رقم العقار / الدور / الشقة <span className="text-red-500">*</span>
+                    <label className="block text-xs font-semibold text-dark mb-1.5">
+                      رقم العقار / الدور / الشقة <span className="text-danger">*</span>
                     </label>
                     <Input
                       value={buildingApt}
@@ -440,7 +424,7 @@ export const CheckoutPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#26212B] mb-1.5">
+                    <label className="block text-xs font-semibold text-dark mb-1.5">
                       علامة مميزة قريبة (اختياري)
                     </label>
                     <Input
@@ -453,27 +437,27 @@ export const CheckoutPage: React.FC = () => {
               </Card>
             ) : (
               <Card className="p-6">
-                <h2 className="text-base font-extrabold text-[#26212B] mb-4">
+                <h2 className="text-base font-extrabold text-dark mb-4">
                   ٢. تفاصيل الاستلام
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-gray-50 border border-gray-100">
-                    <MapPin className="w-5 h-5 text-[#512080] shrink-0" />
+                  <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-light-gray border border-border">
+                    <MapPin className="w-5 h-5 text-primary shrink-0" />
                     <div className="text-xs">
-                      <span className="font-bold text-[#26212B] block">
+                      <span className="font-bold text-dark block">
                         عنوان الفرع
                       </span>
-                      <span className="text-gray-500">{getLocalizedText(branchAddress)}</span>
+                      <span className="text-medium-gray">{getLocalizedText(branchAddress)}</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-gray-50 border border-gray-100">
-                    <Clock className="w-5 h-5 text-[#512080] shrink-0" />
+                  <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-light-gray border border-border">
+                    <Clock className="w-5 h-5 text-primary shrink-0" />
                     <div className="text-xs">
-                      <span className="font-bold text-[#26212B] block">
+                      <span className="font-bold text-dark block">
                         موعد الاستلام
                       </span>
-                      <span className="text-gray-500">
+                      <span className="text-medium-gray">
                         أقرب وقت متاح (ASAP)
                       </span>
                     </div>
@@ -484,7 +468,7 @@ export const CheckoutPage: React.FC = () => {
 
             {/* Step 3: Customer Details */}
             <Card className="p-6 space-y-4">
-              <h2 className="text-base font-extrabold text-[#26212B]">
+              <h2 className="text-base font-extrabold text-dark">
                 ٣. بيانات التواصل
               </h2>
 
@@ -515,7 +499,7 @@ export const CheckoutPage: React.FC = () => {
               />
 
               <div>
-                <label className="block text-xs font-semibold text-[#26212B] mb-1.5">
+                <label className="block text-xs font-semibold text-dark mb-1.5">
                   ملاحظات إضافية للمطبخ أو المندوب
                 </label>
                 <textarea
@@ -523,36 +507,36 @@ export const CheckoutPage: React.FC = () => {
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
                   placeholder="أي تعليمات إضافية بخصوص التحضير، التغليف أو الوصول..."
-                  className="w-full rounded-xl border border-gray-200 p-3 text-xs focus:outline-none focus:border-[#512080] focus:ring-2 focus:ring-[#512080]/10"
+                  className="w-full rounded-xl border border-border p-3 text-xs focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20"
                 />
               </div>
             </Card>
 
             {/* Step 4: Payment Method */}
             <Card className="p-6">
-              <h2 className="text-base font-extrabold text-[#26212B] mb-4">
+              <h2 className="text-base font-extrabold text-dark mb-4">
                 ٤. طريقة الدفع
               </h2>
 
-              <div className="p-4 rounded-2xl border-2 border-[#512080] bg-[#F3EDFA]/40 flex items-center justify-between">
+              <div className="p-4 rounded-2xl border-2 border-primary bg-primary-50 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#512080] text-[#FFDA35] flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-primary text-yellow flex items-center justify-center shrink-0">
                     <Banknote className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-sm text-[#26212B]">
+                    <h4 className="font-extrabold text-sm text-dark">
                       {orderType === 'delivery'
                         ? 'الدفع نقداً عند استلام الديليفري'
                         : 'الدفع نقداً عند الاستلام من الفرع'}
                     </h4>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-medium-gray">
                       {orderType === 'delivery'
                         ? 'الدفع كاش لمندوب التوصيل عند باب البيت'
                         : 'الدفع كاش عند استلام طلبك من الفرع'}
                     </p>
                   </div>
                 </div>
-                <span className="text-xs font-bold text-[#512080] bg-white px-2.5 py-1 rounded-full border border-[#512080]/20">
+                <span className="text-xs font-bold text-primary bg-white px-2.5 py-1 rounded-full border border-primary/20">
                   كاش نقداً
                 </span>
               </div>
@@ -563,22 +547,22 @@ export const CheckoutPage: React.FC = () => {
           <div className="lg:col-span-4 space-y-6 sticky top-28">
             <Card className="p-6 space-y-6">
               <div className="flex items-center justify-between">
-                <h3 className="font-bold text-base text-[#26212B]">
+                <h3 className="font-bold text-base text-dark">
                   ملخص الحساب
                 </h3>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-light-gray text-dark">
                   {orderType === 'delivery' ? 'طلب ديليفري' : 'استلام فرع'}
                 </span>
               </div>
 
               {/* Items recap */}
-              <div className="max-h-52 overflow-y-auto divide-y divide-gray-100 text-xs">
+              <div className="max-h-52 overflow-y-auto divide-y divide-border text-xs">
                 {items.map((item) => (
                   <div key={item.id} className="py-2 flex justify-between">
                     <span className="truncate max-w-[180px]">
                       {item.quantity}x {getLocalizedText(item.name, 'صنف')}
                     </span>
-                    <span className="font-bold text-gray-700 number-ltr">
+                    <span className="font-bold text-dark tabular-nums number-ltr">
                       {item.lineTotal} ج.م
                     </span>
                   </div>
@@ -597,10 +581,10 @@ export const CheckoutPage: React.FC = () => {
                   isLoading={isSubmitting}
                   className={
                     !isStoreOpen
-                      ? 'bg-red-50 text-red-600 border border-red-200 cursor-not-allowed font-black opacity-90 hover:bg-red-50 hover:text-red-600'
+                      ? 'bg-danger-light text-danger border border-danger/30 cursor-not-allowed font-black opacity-90'
                       : hasDisabledCategoryItems
-                      ? 'bg-amber-50 text-amber-700 border border-amber-200 cursor-not-allowed font-black opacity-90 hover:bg-amber-50 hover:text-amber-700'
-                      : 'font-black shadow-lg shadow-[#FFDA35]/30 hover:scale-[1.01]'
+                      ? 'bg-warning-light text-warning-800 border border-warning/30 cursor-not-allowed font-black opacity-90'
+                      : 'font-black shadow-md'
                   }
                 >
                   {!isStoreOpen
@@ -613,8 +597,8 @@ export const CheckoutPage: React.FC = () => {
                 </Button>
               </div>
 
-              <div className="flex items-center justify-center gap-1.5 text-[11px] text-gray-400">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#27834B]" />
+              <div className="flex items-center justify-center gap-1.5 text-[11px] text-medium-gray">
+                <ShieldCheck className="w-3.5 h-3.5 text-success" />
                 <span>
                   طلب آمن ومضمون من مطعم مانشيز أسوان
                 </span>

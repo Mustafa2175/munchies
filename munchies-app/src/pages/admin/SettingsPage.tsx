@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Save, ToggleLeft, ToggleRight, Truck, Store, MapPin, Phone, Banknote } from 'lucide-react';
+import { Save, ToggleLeft, ToggleRight, Truck, Store, Phone, Banknote } from 'lucide-react';
 import { doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { getLocalizedText } from '@/lib/i18n';
@@ -78,7 +78,7 @@ export const SettingsPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-4xl" dir="rtl">
       <div>
-        <h1 className="text-2xl font-black text-[#26212B]">إعدادات الفرع والنظام</h1>
+        <h1 className="text-2xl font-black text-dark">إعدادات الفرع والنظام</h1>
         <p className="text-xs text-gray-500 mt-1">
           بيانات التواصل مع فرع أسوان، تفعيل وتعطيل خدمات التوصيل والميزات
         </p>
@@ -87,8 +87,8 @@ export const SettingsPage: React.FC = () => {
       <form onSubmit={handleSave} className="space-y-6">
         {/* Branch Info Card */}
         <Card className="p-6 space-y-4">
-          <h3 className="font-bold text-base text-[#26212B] pb-2 border-b border-gray-100 flex items-center gap-2">
-            <Phone className="w-4 h-4 text-[#512080]" />
+          <h3 className="font-bold text-base text-dark pb-2 border-b border-gray-100 flex items-center gap-2">
+            <Phone className="w-4 h-4 text-primary" />
             <span>بيانات الفرع والخط الساخن</span>
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -96,7 +96,7 @@ export const SettingsPage: React.FC = () => {
               label="رقم الهاتف والواتساب الخاص بالفرع"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="number-ltr"
+              className="number-ltr tabular-nums"
               required
             />
             <Input
@@ -110,15 +110,15 @@ export const SettingsPage: React.FC = () => {
 
         {/* Feature Flags: Fulfillment Types */}
         <Card className="p-6 space-y-5">
-          <h3 className="font-bold text-base text-[#26212B] pb-2 border-b border-gray-100 flex items-center gap-2">
-            <Store className="w-4 h-4 text-[#512080]" />
+          <h3 className="font-bold text-base text-dark pb-2 border-b border-gray-100 flex items-center gap-2">
+            <Store className="w-4 h-4 text-primary" />
             <span>طرق الاستلام والخدمات المفعلة</span>
           </h3>
 
           {/* Pickup option */}
           <div className="flex items-center justify-between py-2">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#512080]/10 text-[#512080] flex items-center justify-center shrink-0 mt-0.5">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
                 <Store className="w-5 h-5" />
               </div>
               <div>
@@ -128,7 +128,7 @@ export const SettingsPage: React.FC = () => {
                 </p>
               </div>
             </div>
-            <span className="text-xs font-bold text-[#27834B] bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 shrink-0">
+            <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 shrink-0">
               مفعل ومتاح دائماً
             </span>
           </div>
@@ -146,7 +146,7 @@ export const SettingsPage: React.FC = () => {
                   <h4 className="text-sm font-bold text-gray-800">توصيل ديليفري (Delivery)</h4>
                   <span className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border ${
                     deliveryEnabled
-                      ? 'bg-emerald-50 text-[#27834B] border-emerald-200'
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                       : 'bg-amber-50 text-amber-700 border-amber-200'
                   }`}>
                     {deliveryEnabled ? 'مفعل ومتاح في أسوان' : 'معطل حالياً'}
@@ -197,7 +197,7 @@ export const SettingsPage: React.FC = () => {
                   step="5"
                   value={deliveryFee}
                   onChange={(e) => setDeliveryFee(Number(e.target.value) || 0)}
-                  className="number-ltr font-bold"
+                  className="number-ltr font-bold tabular-nums"
                 />
               </div>
               <p className="text-[11px] text-gray-500">
@@ -213,7 +213,7 @@ export const SettingsPage: React.FC = () => {
           size="md"
           isLoading={isSaving}
           leftIcon={Save}
-          className="font-black px-6 shadow-md shadow-[#FFDA35]/20"
+          className="font-black px-6 shadow-md shadow-yellow/20"
         >
           حفظ كافة التغييرات
         </Button>

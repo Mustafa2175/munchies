@@ -12,5 +12,5 @@ export interface CurrencyDisplayProps {
 }
 
 export const CurrencyDisplay: React.FC<CurrencyDisplayProps> = ({ amount, className = '' }) => {
-  return <span className={`font-bold number-ltr ${className}`}>{formatPrice(amount)}</span>;
+  return <span className={`font-bold tabular-nums number-ltr ${className}`}>{formatPrice(amount)}</span>;
 };

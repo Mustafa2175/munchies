@@ -99,10 +99,10 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <div className="w-12 h-12 rounded-2xl bg-[#512080] text-[#FFDA35] flex items-center justify-center mx-auto mb-3 shadow-md">
+        <div className="w-12 h-12 rounded-2xl bg-primary text-yellow flex items-center justify-center mx-auto mb-3 shadow-md">
           <ShieldCheck className="w-7 h-7" />
         </div>
-        <h2 className="text-2xl font-black text-[#26212B]">
+        <h2 className="text-2xl font-black text-dark">
           بوابة إدارة المطعم
         </h2>
         <p className="text-xs text-gray-500 mt-1">

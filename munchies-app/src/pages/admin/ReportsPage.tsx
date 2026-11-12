@@ -57,7 +57,7 @@ export const ReportsPage: React.FC = () => {
   return (
     <div className="space-y-8 max-w-6xl">
       <div>
-        <h1 className="text-2xl font-black text-[#26212B]">تقارير المبيعات والأداء</h1>
+        <h1 className="text-2xl font-black text-dark">تقارير المبيعات والأداء</h1>
         <p className="text-xs text-gray-500 mt-1">
           تحليل الإيرادات، حجم الطلبات، والأصناف الأكثر طلباً ومبيعاً بفرع أسوان
         </p>
@@ -68,11 +68,11 @@ export const ReportsPage: React.FC = () => {
         <Card className="p-5 flex items-center justify-between">
           <div>
             <span className="text-xs text-gray-400 font-bold block">إجمالي إيرادات الأسبوع</span>
-            <span className="text-xl font-black text-[#27834B] mt-1 block">
+            <span className="text-xl font-black text-emerald-600 mt-1 block">
               <CurrencyDisplay amount={weeklyRevenue} />
             </span>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#27834B] flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
             <DollarSign className="w-6 h-6" />
           </div>
         </Card>
@@ -80,11 +80,11 @@ export const ReportsPage: React.FC = () => {
         <Card className="p-5 flex items-center justify-between">
           <div>
             <span className="text-xs text-gray-400 font-bold block">إجمالي عدد الطلبات</span>
-            <span className="text-2xl font-black text-[#512080] mt-1 block number-ltr text-start">
+            <span className="text-2xl font-black text-primary mt-1 block number-ltr text-start tabular-nums">
               169 طلب
             </span>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-[#F3EDFA] text-[#512080] flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-primary-50 text-primary flex items-center justify-center">
             <ShoppingBag className="w-6 h-6" />
           </div>
         </Card>
@@ -92,7 +92,7 @@ export const ReportsPage: React.FC = () => {
         <Card className="p-5 flex items-center justify-between">
           <div>
             <span className="text-xs text-gray-400 font-bold block">متوسط قيمة الطلب</span>
-            <span className="text-xl font-black text-[#26212B] mt-1 block">
+            <span className="text-xl font-black text-dark mt-1 block">
               <CurrencyDisplay amount={131} />
             </span>
           </div>
@@ -104,9 +104,9 @@ export const ReportsPage: React.FC = () => {
         <Card className="p-5 flex items-center justify-between">
           <div>
             <span className="text-xs text-gray-400 font-bold block">أعلى يوم مبيعاً</span>
-            <span className="text-xl font-black text-[#512080] mt-1 block">يوم الجمعة</span>
+            <span className="text-xl font-black text-primary mt-1 block">يوم الجمعة</span>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-purple-50 text-[#512080] flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-purple-50 text-primary flex items-center justify-center">
             <Calendar className="w-6 h-6" />
           </div>
         </Card>
@@ -116,7 +116,7 @@ export const ReportsPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Weekly Revenue Bar Chart */}
         <Card className="lg:col-span-8 p-6 space-y-4">
-          <h3 className="font-bold text-base text-[#26212B]">
+          <h3 className="font-bold text-base text-dark">
             حجم المبيعات اليومية خلال الأسبوع (ج.م)
           </h3>
           <div className="h-72 w-full pt-4">
@@ -140,7 +140,7 @@ export const ReportsPage: React.FC = () => {
 
         {/* Category Share Donut */}
         <Card className="lg:col-span-4 p-6 space-y-4">
-          <h3 className="font-bold text-base text-[#26212B]">توزيع المبيعات حسب القسم</h3>
+          <h3 className="font-bold text-base text-dark">توزيع المبيعات حسب القسم</h3>
           <div className="h-56 w-full flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -178,7 +178,7 @@ export const ReportsPage: React.FC = () => {
                   />
                   <span>{getLocalizedText(cat.name)}</span>
                 </div>
-                <span className="font-bold">{cat.value}%</span>
+                <span className="font-bold tabular-nums">{cat.value}%</span>
               </div>
             ))}
           </div>
@@ -190,7 +190,7 @@ export const ReportsPage: React.FC = () => {
         <div className="p-5 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Award className="w-5 h-5 text-amber-500" />
-            <h3 className="font-bold text-base text-[#26212B]">
+            <h3 className="font-bold text-base text-dark">
               الأصناف الخمسة الأكثر مبيعاً
             </h3>
           </div>
@@ -198,7 +198,7 @@ export const ReportsPage: React.FC = () => {
 
         <div className="overflow-x-auto">
           <table className="w-full text-start text-xs">
-            <thead className="bg-[#F5F3F7] text-gray-500 font-bold">
+            <thead className="bg-light-gray text-gray-500 font-bold">
               <tr>
                 <th className="px-5 py-3 text-start">الترتيب</th>
                 <th className="px-5 py-3 text-start">اسم الصنف</th>
@@ -209,16 +209,16 @@ export const ReportsPage: React.FC = () => {
             <tbody className="divide-y divide-gray-100">
               {topSelling.map((item, idx) => (
                 <tr key={item.name} className="hover:bg-gray-50/50">
-                  <td className="px-5 py-3.5 font-bold text-[#512080]">
+                  <td className="px-5 py-3.5 font-bold text-primary tabular-nums">
                     #{idx + 1}
                   </td>
-                  <td className="px-5 py-3.5 font-bold text-[#26212B]">
+                  <td className="px-5 py-3.5 font-bold text-dark">
                     {getLocalizedText(item.name)}
                   </td>
-                  <td className="px-5 py-3.5 text-gray-600 number-ltr text-start font-semibold">
+                  <td className="px-5 py-3.5 text-gray-600 number-ltr text-start font-semibold tabular-nums">
                     {item.count} طلب
                   </td>
-                  <td className="px-5 py-3.5 font-extrabold text-[#27834B]">
+                  <td className="px-5 py-3.5 font-extrabold text-emerald-600">
                     <CurrencyDisplay amount={item.revenue} />
                   </td>
                 </tr>

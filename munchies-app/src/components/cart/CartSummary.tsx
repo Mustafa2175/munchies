@@ -21,30 +21,30 @@ export const CartSummary: React.FC<CartSummaryProps> = ({ orderType = 'pickup', 
 
   return (
     <div className="space-y-2.5 text-sm">
-      <div className="flex justify-between text-gray-600">
+      <div className="flex justify-between text-medium-gray">
         <span>المجموع الفرعي</span>
-        <CurrencyDisplay amount={subtotal} />
+        <CurrencyDisplay amount={subtotal} className="text-dark font-semibold" />
       </div>
 
-      <div className="flex justify-between text-gray-600">
+      <div className="flex justify-between text-medium-gray">
         <span>رسوم الاستلام / التوصيل</span>
         {orderType === 'pickup' ? (
-          <span className="text-[#27834B] font-bold">مجاني</span>
+          <span className="text-success font-bold">مجاني</span>
         ) : (
-          <CurrencyDisplay amount={deliveryFee} />
+          <CurrencyDisplay amount={deliveryFee} className="text-dark font-semibold" />
         )}
       </div>
 
       {discountAmount > 0 && (
-        <div className="flex justify-between text-[#27834B]">
+        <div className="flex justify-between text-success">
           <span>الخصم</span>
           <span>-<CurrencyDisplay amount={discountAmount} /></span>
         </div>
       )}
 
-      <div className="border-t border-gray-100 pt-3 flex justify-between items-center text-base font-bold text-[#26212B]">
+      <div className="border-t border-border pt-3 flex justify-between items-center text-base font-bold text-dark">
         <span>الإجمالي المطلوب</span>
-        <CurrencyDisplay amount={total} className="text-xl text-[#512080]" />
+        <CurrencyDisplay amount={total} className="text-xl font-black text-primary" />
       </div>
     </div>
   );

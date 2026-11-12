@@ -49,11 +49,11 @@ export const Modal: React.FC<ModalProps> = ({
         aria-hidden="true"
       />
       <div
-        className={`relative z-10 w-full ${sizeClasses} bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden transform transition-all duration-200 max-h-[90vh] flex flex-col`}
+        className={`relative z-10 w-full ${sizeClasses} bg-white rounded-2xl shadow-card-hover border border-border overflow-hidden transform transition-all duration-200 max-h-[90vh] flex flex-col`}
       >
         {title && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <h3 className="text-lg font-bold text-[#26212B]">{title}</h3>
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+            <h3 className="text-lg font-bold text-dark">{title}</h3>
             <button
               onClick={onClose}
               className="p-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"

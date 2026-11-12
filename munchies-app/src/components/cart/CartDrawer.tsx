@@ -109,16 +109,16 @@ export const CartDrawer: React.FC = () => {
       <div className="fixed inset-y-0 start-0 max-w-full flex">
         <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-[#F5F3F7]">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-light-gray">
             <div className="flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-[#512080]" />
-              <h2 className="text-base font-bold text-[#26212B]">
-                سلة المشتريات ({itemCount})
+              <ShoppingBag className="w-5 h-5 text-primary" />
+              <h2 className="text-base font-bold text-dark">
+                سلة المشتريات <span className="tabular-nums">({itemCount})</span>
               </h2>
             </div>
             <button
               onClick={closeCartDrawer}
-              className="p-1.5 rounded-full text-gray-400 hover:text-gray-700 hover:bg-white transition-colors"
+              className="p-1.5 rounded-full text-gray-400 hover:text-gray-700 hover:bg-white transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -156,7 +156,7 @@ export const CartDrawer: React.FC = () => {
                   icon={ShoppingBag}
                   title="سلة المشتريات فارغة"
                   description="أضف أشهى الساندوتشات والبرجر والبطاطس لتبدأ طلبك الآن!"
-                  actionLabel="استكشف قائمة الطعام"
+                  actionLabel="شوف المنيو كامل"
                   onAction={() => {
                     closeCartDrawer();
                     navigate(ROUTES.MENU);

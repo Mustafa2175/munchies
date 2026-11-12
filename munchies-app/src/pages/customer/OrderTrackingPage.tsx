@@ -8,7 +8,6 @@ import { useParams, useSearchParams, useLocation, Link, useNavigate } from 'reac
 import {
   MapPin,
   Phone,
-  Sparkles,
   Search,
   PackageSearch,
   AlertCircle,
@@ -16,10 +15,9 @@ import {
   RotateCcw,
   Printer,
   Truck,
-  Navigation,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import type { Order } from '@/types';
 import { OrderTimeline } from '@/components/order/OrderTimeline';
@@ -28,6 +26,7 @@ import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { getLocalizedText } from '@/lib/i18n';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { callCancelOrder } from '@/lib/functions';
@@ -53,17 +52,14 @@ export const OrderTrackingPage: React.FC = () => {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
 
-  // Helper: Normalize phone & order numbers
   const normalizeOrderNumber = (num: string) => String(num || '').trim().replace(/^#/, '');
   const normalizePhone = (p: string) => String(p || '').replace(/\D/g, '');
 
-  // Helper to search in Firestore and local storage
   const findOrder = async (targetOrderNum: string, targetPhone?: string): Promise<Order | null> => {
     const cleanNum = normalizeOrderNumber(targetOrderNum);
     const cleanDigits = targetPhone ? normalizePhone(targetPhone) : '';
     const numVariant = parseInt(cleanNum, 10);
 
-    // 1. Query Firestore by orderNumber (string, #string, and numeric)
     try {
       const ordersCol = collection(db, 'orders');
       const variants: any[] = [cleanNum, `#${cleanNum}`];
@@ -94,7 +90,6 @@ export const OrderTrackingPage: React.FC = () => {
         }
       });
 
-      // Also try querying by orderNumberNum if not matched
       if (!matched && !isNaN(numVariant)) {
         const qNum = query(ordersCol, where('orderNumberNum', '==', numVariant));
         const snapNum = await getDocs(qNum);
@@ -120,7 +115,6 @@ export const OrderTrackingPage: React.FC = () => {
       console.warn('Firestore order lookup error:', err);
     }
 
-    // 2. Check local storage fallback (for offline or local testing)
     try {
       const localOrders: Order[] = JSON.parse(
         localStorage.getItem('munchies_orders') || '[]'
@@ -141,12 +135,10 @@ export const OrderTrackingPage: React.FC = () => {
     return null;
   };
 
-  // 1. Handle initial load from navigation state, query params, or URL id
   useEffect(() => {
     let isMounted = true;
 
     const initialize = async () => {
-      // A. Check navigation state first (e.g. from Digital Receipt Modal)
       const state = location.state as { order?: Order; orderNumber?: string; phone?: string } | null;
       if (state?.order?.id) {
         setActiveOrderId(state.order.id);
@@ -156,7 +148,6 @@ export const OrderTrackingPage: React.FC = () => {
         return;
       }
 
-      // B. Check URL Search Params (?orderNumber=1001&phone=010...)
       const paramOrderNum = searchParams.get('orderNumber');
       const paramPhone = searchParams.get('phone');
 
@@ -181,7 +172,6 @@ export const OrderTrackingPage: React.FC = () => {
         return;
       }
 
-      // C. Check URL Route Param (:id)
       if (id) {
         setActiveOrderId(id);
       }
@@ -194,17 +184,16 @@ export const OrderTrackingPage: React.FC = () => {
     };
   }, [id, searchParams, location.state]);
 
-  // 2. Real-time subscription to Firestore whenever activeOrderId is set (zero refresh needed)
   useEffect(() => {
     if (!activeOrderId) return;
 
     const unsub = subscribeToDoc<Order>('orders', activeOrderId, (remoteOrder) => {
       if (remoteOrder) {
         setOrder(remoteOrder);
+        setSearchError(null);
         setOrderNumberInput(normalizeOrderNumber(remoteOrder.orderNumber));
         setPhoneInput(remoteOrder.customerPhone || '');
       } else {
-        // Fallback to local storage if doc doesn't exist remotely yet
         try {
           const localOrders: Order[] = JSON.parse(
             localStorage.getItem('munchies_orders') || '[]'
@@ -212,6 +201,10 @@ export const OrderTrackingPage: React.FC = () => {
           const foundLocal = localOrders.find((o) => o.id === activeOrderId);
           if (foundLocal) {
             setOrder(foundLocal);
+            setSearchError(null);
+          } else if (id === activeOrderId) {
+            setActiveOrderId(null);
+            setSearchError('لم نتمكن من العثور على طلب بهذا المعرّف. يمكنك البحث برقم الطلب ورقم الهاتف أدناه.');
           }
         } catch {
           // ignore
@@ -220,9 +213,8 @@ export const OrderTrackingPage: React.FC = () => {
     });
 
     return () => unsub();
-  }, [activeOrderId]);
+  }, [activeOrderId, id]);
 
-  // 3. Manual Search Form Submission
   const handleSearchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -239,7 +231,6 @@ export const OrderTrackingPage: React.FC = () => {
       return;
     }
 
-    // Egyptian phone validation (at least 10-11 digits)
     if (cleanPhone.length < 10) {
       toast.error('يرجى إدخال رقم موبايل مصري صحيح (مثال: 01025707026)');
       return;
@@ -260,14 +251,13 @@ export const OrderTrackingPage: React.FC = () => {
           'لم نتمكن من العثور على طلب مطابق لرقم الطلب ورقم الهاتف المدخلين. يرجى التأكد من البيانات والمحاولة مرة أخرى.'
         );
       }
-    } catch (err: any) {
+    } catch {
       setSearchError('حدث خطأ أثناء البحث، يرجى المحاولة مرة أخرى.');
     } finally {
       setIsSearching(false);
     }
   };
 
-  // Reset to search another order
   const handleResetSearch = () => {
     setActiveOrderId(null);
     setOrder(null);
@@ -276,7 +266,6 @@ export const OrderTrackingPage: React.FC = () => {
     navigate(ROUTES.TRACK_ORDER);
   };
 
-  // Cancellation handling
   const canCancel =
     order && (order.status === 'pending' || order.status === 'confirmed');
 
@@ -295,49 +284,80 @@ export const OrderTrackingPage: React.FC = () => {
     }
   };
 
+  const showTrackingSkeleton =
+    !order && (Boolean(activeOrderId) || (isSearching && Boolean(searchParams.get('orderNumber'))));
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8" dir="rtl">
-      {/* ── Lookup Form (Shown when no order is actively displayed or user wants to search) ── */}
-      {!order && (
+      {showTrackingSkeleton && (
+        <div className="space-y-6">
+          <div className="bg-white p-6 rounded-2xl border border-border shadow-card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-2">
+              <Skeleton variant="text" className="w-32 h-3" />
+              <Skeleton variant="text" className="w-24 h-8" />
+              <Skeleton variant="text" className="w-40 h-3" />
+            </div>
+            <Skeleton variant="rectangular" className="w-28 h-8 rounded-full" />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <Card className="lg:col-span-7 p-6 space-y-4">
+              <Skeleton variant="text" className="w-36 h-5" />
+              <div className="space-y-5 pt-2">
+                {[1, 2, 3, 4].map((step) => (
+                  <div key={step} className="flex items-center gap-3">
+                    <Skeleton variant="circular" className="w-6 h-6 shrink-0" />
+                    <Skeleton variant="text" className="w-48 h-4" />
+                  </div>
+                ))}
+              </div>
+            </Card>
+            <Card className="lg:col-span-5 p-6 space-y-4">
+              <Skeleton variant="text" className="w-32 h-5" />
+              <Skeleton variant="rectangular" className="w-full h-24" />
+              <Skeleton variant="rectangular" className="w-full h-16" />
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {!order && !showTrackingSkeleton && (
         <div className="max-w-xl mx-auto space-y-6">
           <div className="text-center space-y-2">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#512080]/10 text-[#512080] border border-[#512080]/20 shadow-xs mb-2">
-              <PackageSearch className="w-8 h-8 text-[#512080]" />
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary-50 text-primary border border-primary-100 shadow-xs mb-2">
+              <PackageSearch className="w-8 h-8 text-primary" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-[#26212B]">
+            <h1 className="text-2xl sm:text-3xl font-black text-dark">
               تتبع حالة طلبك
             </h1>
-            <p className="text-xs sm:text-sm text-gray-500 max-w-md mx-auto">
-              أدخل رقم الطلب المسجل بالفاتورة (مثال: <span className="font-mono text-[#512080] font-bold">1001</span>) ورقم الموبايل لمتابعة حالة تحضير طلبك مباشرة لحظة بلحظة.
+            <p className="text-xs sm:text-sm text-medium-gray max-w-md mx-auto">
+              أدخل رقم الطلب المدون بالفاتورة ورقم الموبايل لمتابعة حالة تحضير طلبك مباشرة لحظة بلحظة.
             </p>
           </div>
 
-          <Card className="p-6 sm:p-8 shadow-xl border-gray-100">
+          <Card className="p-6 sm:p-8 shadow-card border-border">
             <form onSubmit={handleSearchSubmit} className="space-y-5">
               <div>
-                <label className="block text-xs font-black text-[#26212B] mb-1.5">
+                <label className="block text-xs font-black text-dark mb-1.5">
                   رقم الطلب (Order Number)
                 </label>
-                <div className="relative">
-                  <Input
-                    type="text"
-                    value={orderNumberInput}
-                    onChange={(e) => {
-                      setOrderNumberInput(e.target.value);
-                      if (searchError) setSearchError(null);
-                    }}
-                    placeholder="1001 أو #1001"
-                    className="font-mono font-bold text-sm"
-                    required
-                  />
-                </div>
-                <p className="text-[11px] text-gray-400 mt-1">
-                  الرقم التسلسلي المميز المدون على الفاتورة الرقمية
+                <Input
+                  type="text"
+                  value={orderNumberInput}
+                  onChange={(e) => {
+                    setOrderNumberInput(e.target.value);
+                    if (searchError) setSearchError(null);
+                  }}
+                  placeholder="1001 أو #1001"
+                  className="font-mono font-bold text-sm"
+                  required
+                />
+                <p className="text-[11px] text-medium-gray mt-1">
+                  الرقم التسلسلي المدون على الفاتورة الرقمية
                 </p>
               </div>
 
               <div>
-                <label className="block text-xs font-black text-[#26212B] mb-1.5">
+                <label className="block text-xs font-black text-dark mb-1.5">
                   رقم الموبايل المسجل بالطلب
                 </label>
                 <Input
@@ -351,14 +371,14 @@ export const OrderTrackingPage: React.FC = () => {
                   className="number-ltr font-bold text-sm"
                   required
                 />
-                <p className="text-[11px] text-gray-400 mt-1">
-                  رقم الهاتف المصري الذي قمت بإدخاله عند إتمام الطلب
+                <p className="text-[11px] text-medium-gray mt-1">
+                  رقم الهاتف الذي قمت بإدخاله عند إتمام الطلب
                 </p>
               </div>
 
               {searchError && (
-                <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-bold flex items-start gap-2.5">
-                  <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <div className="p-3.5 bg-danger-light border border-danger/20 rounded-xl text-danger text-xs font-bold flex items-start gap-2.5">
+                  <AlertCircle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
                   <span className="leading-relaxed">{searchError}</span>
                 </div>
               )}
@@ -369,7 +389,7 @@ export const OrderTrackingPage: React.FC = () => {
                 size="lg"
                 fullWidth
                 isLoading={isSearching}
-                className="font-black shadow-lg shadow-[#FFDA35]/30 hover:scale-[1.01]"
+                className="font-black shadow-md"
               >
                 <Search className="w-4 h-4 ms-2" />
                 <span>متابعة حالة الطلب</span>
@@ -380,7 +400,7 @@ export const OrderTrackingPage: React.FC = () => {
           <div className="text-center pt-2">
             <Link
               to={ROUTES.MENU}
-              className="text-xs font-bold text-[#512080] hover:underline inline-flex items-center gap-1"
+              className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1"
             >
               <span>العودة لقائمة الطعام واطلب الآن</span>
               <ArrowRight className="w-3.5 h-3.5 rotate-180" />
@@ -389,22 +409,17 @@ export const OrderTrackingPage: React.FC = () => {
         </div>
       )}
 
-      {/* ── Active Order View (Timeline, Details, Live Updates) ── */}
       {order && (
         <div className="space-y-6">
-          {/* Top Banner */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-border shadow-card">
             <div>
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#FFDA35]" />
-                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  متابعة حالة الطلب المباشرة
-                </span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-black text-[#512080] mt-1 font-mono">
+              <span className="text-xs font-bold text-medium-gray uppercase tracking-wider block">
+                متابعة حالة الطلب المباشرة
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-black text-primary mt-1 font-mono">
                 #{String(order.orderNumber || '').replace(/^#/, '')}
               </h1>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-medium-gray">
                 تاريخ الطلب: {formatDateTime(order.createdAt)}
               </span>
             </div>
@@ -414,7 +429,7 @@ export const OrderTrackingPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleResetSearch}
-                className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-100 flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-3 py-1.5 rounded-xl border border-border text-xs font-bold text-dark hover:bg-light-gray flex items-center gap-1.5 transition-colors cursor-pointer"
                 title="البحث عن طلب آخر"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -424,14 +439,13 @@ export const OrderTrackingPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-            {/* Timeline Column */}
-            <div className="md:col-span-7 bg-white p-6 rounded-3xl border border-gray-100 shadow-xs space-y-6">
+            <div className="md:col-span-7 bg-white p-6 rounded-2xl border border-border shadow-card space-y-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-base font-extrabold text-[#26212B]">
+                <h2 className="text-base font-extrabold text-dark">
                   مراحل تحضير الطلب
                 </h2>
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-success bg-success-light px-2.5 py-1 rounded-full border border-success/20">
+                  <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
                   <span>تحديث فوري</span>
                 </span>
               </div>
@@ -442,17 +456,16 @@ export const OrderTrackingPage: React.FC = () => {
                 locale="ar"
               />
 
-              {/* Cancellation section */}
               {canCancel && (
-                <div className="pt-6 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <span className="text-xs text-gray-500">
+                <div className="pt-6 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <span className="text-xs text-medium-gray">
                     يمكنك إلغاء الطلب قبل بدء تجهيز الطعام في المطبخ.
                   </span>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setIsCancelModalOpen(true)}
-                    className="text-[#E84D45] hover:bg-red-50 hover:text-red-700 shrink-0"
+                    className="text-danger hover:bg-danger-light hover:text-danger shrink-0"
                   >
                     إلغاء الطلب
                   </Button>
@@ -460,75 +473,73 @@ export const OrderTrackingPage: React.FC = () => {
               )}
             </div>
 
-            {/* Order Details & Branch / Delivery Info */}
             <div className="md:col-span-5 space-y-6">
-              {/* Delivery or Branch pickup card */}
               {(order.type === 'delivery' || (order as any).deliveryType === 'delivery') ? (
-                <Card className="p-6 space-y-4 bg-purple-50/60 border-purple-200">
-                  <div className="flex items-center justify-between pb-2 border-b border-purple-100">
-                    <h3 className="text-sm font-black text-[#512080] flex items-center gap-2">
-                      <Truck className="w-4 h-4 text-[#512080]" />
+                <Card className="p-6 space-y-4 bg-primary-50/60 border-primary-200">
+                  <div className="flex items-center justify-between pb-2 border-b border-primary-100">
+                    <h3 className="text-sm font-black text-primary flex items-center gap-2">
+                      <Truck className="w-4 h-4 text-primary" />
                       <span>توصيل ديليفري لباب البيت</span>
                     </h3>
-                    <span className="text-[11px] font-bold text-[#512080] bg-white px-2 py-0.5 rounded-full border border-purple-200">
+                    <span className="text-[11px] font-bold text-primary bg-white px-2 py-0.5 rounded-full border border-primary-200">
                       طلب ديليفري
                     </span>
                   </div>
 
                   {order.deliveryAddress ? (
-                    <div className="space-y-1.5 text-xs text-gray-700">
-                      <div className="font-extrabold text-[#26212B] text-sm flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-[#512080]" />
+                    <div className="space-y-1.5 text-xs text-dark">
+                      <div className="font-extrabold text-dark text-sm flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-primary" />
                         <span>{getLocalizedText(order.deliveryAddress.area, 'أسوان')} – أسوان</span>
                       </div>
-                      <p className="font-semibold text-gray-800">
+                      <p className="font-semibold text-dark">
                         الشارع: {getLocalizedText(order.deliveryAddress.addressLine1 || order.deliveryAddress.street, '')}
                       </p>
                       {(order.deliveryAddress.addressLine2 || order.deliveryAddress.building) && (
-                        <p className="text-gray-600">
+                        <p className="text-medium-gray">
                           العقار / الشقة: {getLocalizedText(order.deliveryAddress.addressLine2 || order.deliveryAddress.building, '')}
                         </p>
                       )}
                       {order.deliveryAddress.deliveryInstructions && (
-                        <p className="text-[11px] text-amber-800 italic bg-amber-50 p-2 rounded-lg border border-amber-100">
+                        <p className="text-[11px] text-warning-800 bg-warning-light p-2 rounded-lg border border-warning/20">
                           علامة مميزة: {getLocalizedText(order.deliveryAddress.deliveryInstructions, '')}
                         </p>
                       )}
                     </div>
                   ) : (
-                    <p className="text-xs text-gray-500">تم تسجيل طلب التوصيل</p>
+                    <p className="text-xs text-medium-gray">تم تسجيل طلب التوصيل</p>
                   )}
 
-                  <div className="flex items-center justify-between pt-2 border-t border-purple-100 text-xs">
+                  <div className="flex items-center justify-between pt-2 border-t border-primary-100 text-xs">
                     <div className="flex items-center gap-1.5">
-                      <Phone className="w-4 h-4 text-[#512080]" />
-                      <span className="text-gray-500">للتواصل مع المطعم:</span>
+                      <Phone className="w-4 h-4 text-primary" />
+                      <span className="text-medium-gray">للتواصل مع المطعم:</span>
                     </div>
                     <a
                       href="tel:01025707026"
-                      className="font-bold text-[#512080] number-ltr hover:underline"
+                      className="font-bold text-primary number-ltr hover:underline"
                     >
                       01025707026
                     </a>
                   </div>
                 </Card>
               ) : (
-                <Card className="p-6 space-y-4 bg-[#F5F3F7]/60 border-gray-200">
-                  <h3 className="text-sm font-black text-[#26212B] flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-[#512080]" />
+                <Card className="p-6 space-y-4 bg-light-gray/60 border-border">
+                  <h3 className="text-sm font-black text-dark flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-primary" />
                     <span>عنوان ومقر الاستلام</span>
                   </h3>
-                  <p className="text-xs text-gray-600 leading-relaxed font-semibold">
+                  <p className="text-xs text-dark leading-relaxed font-semibold">
                     حديقة الورد أمام الراية – فرع الكورنيش، أسوان
                   </p>
-                  <div className="flex items-center justify-between pt-2 border-t border-gray-200 text-xs">
+                  <div className="flex items-center justify-between pt-2 border-t border-border text-xs">
                     <div className="flex items-center gap-1.5">
-                      <Phone className="w-4 h-4 text-[#512080]" />
-                      <span className="text-gray-500">للتواصل مع الفرع:</span>
+                      <Phone className="w-4 h-4 text-primary" />
+                      <span className="text-medium-gray">للتواصل مع الفرع:</span>
                     </div>
                     <a
                       href="tel:01025707026"
-                      className="font-bold text-[#512080] number-ltr hover:underline"
+                      className="font-bold text-primary number-ltr hover:underline"
                     >
                       01025707026
                     </a>
@@ -536,37 +547,36 @@ export const OrderTrackingPage: React.FC = () => {
                 </Card>
               )}
 
-              {/* Items summary */}
               <Card className="p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-black text-[#26212B]">
+                  <h3 className="text-sm font-black text-dark">
                     تفاصيل الفاتورة
                   </h3>
                   <button
                     onClick={() => window.print()}
-                    className="text-xs font-bold text-[#512080] hover:underline flex items-center gap-1 cursor-pointer"
+                    className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
                   >
                     <Printer className="w-3.5 h-3.5" />
                     <span>طباعة</span>
                   </button>
                 </div>
 
-                <div className="text-xs text-gray-500 pb-2 border-b border-gray-100 flex justify-between">
-                  <span>العميل: <strong>{getLocalizedText(order.customerName, '')}</strong></span>
-                  <span className="number-ltr">{order.customerPhone}</span>
+                <div className="text-xs text-medium-gray pb-2 border-b border-border flex justify-between">
+                  <span>العميل: <strong className="text-dark">{getLocalizedText(order.customerName, '')}</strong></span>
+                  <span className="number-ltr font-bold text-dark">{order.customerPhone}</span>
                 </div>
 
-                <div className="divide-y divide-gray-100 text-xs space-y-2">
+                <div className="divide-y divide-border text-xs space-y-2">
                   {order.items.map((item, idx) => (
                     <div key={idx} className="pt-2 first:pt-0">
-                      <div className="flex justify-between font-bold text-gray-800">
+                      <div className="flex justify-between font-bold text-dark">
                         <span>
                           {item.quantity}x {getLocalizedText(item.name, 'صنف')}
                         </span>
                         <CurrencyDisplay amount={item.totalPrice} />
                       </div>
                       {item.customizations && item.customizations.length > 0 && (
-                        <div className="mt-0.5 ps-3 text-[11px] text-gray-500 space-y-0.5">
+                        <div className="mt-0.5 ps-3 text-[11px] text-medium-gray space-y-0.5">
                           {item.customizations.map((c: any, cIdx: number) => {
                             const groupTitle = getLocalizedText(c.groupName || c.groupId, '');
                             const optionsList = Array.isArray(c.selectedOptions)
@@ -587,20 +597,20 @@ export const OrderTrackingPage: React.FC = () => {
                   ))}
                 </div>
 
-                <div className="border-t border-gray-100 pt-3 space-y-1 text-xs text-gray-600">
+                <div className="border-t border-border pt-3 space-y-1 text-xs text-medium-gray">
                   <div className="flex justify-between">
                     <span>المجموع الفرعي:</span>
-                    <CurrencyDisplay amount={order.subtotal} />
+                    <CurrencyDisplay amount={order.subtotal} className="text-dark font-semibold" />
                   </div>
                   {order.discount > 0 && (
-                    <div className="flex justify-between text-emerald-600">
+                    <div className="flex justify-between text-success">
                       <span>الخصم:</span>
                       <span>-{order.discount} ج.م</span>
                     </div>
                   )}
-                  <div className="pt-2 border-t border-gray-100 flex justify-between items-center text-sm font-black text-[#26212B]">
+                  <div className="pt-2 border-t border-border flex justify-between items-center text-sm font-black text-dark">
                     <span>المطلوب كاش عند الاستلام:</span>
-                    <CurrencyDisplay amount={order.total} className="text-base text-[#512080]" />
+                    <CurrencyDisplay amount={order.total} className="text-base text-primary font-black" />
                   </div>
                 </div>
               </Card>
@@ -615,7 +625,7 @@ export const OrderTrackingPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleResetSearch}
-                  className="w-full py-2.5 text-center text-xs font-bold text-gray-500 hover:text-[#512080] transition-colors cursor-pointer"
+                  className="w-full py-2.5 text-center text-xs font-bold text-medium-gray hover:text-primary transition-colors cursor-pointer"
                 >
                   البحث عن طلب آخر
                 </button>
@@ -625,7 +635,6 @@ export const OrderTrackingPage: React.FC = () => {
         </div>
       )}
 
-      {/* Cancel Modal Confirmation */}
       <ConfirmDialog
         isOpen={isCancelModalOpen}
         onClose={() => setIsCancelModalOpen(false)}

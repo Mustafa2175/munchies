@@ -9,7 +9,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   Search,
   Printer,
-  X,
   UtensilsCrossed,
   Truck,
   Store,
@@ -22,8 +21,6 @@ import {
   ChevronDown,
   ChevronUp,
   Calendar,
-  AlertCircle,
-  CheckCircle2,
   SlidersHorizontal,
 } from 'lucide-react';
 import type { Order, OrderStatus } from '@/types';
@@ -34,7 +31,7 @@ import { Modal } from '@/components/ui/Modal';
 import { formatTime, formatDateTime } from '@/lib/date';
 import { subscribeToCollection, updateOrderStatusInFirestore } from '@/lib/firestore';
 import { getLocalizedText } from '@/lib/i18n';
-import { useRestaurantStore, getTodayWorkingHoursText } from '@/stores/restaurantStore';
+import { getTodayWorkingHoursText } from '@/stores/restaurantStore';
 import { TIMEZONE } from '@/config/constants';
 import { toZonedTime } from 'date-fns-tz';
 import toast from 'react-hot-toast';
@@ -298,7 +295,7 @@ export const OrdersPage: React.FC = () => {
         rawOrderNum.includes(cleanQuery) ||
         `#${rawOrderNum}`.includes(query) ||
         o.customerName?.toLowerCase().includes(query) ||
-        o.customerPhone?.replace(/[\s\-]/g, '').includes(cleanQuery);
+        o.customerPhone?.replace(/[\s-]/g, '').includes(cleanQuery);
 
       return matchesStatus && matchesSearch;
     });
@@ -325,8 +322,8 @@ export const OrdersPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black text-[#26212B]">الطلبات الواردة</h1>
-            <span className="px-3 py-1 rounded-full text-xs font-black bg-[#F3EDFA] text-[#512080] border border-purple-200 shadow-2xs">
+            <h1 className="text-2xl font-black text-dark">الطلبات الواردة</h1>
+            <span className="px-3 py-1 rounded-full text-xs font-black bg-primary-50 text-primary border border-primary-100 shadow-2xs tabular-nums">
               {finalFilteredOrders.length} {finalFilteredOrders.length === 1 ? 'طلب' : 'طلبات'}
             </span>
           </div>
@@ -344,11 +341,11 @@ export const OrdersPage: React.FC = () => {
         <Card className="p-5 flex items-center justify-between">
           <div>
             <span className="text-xs text-gray-400 font-bold block">إجمالي طلبات اليوم</span>
-            <span className="text-2xl font-black text-[#26212B] mt-1 block number-ltr text-start">
+            <span className="text-2xl font-black text-dark mt-1 block number-ltr text-start tabular-nums">
               {kpiTodayTotal}
             </span>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-[#F3EDFA] text-[#512080] flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-primary-50 text-primary flex items-center justify-center">
             <ShoppingBag className="w-6 h-6" />
           </div>
         </Card>
@@ -357,7 +354,7 @@ export const OrdersPage: React.FC = () => {
         <Card className="p-5 flex items-center justify-between">
           <div>
             <span className="text-xs text-gray-400 font-bold block">بانتظار الموافقة</span>
-            <span className="text-2xl font-black text-amber-600 mt-1 block number-ltr text-start">
+            <span className="text-2xl font-black text-amber-600 mt-1 block number-ltr text-start tabular-nums">
               {kpiPending}
             </span>
           </div>
@@ -370,11 +367,11 @@ export const OrdersPage: React.FC = () => {
         <Card className="p-5 flex items-center justify-between">
           <div>
             <span className="text-xs text-gray-400 font-bold block">قيد التحضير في المطبخ</span>
-            <span className="text-2xl font-black text-[#512080] mt-1 block number-ltr text-start">
+            <span className="text-2xl font-black text-primary mt-1 block number-ltr text-start tabular-nums">
               {kpiPreparing}
             </span>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-purple-50 text-[#512080] flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-purple-50 text-primary flex items-center justify-center">
             <ChefHat className="w-6 h-6" />
           </div>
         </Card>
@@ -383,11 +380,11 @@ export const OrdersPage: React.FC = () => {
         <Card className="p-5 flex items-center justify-between">
           <div>
             <span className="text-xs text-gray-400 font-bold block">إجمالي الإيرادات اليوم</span>
-            <span className="text-xl font-black text-[#27834B] mt-1 block">
+            <span className="text-xl font-black text-emerald-600 mt-1 block">
               <CurrencyDisplay amount={kpiRevenue} />
             </span>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#27834B] flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
             <TrendingUp className="w-6 h-6" />
           </div>
         </Card>
@@ -396,13 +393,13 @@ export const OrdersPage: React.FC = () => {
       {/* ══════════════════════════════════════════════════════════════════════
           3. UNIFIED FILTER & SHIFT CONTROL BOX (Multi-row Card)
           ══════════════════════════════════════════════════════════════════════ */}
-      <Card className="p-5 space-y-4 border border-gray-200/80 shadow-xs">
+      <Card className="p-5 space-y-4 border border-border shadow-xs">
         {/* Row 1 — Shift Date Filter */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-3 border-b border-gray-100">
           {/* Shift Date Pills */}
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-extrabold text-gray-700 ms-1 flex items-center gap-1.5">
-              <SlidersHorizontal className="w-3.5 h-3.5 text-[#512080]" />
+              <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
               <span>تاريخ الوردية:</span>
             </span>
 
@@ -411,11 +408,11 @@ export const OrdersPage: React.FC = () => {
               onClick={() => setDateFilter('today')}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
                 dateFilter === 'today'
-                  ? 'bg-[#512080] text-white shadow-xs'
+                  ? 'bg-primary text-white shadow-xs'
                   : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200/80'
               }`}
             >
-              اليوم ({todayOrdersAll.length})
+              اليوم (<span className="tabular-nums">{todayOrdersAll.length}</span>)
             </button>
 
             {/* Yesterday */}
@@ -423,11 +420,11 @@ export const OrdersPage: React.FC = () => {
               onClick={() => setDateFilter('yesterday')}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
                 dateFilter === 'yesterday'
-                  ? 'bg-[#512080] text-white shadow-xs'
+                  ? 'bg-primary text-white shadow-xs'
                   : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200/80'
               }`}
             >
-              أمس ({yesterdayOrdersAll.length})
+              أمس (<span className="tabular-nums">{yesterdayOrdersAll.length}</span>)
             </button>
 
             {/* Specific Date */}
@@ -436,7 +433,7 @@ export const OrdersPage: React.FC = () => {
                 onClick={() => setDateFilter('specific')}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
                   dateFilter === 'specific'
-                    ? 'bg-[#512080] text-white shadow-xs'
+                    ? 'bg-primary text-white shadow-xs'
                     : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200/80'
                 }`}
               >
@@ -447,7 +444,7 @@ export const OrdersPage: React.FC = () => {
                   type="date"
                   value={specificDate}
                   onChange={(e) => setSpecificDate(e.target.value)}
-                  className="text-xs px-2.5 py-1.5 rounded-xl border border-gray-300 bg-white font-mono focus:outline-none focus:border-[#512080]"
+                  className="text-xs px-2.5 py-1.5 rounded-xl border border-gray-300 bg-white font-mono focus:outline-none focus:border-primary"
                 />
               )}
             </div>
@@ -457,18 +454,18 @@ export const OrdersPage: React.FC = () => {
               onClick={() => setDateFilter('all')}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
                 dateFilter === 'all'
-                  ? 'bg-[#512080] text-white shadow-xs'
+                  ? 'bg-primary text-white shadow-xs'
                   : 'bg-gray-100/80 text-gray-600 hover:bg-gray-200/80'
               }`}
             >
-              كل التواريخ ({orders.length})
+              كل التواريخ (<span className="tabular-nums">{orders.length}</span>)
             </button>
           </div>
 
           {/* Shift Hours & Date Badges */}
           <div className="flex items-center gap-2 flex-wrap">
             {/* Shift hours badge */}
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold bg-[#F3EDFA] text-[#512080] border border-purple-200">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold bg-primary-50 text-primary border border-primary-100">
               <Clock className="w-3.5 h-3.5" />
               <span>الوردية: {workingHoursText}</span>
             </span>
@@ -488,73 +485,73 @@ export const OrdersPage: React.FC = () => {
             {/* All */}
             <button
               onClick={() => setStatusFilter('all')}
-              className={`px-3 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                 statusFilter === 'all'
-                  ? 'bg-[#512080] text-white shadow-xs'
-                  : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                  ? 'bg-primary text-white shadow-xs'
+                  : 'bg-white border border-border text-gray-600 hover:bg-gray-50'
               }`}
             >
-              الكل ({statusCounts.all})
+              الكل (<span className="tabular-nums">{statusCounts.all}</span>)
             </button>
 
             {/* New / Pending */}
             <button
               onClick={() => setStatusFilter('pending')}
-              className={`px-3 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                 statusFilter === 'pending'
                   ? 'bg-blue-600 text-white shadow-xs'
                   : 'bg-white border border-blue-200 text-blue-700 hover:bg-blue-50'
               }`}
             >
-              جديد ({statusCounts.pending})
+              جديد (<span className="tabular-nums">{statusCounts.pending}</span>)
             </button>
 
             {/* Preparing */}
             <button
               onClick={() => setStatusFilter('preparing')}
-              className={`px-3 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                 statusFilter === 'preparing'
                   ? 'bg-amber-600 text-white shadow-xs'
                   : 'bg-white border border-amber-200 text-amber-700 hover:bg-amber-50'
               }`}
             >
-              قيد التحضير ({statusCounts.preparing})
+              قيد التحضير (<span className="tabular-nums">{statusCounts.preparing}</span>)
             </button>
 
             {/* Ready */}
             <button
               onClick={() => setStatusFilter('ready')}
-              className={`px-3 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                 statusFilter === 'ready'
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50'
               }`}
             >
-              جاهز للاستلام ({statusCounts.ready})
+              جاهز للاستلام (<span className="tabular-nums">{statusCounts.ready}</span>)
             </button>
 
             {/* Delivered */}
             <button
               onClick={() => setStatusFilter('delivered')}
-              className={`px-3 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                 statusFilter === 'delivered'
-                  ? 'bg-gray-700 text-white shadow-xs'
-                  : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                  ? 'bg-dark text-white shadow-xs'
+                  : 'bg-white border border-border text-gray-600 hover:bg-gray-50'
               }`}
             >
-              تم التسليم ({statusCounts.delivered})
+              تم التسليم (<span className="tabular-nums">{statusCounts.delivered}</span>)
             </button>
 
             {/* Cancelled */}
             <button
               onClick={() => setStatusFilter('cancelled')}
-              className={`px-3 py-1.5 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                 statusFilter === 'cancelled'
-                  ? 'bg-red-600 text-white shadow-xs'
-                  : 'bg-white border border-red-200 text-red-700 hover:bg-red-50'
+                  ? 'bg-danger text-white shadow-xs'
+                  : 'bg-white border border-red-200 text-danger hover:bg-red-50'
               }`}
             >
-              ملغي ({statusCounts.cancelled})
+              ملغي (<span className="tabular-nums">{statusCounts.cancelled}</span>)
             </button>
           </div>
 
@@ -566,7 +563,7 @@ export const OrdersPage: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="بحث برقم الطلب، اسم العميل، الهاتف..."
-              className="w-full text-xs rounded-xl border border-gray-200 bg-white py-2 ps-9 pe-3 focus:outline-none focus:border-[#512080]"
+              className="w-full text-xs rounded-xl border border-border bg-white py-2 ps-9 pe-3 focus:outline-none focus:border-primary"
             />
           </div>
         </div>
@@ -602,17 +599,17 @@ export const OrdersPage: React.FC = () => {
             return (
               <Card
                 key={order.id}
-                className="flex flex-col justify-between overflow-hidden border border-gray-200 hover:border-purple-300 transition-all shadow-xs hover:shadow-md"
+                className="flex flex-col justify-between overflow-hidden border border-border hover:border-primary/40 transition-all shadow-xs hover:shadow-card-hover"
               >
                 {/* ── CARD HEADER ── */}
                 <div className="p-4 bg-white border-b border-gray-100 space-y-2.5">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-black text-base text-[#512080]">
+                      <span className="font-mono font-black text-base text-primary tabular-nums">
                         {displayOrderNumber}
                       </span>
                       <span
-                        className={`text-[11px] font-black px-2.5 py-0.5 rounded-full border ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border}`}
+                        className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border}`}
                       >
                         {statusConfig.label}
                       </span>
@@ -630,7 +627,7 @@ export const OrdersPage: React.FC = () => {
                           setSelectedTicketOrder(order);
                           setTimeout(() => window.print(), 300);
                         }}
-                        className="p-1 rounded-lg text-gray-400 hover:text-[#512080] hover:bg-purple-50 transition-colors"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-primary-50 transition-colors cursor-pointer"
                         title="طباعة بون فوري"
                       >
                         <Printer className="w-4 h-4" />
@@ -639,7 +636,7 @@ export const OrdersPage: React.FC = () => {
                       {/* Collapse toggle */}
                       <button
                         onClick={() => toggleCardCollapse(order.id)}
-                        className="p-1 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
                         title={isCollapsed ? 'توسيع الأصناف' : 'تصغير الأصناف'}
                       >
                         {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
@@ -651,9 +648,9 @@ export const OrdersPage: React.FC = () => {
                   <div className="flex items-center justify-between text-[11px] text-gray-400">
                     <span className="flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5" />
-                      <span>{formatTime(order.createdAt)}</span>
+                      <span className="tabular-nums">{formatTime(order.createdAt)}</span>
                     </span>
-                    <span>{formatDateTime(order.createdAt).split('-')[0]}</span>
+                    <span className="tabular-nums">{formatDateTime(order.createdAt).split('-')[0]}</span>
                   </div>
                 </div>
 
@@ -661,17 +658,17 @@ export const OrdersPage: React.FC = () => {
                 <div className="p-4 bg-gray-50/70 border-b border-gray-100 space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 min-w-0">
-                      <div className="w-6 h-6 rounded-full bg-purple-100 text-[#512080] flex items-center justify-center shrink-0">
+                      <div className="w-6 h-6 rounded-full bg-primary-50 text-primary flex items-center justify-center shrink-0">
                         <User className="w-3.5 h-3.5" />
                       </div>
-                      <span className="font-extrabold text-xs text-[#26212B] truncate">
+                      <span className="font-extrabold text-xs text-dark truncate">
                         {getLocalizedText(order.customerName, 'عميل مانشيز')}
                       </span>
                     </div>
 
                     <a
                       href={`tel:${order.customerPhone}`}
-                      className="inline-flex items-center gap-1 text-[11px] font-bold text-gray-700 hover:text-[#512080] number-ltr bg-white px-2 py-0.5 rounded-md border border-gray-200 shrink-0"
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-gray-700 hover:text-primary number-ltr tabular-nums bg-white px-2 py-0.5 rounded-md border border-gray-200 shrink-0"
                     >
                       <Phone className="w-3 h-3 text-emerald-600" />
                       <span>{order.customerPhone}</span>
@@ -686,8 +683,8 @@ export const OrdersPage: React.FC = () => {
 
                     {/* Order Type badge */}
                     {isDelivery ? (
-                      <span className="inline-flex items-center gap-1 font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200 shrink-0">
-                        <Truck className="w-3 h-3 text-[#512080]" />
+                      <span className="inline-flex items-center gap-1 font-bold text-primary bg-primary-50 px-2 py-0.5 rounded border border-primary-100 shrink-0">
+                        <Truck className="w-3 h-3 text-primary" />
                         <span>توصيل للمنزل</span>
                       </span>
                     ) : (
@@ -701,7 +698,7 @@ export const OrdersPage: React.FC = () => {
                   {/* Delivery address details if delivery */}
                   {isDelivery && order.deliveryAddress && (
                     <div className="text-[10px] text-gray-600 bg-white p-2 rounded-lg border border-gray-200/60 space-y-0.5">
-                      <div className="font-bold text-purple-900">
+                      <div className="font-bold text-primary">
                         منطقة: {getLocalizedText(order.deliveryAddress.area, 'أسوان')}
                       </div>
                       <div className="truncate">
@@ -713,7 +710,7 @@ export const OrdersPage: React.FC = () => {
                           .join(' – ')}
                       </div>
                       {order.deliveryAddress.deliveryInstructions && (
-                        <div className="text-gray-400 italic">
+                        <div className="text-gray-400">
                           علامة: {getLocalizedText(order.deliveryAddress.deliveryInstructions)}
                         </div>
                       )}
@@ -725,8 +722,8 @@ export const OrdersPage: React.FC = () => {
                 {!isCollapsed && (
                   <div className="p-4 flex-1 space-y-2.5">
                     <div className="flex items-center justify-between text-xs pb-1 border-b border-gray-100">
-                      <span className="font-black text-[#26212B]">الأصناف المطلوبة</span>
-                      <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                      <span className="font-black text-dark">الأصناف المطلوبة</span>
+                      <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full tabular-nums">
                         {totalItemCount} قطع
                       </span>
                     </div>
@@ -740,12 +737,12 @@ export const OrdersPage: React.FC = () => {
                           <div key={idx} className="text-xs space-y-1">
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex items-center gap-1.5 min-w-0">
-                                <span className="font-mono font-black text-[11px] text-[#512080] bg-[#F3EDFA] px-1.5 py-0.2 rounded shrink-0">
+                                <span className="font-mono font-black text-[11px] text-primary bg-primary-50 px-1.5 py-0.2 rounded shrink-0 tabular-nums">
                                   {item.quantity}x
                                 </span>
-                                <span className="font-bold text-[#26212B] truncate">{itemName}</span>
+                                <span className="font-bold text-dark truncate">{itemName}</span>
                               </div>
-                              <span className="font-extrabold text-[#26212B] shrink-0">
+                              <span className="font-extrabold text-dark shrink-0">
                                 <CurrencyDisplay amount={itemPrice} />
                               </span>
                             </div>
@@ -772,7 +769,7 @@ export const OrdersPage: React.FC = () => {
 
                             {/* Item special notes */}
                             {item.specialInstructions && (
-                              <div className="ps-6 text-[10px] text-amber-700 italic">
+                              <div className="ps-6 text-[10px] text-amber-700">
                                 * ملاحظة: {item.specialInstructions}
                               </div>
                             )}
@@ -788,7 +785,7 @@ export const OrdersPage: React.FC = () => {
                   {/* Total */}
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-xs text-gray-400 font-bold">الإجمالي:</span>
-                    <span className="text-base font-black text-[#512080]">
+                    <span className="text-base font-black text-primary">
                       <CurrencyDisplay amount={order.total} />
                     </span>
                   </div>
@@ -798,7 +795,7 @@ export const OrdersPage: React.FC = () => {
                     {/* Print Receipt Button */}
                     <button
                       onClick={() => setSelectedTicketOrder(order)}
-                      className="px-2.5 py-1.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                      className="px-2.5 py-1.5 rounded-xl border border-border bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                       title="معاينة وطباعة البون"
                     >
                       <Printer className="w-3.5 h-3.5" />
@@ -809,7 +806,7 @@ export const OrdersPage: React.FC = () => {
                     {isCancellable && (
                       <button
                         onClick={() => handleCancelOrder(order.id)}
-                        className="px-2.5 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold transition-all cursor-pointer"
+                        className="px-2.5 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-danger text-xs font-bold transition-all cursor-pointer"
                       >
                         إلغاء الطلب
                       </button>
@@ -819,7 +816,7 @@ export const OrdersPage: React.FC = () => {
                     {order.status === 'pending' && (
                       <button
                         onClick={() => handleUpdateStatus(order.id, 'preparing')}
-                        className="px-3.5 py-1.5 rounded-xl bg-[#512080] hover:bg-[#43186e] text-white text-xs font-black transition-all shadow-xs cursor-pointer"
+                        className="px-3.5 py-1.5 rounded-xl bg-primary hover:bg-primary-dark text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
                       >
                         بدء التحضير
                       </button>
@@ -828,7 +825,7 @@ export const OrdersPage: React.FC = () => {
                     {order.status === 'confirmed' && (
                       <button
                         onClick={() => handleUpdateStatus(order.id, 'preparing')}
-                        className="px-3.5 py-1.5 rounded-xl bg-[#512080] hover:bg-[#43186e] text-white text-xs font-black transition-all shadow-xs cursor-pointer"
+                        className="px-3.5 py-1.5 rounded-xl bg-primary hover:bg-primary-dark text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
                       >
                         بدء التحضير
                       </button>
@@ -839,7 +836,7 @@ export const OrdersPage: React.FC = () => {
                         onClick={() =>
                           handleUpdateStatus(order.id, isDelivery ? 'out_for_delivery' : 'ready')
                         }
-                        className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black transition-all shadow-xs cursor-pointer"
+                        className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
                       >
                         {isDelivery ? 'خرج للتوصيل' : 'جاهز للاستلام'}
                       </button>
@@ -850,21 +847,21 @@ export const OrdersPage: React.FC = () => {
                         onClick={() =>
                           handleUpdateStatus(order.id, isDelivery ? 'delivered' : 'picked_up')
                         }
-                        className="px-3.5 py-1.5 rounded-xl bg-[#512080] hover:bg-[#43186e] text-white text-xs font-black transition-all shadow-xs cursor-pointer"
+                        className="px-3.5 py-1.5 rounded-xl bg-primary hover:bg-primary-dark text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
                       >
                         تم التسليم
                       </button>
                     )}
 
                     {(order.status === 'picked_up' || order.status === 'delivered') && (
-                      <span className="px-2.5 py-1 rounded-xl bg-gray-100 text-gray-500 text-xs font-bold">
-                        تم التسليم ✓
+                      <span className="px-2.5 py-1 rounded-xl bg-gray-100 text-gray-600 text-xs font-bold">
+                        تم التسليم
                       </span>
                     )}
 
                     {order.status === 'cancelled' && (
-                      <span className="px-2.5 py-1 rounded-xl bg-red-50 text-red-500 text-xs font-bold">
-                        ملغي ✕
+                      <span className="px-2.5 py-1 rounded-xl bg-red-50 text-danger text-xs font-bold">
+                        ملغي
                       </span>
                     )}
                   </div>
@@ -888,20 +885,20 @@ export const OrdersPage: React.FC = () => {
             {/* Header */}
             <div className="text-center pb-4 border-b-2 border-dashed border-gray-300">
               <div className="flex items-center justify-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-xl bg-[#512080] text-[#FFDA35] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-primary text-yellow flex items-center justify-center">
                   <UtensilsCrossed className="w-5 h-5 stroke-[2.5]" />
                 </div>
-                <h3 className="font-black text-xl text-[#26212B]">مانشيز MUNCHIE'S</h3>
+                <h3 className="font-black text-xl text-dark">مانشيز MUNCHIE'S</h3>
               </div>
               <p className="text-xs text-gray-500">فرع الكورنيش - حديقة الورد أمام الراية، أسوان</p>
-              <p className="text-xs text-gray-500 font-bold number-ltr">01025707026</p>
+              <p className="text-xs text-gray-500 font-bold number-ltr tabular-nums">01025707026</p>
               {selectedTicketOrder.type === 'delivery' ||
               (selectedTicketOrder as any).deliveryType === 'delivery' ? (
                 <div className="mt-2 inline-block px-3 py-1 rounded-full bg-emerald-700 text-white text-xs font-black">
                   بون توصيل ديليفري (DELIVERY)
                 </div>
               ) : (
-                <div className="mt-2 inline-block px-3 py-1 rounded-full bg-[#512080] text-white text-xs font-black">
+                <div className="mt-2 inline-block px-3 py-1 rounded-full bg-primary text-white text-xs font-black">
                   بون استلام من الفرع (PICKUP)
                 </div>
               )}
@@ -911,13 +908,13 @@ export const OrdersPage: React.FC = () => {
             <div className="text-xs space-y-1.5 py-2 border-b border-gray-200">
               <div className="flex justify-between">
                 <span className="text-gray-500">رقم الأوردر:</span>
-                <span className="font-black text-[#512080] text-base font-mono">
+                <span className="font-black text-primary text-base font-mono tabular-nums">
                   #{String(selectedTicketOrder.orderNumber || '').replace(/^#/, '')}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">التاريخ والوقت:</span>
-                <span className="font-bold">{formatDateTime(selectedTicketOrder.createdAt)}</span>
+                <span className="font-bold tabular-nums">{formatDateTime(selectedTicketOrder.createdAt)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">اسم العميل:</span>
@@ -927,7 +924,7 @@ export const OrdersPage: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">رقم الموبايل:</span>
-                <span className="font-bold number-ltr">{selectedTicketOrder.customerPhone}</span>
+                <span className="font-bold number-ltr tabular-nums">{selectedTicketOrder.customerPhone}</span>
               </div>
               {selectedTicketOrder.deliveryAddress && (
                 <div className="p-2 my-1 rounded-lg bg-amber-50 border border-amber-200 text-xs">
@@ -966,13 +963,13 @@ export const OrdersPage: React.FC = () => {
 
             {/* Items */}
             <div className="py-2 border-b-2 border-dashed border-gray-300">
-              <h4 className="font-black text-xs text-[#26212B] mb-2">أصناف الطلب:</h4>
+              <h4 className="font-black text-xs text-dark mb-2">أصناف الطلب:</h4>
               <div className="space-y-2.5">
                 {selectedTicketOrder.items.map((item, idx) => (
                   <div key={idx} className="text-xs">
-                    <div className="flex justify-between font-bold text-[#26212B]">
+                    <div className="flex justify-between font-bold text-dark">
                       <span>
-                        {item.quantity}x {getLocalizedText(item.name || item.productName, 'صنف')}
+                        <span className="tabular-nums font-mono">{item.quantity}</span>x {getLocalizedText(item.name || item.productName, 'صنف')}
                       </span>
                       <CurrencyDisplay amount={item.totalPrice} />
                     </div>
@@ -995,7 +992,7 @@ export const OrdersPage: React.FC = () => {
                       </div>
                     )}
                     {item.specialInstructions && (
-                      <div className="ps-4 text-[10px] text-amber-700 italic">
+                      <div className="ps-4 text-[10px] text-amber-700">
                         * ملاحظة: {item.specialInstructions}
                       </div>
                     )}
@@ -1009,7 +1006,7 @@ export const OrdersPage: React.FC = () => {
               <span>الإجمالي المطلوب:</span>
               <CurrencyDisplay
                 amount={selectedTicketOrder.total}
-                className="text-lg text-[#512080]"
+                className="text-lg text-primary"
               />
             </div>
 

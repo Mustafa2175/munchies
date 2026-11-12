@@ -90,9 +90,8 @@ export function useNewOrderNotification(): NewOrderNotificationState {
         const rawNum = String(order.orderNumber || '').replace(/^#/, '');
         const customerName = getLocalizedText(order.customerName, 'عميل مانشيز');
         toast(
-          `🔔 طلب جديد وارد! رقم الطلب #${rawNum} - ${customerName}`,
+          `طلب جديد وارد! رقم الطلب #${rawNum} - ${customerName}`,
           {
-            icon: '🛎️',
             duration: 8000,
             style: {
               direction: 'rtl',

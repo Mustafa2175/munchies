@@ -35,22 +35,22 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       'inline-flex items-center justify-center font-medium transition-all duration-200 cursor-pointer select-none rounded-xl active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100 focus:outline-none focus:ring-2 focus:ring-offset-2';
 
     const sizeClasses = {
-      sm: 'text-xs px-3 py-1.5 gap-1.5',
-      md: 'text-sm px-4 py-2.5 gap-2',
-      lg: 'text-base px-6 py-3.5 gap-2.5',
+      sm: 'text-xs px-3 h-8 gap-1.5',
+      md: 'text-sm px-4 h-10 gap-2',
+      lg: 'text-base px-6 h-12 gap-2.5',
     }[size];
 
     const variantClasses = {
       primary:
-        'bg-[#512080] hover:bg-[#461C6E] text-white shadow-md hover:shadow-lg focus:ring-[#512080]',
+        'bg-primary hover:bg-primary-600 text-white shadow-md hover:shadow-lg focus:ring-primary',
       yellow:
-        'bg-[#FFDA35] hover:bg-[#E5C200] text-[#26212B] font-semibold shadow-md hover:shadow-lg focus:ring-[#FFDA35]',
+        'bg-yellow hover:bg-yellow-dark text-dark font-semibold shadow-md hover:shadow-lg focus:ring-yellow',
       secondary:
-        'bg-white border-2 border-[#512080] text-[#512080] hover:bg-[#F3EDFA] focus:ring-[#512080]',
+        'bg-white border-2 border-primary text-primary hover:bg-primary-50 focus:ring-primary',
       ghost:
-        'bg-transparent hover:bg-[#F5F3F7] text-[#26212B] focus:ring-[#512080]',
+        'bg-transparent hover:bg-light-gray text-dark focus:ring-primary',
       danger:
-        'bg-[#E84D45] hover:bg-[#D43F37] text-white shadow-sm focus:ring-[#E84D45]',
+        'bg-danger hover:bg-red-600 text-white shadow-sm focus:ring-danger',
     }[variant];
 
     const widthClass = fullWidth ? 'w-full' : '';
@@ -64,7 +64,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {isLoading && (
           <svg
-            className="animate-spin -ml-1 mr-2 h-4 w-4 text-current"
+            className="animate-spin -ms-1 me-2 h-4 w-4 text-current"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"

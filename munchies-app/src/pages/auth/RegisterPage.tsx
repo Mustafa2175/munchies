@@ -71,7 +71,7 @@ export const RegisterPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-black text-[#26212B]">
+        <h2 className="text-2xl font-black text-dark">
           إنشاء حساب جديد
         </h2>
         <p className="text-xs text-gray-500 mt-1">
@@ -96,7 +96,7 @@ export const RegisterPage: React.FC = () => {
           onChange={(e) => setMobile(e.target.value)}
           placeholder="01025707026"
           required
-          className="number-ltr"
+          className="number-ltr tabular-nums"
         />
 
         <Input
@@ -144,7 +144,7 @@ export const RegisterPage: React.FC = () => {
 
       <div className="text-center text-xs text-gray-500 pt-2 border-t border-gray-100">
         <span>لديك حساب بالفعل؟ </span>
-        <Link to={ROUTES.LOGIN} className="text-[#512080] font-bold hover:underline">
+        <Link to={ROUTES.LOGIN} className="text-primary font-bold hover:underline">
           تسجيل الدخول
         </Link>
       </div>

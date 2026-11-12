@@ -38,7 +38,7 @@ export const ForgotPasswordPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-black text-[#26212B]">
+        <h2 className="text-2xl font-black text-dark">
           استعادة كلمة المرور
         </h2>
         <p className="text-xs text-gray-500 mt-1">
@@ -86,7 +86,7 @@ export const ForgotPasswordPage: React.FC = () => {
       <div className="text-center pt-2">
         <Link
           to={ROUTES.LOGIN}
-          className="inline-flex items-center gap-1.5 text-xs text-[#512080] font-bold hover:underline"
+          className="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline"
         >
           <ArrowRight className="w-4 h-4" />
           <span>العودة لتسجيل الدخول</span>

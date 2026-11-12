@@ -18,7 +18,7 @@ import {
   Crown,
   Hash,
 } from 'lucide-react';
-import type { Order, Product, Category } from '@/types';
+import type { Order, Category } from '@/types';
 import { Card } from '@/components/ui/Card';
 import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
 import { getLocalizedText } from '@/lib/i18n';
@@ -288,7 +288,7 @@ export const SalesAnalyticsPage: React.FC = () => {
           HEADER SECTION
           ══════════════════════════════════════════════════════════════════════ */}
       <div>
-        <h1 className="text-2xl font-black text-[#26212B]">
+        <h1 className="text-2xl font-black text-dark">
           إحصائيات وتقارير المبيعات
         </h1>
         <p className="text-xs text-gray-500 mt-1">
@@ -307,15 +307,15 @@ export const SalesAnalyticsPage: React.FC = () => {
               <span className="text-[11px] text-gray-400 font-bold block">
                 مبيعات النهاردة
               </span>
-              <span className="text-xl font-black text-[#27834B] mt-1 block">
+              <span className="text-xl font-black text-emerald-600 mt-1 block">
                 <CurrencyDisplay amount={analytics.todaySales} />
               </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#27834B] flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
               <TrendingUp className="w-5 h-5" />
             </div>
           </div>
-          <span className="inline-block text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+          <span className="inline-block text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 tabular-nums">
             {formatNumber(analytics.todayOrderCount)} طلبات اليوم
           </span>
         </Card>
@@ -327,15 +327,15 @@ export const SalesAnalyticsPage: React.FC = () => {
               <span className="text-[11px] text-gray-400 font-bold block">
                 مبيعات الشهر ده
               </span>
-              <span className="text-xl font-black text-[#512080] mt-1 block">
+              <span className="text-xl font-black text-primary mt-1 block">
                 <CurrencyDisplay amount={analytics.monthSales} />
               </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-[#F3EDFA] text-[#512080] flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary flex items-center justify-center shrink-0">
               <Calendar className="w-5 h-5" />
             </div>
           </div>
-          <span className="inline-block text-[10px] font-bold text-[#512080] bg-[#F3EDFA] px-2.5 py-1 rounded-full border border-purple-200">
+          <span className="inline-block text-[10px] font-bold text-primary bg-primary-50 px-2.5 py-1 rounded-full border border-primary-100 tabular-nums">
             {formatNumber(analytics.monthOrderCount)} طلبات هذا الشهر
           </span>
         </Card>
@@ -349,7 +349,7 @@ export const SalesAnalyticsPage: React.FC = () => {
               </span>
               {analytics.bestSelling ? (
                 <>
-                  <span className="text-sm font-black text-[#26212B] mt-1 block truncate" title={analytics.bestSelling.name}>
+                  <span className="text-sm font-black text-dark mt-1 block truncate" title={analytics.bestSelling.name}>
                     {analytics.bestSelling.name}
                   </span>
                   {analytics.bestSelling.category && (
@@ -367,7 +367,7 @@ export const SalesAnalyticsPage: React.FC = () => {
             </div>
           </div>
           {analytics.bestSelling && (
-            <span className="inline-block text-[10px] font-bold text-amber-800 bg-amber-100 px-2.5 py-1 rounded-full border border-amber-300">
+            <span className="inline-block text-[10px] font-bold text-amber-800 bg-amber-100 px-2.5 py-1 rounded-full border border-amber-300 tabular-nums">
               تم بيع {formatNumber(analytics.bestSelling.quantitySold)} قطعة
             </span>
           )}
@@ -382,7 +382,7 @@ export const SalesAnalyticsPage: React.FC = () => {
               </span>
               {analytics.leastSelling ? (
                 <>
-                  <span className="text-sm font-black text-[#26212B] mt-1 block truncate" title={analytics.leastSelling.name}>
+                  <span className="text-sm font-black text-dark mt-1 block truncate" title={analytics.leastSelling.name}>
                     {analytics.leastSelling.name}
                   </span>
                   {analytics.leastSelling.category && (
@@ -400,7 +400,7 @@ export const SalesAnalyticsPage: React.FC = () => {
             </div>
           </div>
           {analytics.leastSelling && (
-            <span className={`inline-block text-[10px] font-bold px-2.5 py-1 rounded-full border ${
+            <span className={`inline-block text-[10px] font-bold px-2.5 py-1 rounded-full border tabular-nums ${
               analytics.leastSelling.quantitySold === 0
                 ? 'text-gray-500 bg-gray-100 border-gray-200'
                 : 'text-gray-600 bg-gray-100 border-gray-200'
@@ -421,7 +421,7 @@ export const SalesAnalyticsPage: React.FC = () => {
               </span>
               {analytics.topAddOn ? (
                 <>
-                  <span className="text-sm font-black text-[#26212B] mt-1 block truncate" title={analytics.topAddOn.name}>
+                  <span className="text-sm font-black text-dark mt-1 block truncate" title={analytics.topAddOn.name}>
                     {analytics.topAddOn.name}
                   </span>
                   <span className="text-[10px] text-gray-400 block">
@@ -437,7 +437,7 @@ export const SalesAnalyticsPage: React.FC = () => {
             </div>
           </div>
           {analytics.topAddOn && (
-            <span className="inline-block text-[10px] font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
+            <span className="inline-block text-[10px] font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200 tabular-nums">
               {analytics.topAddOn.timesOrdered === 0
                 ? 'لم يتم الطلب'
                 : `تم طلبه ${formatNumber(analytics.topAddOn.timesOrdered)} مرة`}
@@ -452,15 +452,15 @@ export const SalesAnalyticsPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* ── RIGHT COLUMN: Menu Items Ranked by Sales ──────────────────────── */}
         <Card className="overflow-hidden">
-          <div className="p-5 border-b border-gray-100">
+          <div className="p-5 border-b border-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Award className="w-5 h-5 text-amber-500" />
-                <h3 className="font-bold text-base text-[#26212B]">
+                <h3 className="font-bold text-base text-dark">
                   ترتيب أصناف المنيو حسب المبيعات
                 </h3>
               </div>
-              <span className="text-[11px] font-bold text-[#512080] bg-[#F3EDFA] px-2.5 py-1 rounded-full">
+              <span className="text-[11px] font-bold text-primary bg-primary-50 px-2.5 py-1 rounded-full tabular-nums">
                 {analytics.menuItemStats.length} صنف
               </span>
             </div>
@@ -482,7 +482,7 @@ export const SalesAnalyticsPage: React.FC = () => {
                   >
                     {/* Rank Badge */}
                     <div
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black border shrink-0 ${rankStyle.bg} ${rankStyle.text} ${rankStyle.border}`}
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black border shrink-0 tabular-nums ${rankStyle.bg} ${rankStyle.text} ${rankStyle.border}`}
                     >
                       #{rank}
                     </div>
@@ -503,7 +503,7 @@ export const SalesAnalyticsPage: React.FC = () => {
 
                     {/* Item Details */}
                     <div className="flex-1 min-w-0">
-                      <div className="font-bold text-xs text-[#26212B] truncate">
+                      <div className="font-bold text-xs text-dark truncate">
                         {item.name}
                       </div>
                       {item.category && (
@@ -515,7 +515,7 @@ export const SalesAnalyticsPage: React.FC = () => {
 
                     {/* Quantity Badge */}
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 tabular-nums ${
                         item.quantitySold === 0
                           ? 'text-gray-400 bg-gray-100'
                           : 'text-emerald-700 bg-emerald-50'
@@ -527,7 +527,7 @@ export const SalesAnalyticsPage: React.FC = () => {
                     </span>
 
                     {/* Revenue */}
-                    <span className="text-xs font-extrabold text-[#512080] shrink-0 min-w-[70px] text-end">
+                    <span className="text-xs font-extrabold text-primary shrink-0 min-w-[70px] text-end">
                       <CurrencyDisplay amount={item.totalRevenue} />
                     </span>
                   </div>
@@ -539,15 +539,15 @@ export const SalesAnalyticsPage: React.FC = () => {
 
         {/* ── LEFT COLUMN: Add-ons / Sauces / Combos Ranked ────────────────── */}
         <Card className="overflow-hidden">
-          <div className="p-5 border-b border-gray-100">
+          <div className="p-5 border-b border-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Star className="w-5 h-5 text-blue-500" />
-                <h3 className="font-bold text-base text-[#26212B]">
+                <h3 className="font-bold text-base text-dark">
                   ترتيب الإضافات والأطباق الجانبية حسب الطلب
                 </h3>
               </div>
-              <span className="text-[11px] font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full">
+              <span className="text-[11px] font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full tabular-nums">
                 {analytics.addOnStats.length} إضافة
               </span>
             </div>
@@ -569,7 +569,7 @@ export const SalesAnalyticsPage: React.FC = () => {
                   >
                     {/* Rank Badge */}
                     <div
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black border shrink-0 ${rankStyle.bg} ${rankStyle.text} ${rankStyle.border}`}
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black border shrink-0 tabular-nums ${rankStyle.bg} ${rankStyle.text} ${rankStyle.border}`}
                     >
                       #{rank}
                     </div>
@@ -581,7 +581,7 @@ export const SalesAnalyticsPage: React.FC = () => {
 
                     {/* Add-on Details */}
                     <div className="flex-1 min-w-0">
-                      <div className="font-bold text-xs text-[#26212B] truncate">
+                      <div className="font-bold text-xs text-dark truncate">
                         {addOn.name}
                       </div>
                       <div className="text-[10px] text-gray-400">
@@ -591,7 +591,7 @@ export const SalesAnalyticsPage: React.FC = () => {
 
                     {/* Times Ordered Badge */}
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 tabular-nums ${
                         addOn.timesOrdered === 0
                           ? 'text-gray-400 bg-gray-100'
                           : 'text-blue-700 bg-blue-50'
@@ -603,7 +603,7 @@ export const SalesAnalyticsPage: React.FC = () => {
                     </span>
 
                     {/* Revenue */}
-                    <span className="text-xs font-extrabold text-[#512080] shrink-0 min-w-[70px] text-end">
+                    <span className="text-xs font-extrabold text-primary shrink-0 min-w-[70px] text-end">
                       <CurrencyDisplay amount={addOn.totalRevenue} />
                     </span>
                   </div>

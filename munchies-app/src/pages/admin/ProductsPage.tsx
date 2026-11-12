@@ -45,7 +45,7 @@ export const ProductsPage: React.FC = () => {
     setDescAr('');
     setPrice(120);
     setCategoryId('sandwiches');
-    setImageUrl('https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80');
+    setImageUrl('/hero_burger_clean_cutout.png');
     setIsBestSeller(false);
     setIsNew(true);
     setIsModalOpen(true);
@@ -99,9 +99,7 @@ export const ProductsPage: React.FC = () => {
         description: { ar: descAr.trim(), en: descAr.trim() },
         price: Number(price),
         categoryId,
-        image:
-          imageUrl.trim() ||
-          'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80',
+        image: imageUrl.trim() || '/hero_burger_clean_cutout.png',
         isAvailable: true,
         isBestSeller,
         isNew,
@@ -126,7 +124,7 @@ export const ProductsPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-[#26212B]">قائمة أصناف المنيو</h1>
+          <h1 className="text-2xl font-black text-dark">قائمة أصناف المنيو</h1>
           <p className="text-xs text-gray-500 mt-1">
             إدارة أطباق وساندوتشات مانشيز، الأسعار، الصور، وتحديد التوفر
           </p>
@@ -142,15 +140,15 @@ export const ProductsPage: React.FC = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="ابحث في الأصناف باسم الساندوتش..."
-          className="w-full sm:w-72 text-xs rounded-xl border border-gray-200 bg-white py-2 px-3 focus:outline-none focus:border-[#512080]"
+          className="w-full sm:w-72 text-xs rounded-xl border border-border bg-white py-2 px-3 focus:outline-none focus:border-primary"
         />
-        <span className="text-xs text-gray-500 font-bold">{filtered.length} صنف</span>
+        <span className="text-xs text-gray-500 font-bold tabular-nums">{filtered.length} صنف</span>
       </div>
 
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-start text-xs">
-            <thead className="bg-[#F5F3F7] text-gray-500 font-bold">
+            <thead className="bg-light-gray text-gray-500 font-bold">
               <tr>
                 <th className="px-5 py-3 text-start">الصورة</th>
                 <th className="px-5 py-3 text-start">اسم الصنف</th>
@@ -172,14 +170,14 @@ export const ProductsPage: React.FC = () => {
                   </td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-1.5">
-                      <span className="font-bold text-[#26212B]">{product.name.ar}</span>
+                      <span className="font-bold text-dark">{product.name.ar}</span>
                       {product.isBestSeller && (
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-[#FFDA35] text-[#26212B]">
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-yellow text-dark">
                           الأكثر طلباً
                         </span>
                       )}
                       {product.isNew && (
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-[#512080] text-white">
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-primary text-white">
                           جديد
                         </span>
                       )}
@@ -199,7 +197,7 @@ export const ProductsPage: React.FC = () => {
                       ? 'أطباق خاصة'
                       : 'فرايز'}
                   </td>
-                  <td className="px-5 py-3 font-extrabold text-[#512080]">
+                  <td className="px-5 py-3 font-extrabold text-primary">
                     <CurrencyDisplay amount={product.price} />
                   </td>
                   <td className="px-5 py-3">
@@ -208,7 +206,7 @@ export const ProductsPage: React.FC = () => {
                       className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold cursor-pointer transition-all ${
                         product.isAvailable
                           ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          : 'bg-red-50 text-red-700 border border-red-200'
+                          : 'bg-red-50 text-danger border border-red-200'
                       }`}
                     >
                       {product.isAvailable ? 'متاح للطلب' : 'غير متوفر'}
@@ -218,14 +216,14 @@ export const ProductsPage: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleOpenEdit(product)}
-                        className="p-1 rounded-lg text-gray-400 hover:text-[#512080] hover:bg-gray-100"
+                        className="p-1 rounded-lg text-gray-400 hover:text-primary hover:bg-gray-100 cursor-pointer"
                         title="تعديل الصنف"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleDelete(product.id)}
-                        className="p-1 rounded-lg text-gray-400 hover:text-red-500 hover:bg-gray-100"
+                        className="p-1 rounded-lg text-gray-400 hover:text-danger hover:bg-gray-100 cursor-pointer"
                         title="حذف الصنف"
                       >
                         <Archive className="w-3.5 h-3.5" />
@@ -257,13 +255,13 @@ export const ProductsPage: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-[#26212B] mb-1.5">
+              <label className="block text-xs font-semibold text-dark mb-1.5">
                 القسم التابع له
               </label>
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full text-xs rounded-xl border border-gray-200 bg-white p-2.5 focus:outline-none focus:border-[#512080]"
+                className="w-full text-xs rounded-xl border border-border bg-white p-2.5 focus:outline-none focus:border-primary"
               >
                 <option value="sandwiches">سندوتشات مانشيز</option>
                 <option value="vip-menu">VIP منيو</option>
@@ -275,7 +273,7 @@ export const ProductsPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#26212B] mb-1.5">
+              <label className="block text-xs font-semibold text-dark mb-1.5">
                 السعر (ج.م)
               </label>
               <input
@@ -283,14 +281,14 @@ export const ProductsPage: React.FC = () => {
                 min="0"
                 value={price}
                 onChange={(e) => setPrice(Number(e.target.value))}
-                className="w-full text-xs rounded-xl border border-gray-200 bg-white p-2.5 focus:outline-none focus:border-[#512080] number-ltr"
+                className="w-full text-xs rounded-xl border border-border bg-white p-2.5 focus:outline-none focus:border-primary number-ltr tabular-nums"
                 required
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#26212B] mb-1.5">
+            <label className="block text-xs font-semibold text-dark mb-1.5">
               الوصف والمكونات
             </label>
             <textarea
@@ -298,7 +296,7 @@ export const ProductsPage: React.FC = () => {
               onChange={(e) => setDescAr(e.target.value)}
               rows={2}
               placeholder="مثال: برجر لحم بلدي + صوص مانشيز + شرائح شيدر وبطاطس..."
-              className="w-full text-xs rounded-xl border border-gray-200 p-2.5 focus:outline-none focus:border-[#512080]"
+              className="w-full text-xs rounded-xl border border-border p-2.5 focus:outline-none focus:border-primary"
             />
           </div>
 
@@ -316,7 +314,7 @@ export const ProductsPage: React.FC = () => {
                 type="checkbox"
                 checked={isBestSeller}
                 onChange={(e) => setIsBestSeller(e.target.checked)}
-                className="rounded border-gray-300 text-[#512080] focus:ring-[#512080]"
+                className="rounded border-gray-300 text-primary focus:ring-primary"
               />
               <span>تمييز كـ "الأكثر طلباً"</span>
             </label>
@@ -326,7 +324,7 @@ export const ProductsPage: React.FC = () => {
                 type="checkbox"
                 checked={isNew}
                 onChange={(e) => setIsNew(e.target.checked)}
-                className="rounded border-gray-300 text-[#512080] focus:ring-[#512080]"
+                className="rounded border-gray-300 text-primary focus:ring-primary"
               />
               <span>تمييز كـ "صنف جديد"</span>
             </label>

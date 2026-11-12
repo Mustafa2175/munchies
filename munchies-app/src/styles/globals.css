@@ -1,5 +1,153 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
+
+/* ========================================
+   Lama Sans Local Font Family
+   ======================================== */
+
+@font-face {
+  font-family: 'Lama Sans';
+  src: url('/lama-sans-thin.otf') format('opentype');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lama Sans';
+  src: url('/lama-sans-thin-italic.otf') format('opentype');
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lama Sans';
+  src: url('/lama-sans-extralight.otf') format('opentype');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lama Sans';
+  src: url('/lama-sans-extralight-italic.otf') format('opentype');
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lama Sans';
+  src: url('/lama-sans-light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lama Sans';
+  src: url('/lama-sans-light-italic.otf') format('opentype');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lama Sans';
+  src: url('/lama-sans-regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lama Sans';
+  src: url('/lama-sans-regular-italic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lama Sans';
+  src: url('/lama-sans-medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lama Sans';
+  src: url('/lama-sans-medium-italic.otf') format('opentype');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lama Sans';
+  src: url('/lama-sans-semibold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lama Sans';
+  src: url('/lama-sans-semibold-italic.otf') format('opentype');
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lama Sans';
+  src: url('/lama-sans-bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lama Sans';
+  src: url('/lama-sans-bold-italic.otf') format('opentype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lama Sans';
+  src: url('/lama-sans-extrabold.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lama Sans';
+  src: url('/lama-sans-extrabold-italic.otf') format('opentype');
+  font-weight: 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lama Sans';
+  src: url('/lama-sans-black.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lama Sans';
+  src: url('/lama-sans-black-italic.otf') format('opentype');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
 
 /* ========================================
    Munchie's Design System — Custom Theme
@@ -49,7 +197,8 @@
   --color-info-light: #EFF6FF;
 
   /* Typography */
-  --font-arabic: 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --font-arabic: 'Lama Sans', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Lama Sans', system-ui, -apple-system, sans-serif;
   --font-english: 'Outfit', system-ui, sans-serif;
 
   /* Shadows */
@@ -79,7 +228,7 @@ html, body {
 }
 
 html {
-  font-family: var(--font-arabic);
+  font-family: 'Lama Sans', var(--font-arabic), system-ui, sans-serif;
   direction: rtl;
   scroll-behavior: smooth;
 }
@@ -90,6 +239,7 @@ html[lang="en"] {
 }
 
 body {
+  font-family: 'Lama Sans', var(--font-arabic), system-ui, sans-serif;
   background-color: #FDFCFE;
   color: var(--color-dark);
   -webkit-font-smoothing: antialiased;
@@ -127,6 +277,11 @@ html[dir="rtl"] .phone-number {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-primary);
+}
+
+/* Tabular numerals for price alignment */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Skeleton shimmer */

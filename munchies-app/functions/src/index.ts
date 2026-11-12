@@ -15,6 +15,10 @@ export const createOrder = onCall({ region: 'us-central1' }, async (request) => 
   const data = request.data;
   const auth = request.auth;
 
+  if (!auth) {
+    throw new HttpsError('unauthenticated', 'Authentication is required to place an order.');
+  }
+
   if (!data.items || !Array.isArray(data.items) || data.items.length === 0) {
     throw new HttpsError('invalid-argument', 'Cart cannot be empty.');
   }
@@ -136,7 +140,8 @@ export const createOrder = onCall({ region: 'us-central1' }, async (request) => 
   const newOrder = {
     id: orderRef.id,
     orderNumber,
-    userId: auth?.uid || 'guest',
+    customerId: auth.uid,
+    userId: auth.uid,
     customerName: data.customerSnapshot.name,
     customerPhone: data.customerSnapshot.phone,
     customerEmail: data.customerSnapshot.email || '',
@@ -176,6 +181,10 @@ export const cancelOrder = onCall({ region: 'us-central1' }, async (request) => 
   const { orderId, reason } = request.data;
   const auth = request.auth;
 
+  if (!auth) {
+    throw new HttpsError('unauthenticated', 'Authentication is required.');
+  }
+
   if (!orderId) {
     throw new HttpsError('invalid-argument', 'Order ID is required.');
   }
@@ -191,7 +200,8 @@ export const cancelOrder = onCall({ region: 'us-central1' }, async (request) => 
     const orderData = orderDoc.data();
 
     // Check ownership if not admin
-    if (auth && orderData?.userId !== auth.uid) {
+    const ownerUid = orderData?.customerId || orderData?.userId;
+    if (ownerUid !== auth.uid) {
       const adminDoc = await db.doc(`adminUsers/${auth.uid}`).get();
       if (!adminDoc.exists || !adminDoc.data()?.isActive) {
         throw new HttpsError('permission-denied', 'Unauthorized to cancel this order.');

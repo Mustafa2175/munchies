@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import type { Order, Category } from '@/types';
 import { Card } from '@/components/ui/Card';
-import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
+import { formatPrice } from '@/lib/currency';
 import { getLocalizedText } from '@/lib/i18n';
 import { subscribeToCollection } from '@/lib/firestore';
 import { useProductStore } from '@/stores/productStore';
@@ -308,7 +308,7 @@ export const SalesAnalyticsPage: React.FC = () => {
                 مبيعات النهاردة
               </span>
               <span className="text-xl font-black text-emerald-600 mt-1 block">
-                <CurrencyDisplay amount={analytics.todaySales} />
+                <span className="font-bold tabular-nums number-ltr">{formatPrice(analytics.todaySales)}</span>
               </span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
@@ -328,7 +328,7 @@ export const SalesAnalyticsPage: React.FC = () => {
                 مبيعات الشهر ده
               </span>
               <span className="text-xl font-black text-primary mt-1 block">
-                <CurrencyDisplay amount={analytics.monthSales} />
+                <span className="font-bold tabular-nums number-ltr">{formatPrice(analytics.monthSales)}</span>
               </span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary flex items-center justify-center shrink-0">
@@ -425,7 +425,7 @@ export const SalesAnalyticsPage: React.FC = () => {
                     {analytics.topAddOn.name}
                   </span>
                   <span className="text-[10px] text-gray-400 block">
-                    <CurrencyDisplay amount={analytics.topAddOn.unitPrice} className="text-[10px] font-semibold" />
+                    <span className="font-bold tabular-nums number-ltr text-[10px] font-semibold">{formatPrice(analytics.topAddOn.unitPrice)}</span>
                   </span>
                 </>
               ) : (
@@ -528,7 +528,7 @@ export const SalesAnalyticsPage: React.FC = () => {
 
                     {/* Revenue */}
                     <span className="text-xs font-extrabold text-primary shrink-0 min-w-[70px] text-end">
-                      <CurrencyDisplay amount={item.totalRevenue} />
+                      <span className="font-bold tabular-nums number-ltr">{formatPrice(item.totalRevenue)}</span>
                     </span>
                   </div>
                 );
@@ -585,7 +585,7 @@ export const SalesAnalyticsPage: React.FC = () => {
                         {addOn.name}
                       </div>
                       <div className="text-[10px] text-gray-400">
-                        <CurrencyDisplay amount={addOn.unitPrice} className="text-[10px] font-semibold" />
+                        <span className="font-bold tabular-nums number-ltr text-[10px] font-semibold">{formatPrice(addOn.unitPrice)}</span>
                       </div>
                     </div>
 
@@ -604,7 +604,7 @@ export const SalesAnalyticsPage: React.FC = () => {
 
                     {/* Revenue */}
                     <span className="text-xs font-extrabold text-primary shrink-0 min-w-[70px] text-end">
-                      <CurrencyDisplay amount={addOn.totalRevenue} />
+                      <span className="font-bold tabular-nums number-ltr">{formatPrice(addOn.totalRevenue)}</span>
                     </span>
                   </div>
                 );

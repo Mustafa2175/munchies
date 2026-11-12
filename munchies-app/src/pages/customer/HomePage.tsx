@@ -23,7 +23,7 @@ export const HomePage: React.FC = () => {
       <HeroSection />
 
       {/* ─── Curved White Content Surface Emerging Over Hero ─── */}
-      <div className="curved-top-surface relative z-20 -mt-7 sm:-mt-10 lg:-mt-14 bg-[#FDFCFE] pt-6 sm:pt-8 lg:pt-10 pb-12 space-y-10 sm:space-y-14 shadow-[0_-10px_28px_rgba(18,3,38,0.14)]">
+      <div className="curved-top-surface relative z-20 -mt-4 sm:-mt-7 lg:-mt-14 bg-[#FDFCFE] pt-6 sm:pt-8 lg:pt-10 pb-12 space-y-9 sm:space-y-12 lg:space-y-14 shadow-[0_-8px_24px_rgba(18,3,38,0.12)]">
         {/* ─── 2. Categories Section (Navigation Shortcuts) ─── */}
         <CategoryShortcuts />
 

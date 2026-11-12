@@ -1,10 +1,11 @@
 /**
  * @module lib/i18n
- * @description Internationalization setup locked strictly to Arabic (RTL).
+ * @description Internationalization setup supporting Arabic (RTL default) and English (LTR).
  */
 
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import type { SupportedLanguage } from '@/config/constants';
 
 export const defaultNS = 'common';
 
@@ -29,7 +30,7 @@ export const resources = {
         logout: "تسجيل خروج",
         profile: "حسابي",
         orders: "طلباتي",
-        admin: "لوحة التحكم"
+        admin: "لوحة التحكم",
       },
       actions: {
         add: "إضافة",
@@ -46,19 +47,19 @@ export const resources = {
         edit: "تعديل",
         delete: "حذف",
         search: "بحث",
-        apply: "تطبيق"
+        apply: "تطبيق",
       },
       status: {
         open: "مفتوح دلوقتي",
         closed: "معلش، إحنا قافلين دلوقتي. راجعنا قريب!",
         loading: "بنجهزلك كل حاجة...",
         available: "متاح",
-        outOfStock: "خلص مننا مؤقتًا"
+        outOfStock: "خلص مننا مؤقتًا",
       },
       badges: {
         bestSeller: "الأكثر طلباً",
         new: "جديد",
-        special: "مميز"
+        special: "مميز",
       },
       footer: {
         aboutText: "مطعم مانشيز في أسوان – أشهى ساندوتشات البرجر، الفات بير، والـ Loaded Fries بأعلى جودة ولحوم بلدية طازة 100%.",
@@ -68,8 +69,8 @@ export const resources = {
         phone: "01025707026",
         hours: "يومياً من 12:00 ظهراً حتى 3:00 فجراً",
         rights: "جميع الحقوق محفوظة لـ Munchie's © 2026",
-        madeWith: "صُنع بكل ❤️ في أسوان"
-      }
+        madeWith: "صُنع بكل ❤️ في أسوان",
+      },
     },
     menu: {
       title: "منيو مانشيز",
@@ -84,10 +85,10 @@ export const resources = {
         friesCup: "فرايز كب",
         friesCono: "فرايز كونو",
         other: "أصناف خاصة",
-        additions: "إضافات"
+        additions: "إضافات",
       },
       emptySearch: "ملقيناش اللي بتدور عليه!",
-      emptySearchSuggestion: "جرّب تدور بكلمة تانية."
+      emptySearchSuggestion: "جرّب تدور بكلمة تانية.",
     },
     checkout: {
       title: "يلا نكمّل طلبك!",
@@ -114,16 +115,78 @@ export const resources = {
       emptyNotice: "لسه مستني إيه؟ اختار أكلك المفضل وابدأ طلبك.",
       orderSuccess: "متقلقش، طلبك وصلنا!",
       orderNumber: "رقم الطلب",
-      orderPlacedNotice: "استلمنا طلبك وفي انتظار تأكيد المطعم عشان نبدأ نجهزه."
-    }
-  }
+      orderPlacedNotice: "استلمنا طلبك وفي انتظار تأكيد المطعم عشان نبدأ نجهزه.",
+    },
+  },
+  en: {
+    common: {
+      restaurantName: "Munchie's",
+      restaurantTagline: "Too Big? Smash It! 🍔",
+      currency: "EGP",
+      nav: {
+        home: "Home",
+        menu: "Menu",
+        buildYourOwn: "Build Your Own",
+        offers: "Offers",
+        about: "Our Story",
+        contact: "Contact Us",
+        orderNow: "Order Now",
+        viewMenu: "View Menu",
+        cart: "Cart",
+        login: "Sign In",
+        register: "Create Account",
+        logout: "Log Out",
+        profile: "My Account",
+        orders: "My Orders",
+        admin: "Admin Portal",
+      },
+      actions: {
+        add: "Add",
+        addToCart: "Add to Cart",
+        customize: "Customize Your Order",
+        checkout: "Proceed to Checkout",
+        viewCart: "View Cart",
+        backToMenu: "Back to Menu",
+        backToHome: "Back to Home",
+        close: "Close",
+        cancel: "Cancel",
+        confirm: "Confirm",
+        save: "Save",
+        edit: "Edit",
+        delete: "Delete",
+        search: "Search",
+        apply: "Apply",
+      },
+      status: {
+        open: "Open Now",
+        closed: "Sorry, we are currently closed. Check back soon!",
+        loading: "Getting everything ready...",
+        available: "Available",
+        outOfStock: "Temporarily Out of Stock",
+      },
+      badges: {
+        bestSeller: "Best Seller",
+        new: "New",
+        special: "Special",
+      },
+    },
+  },
 };
+
+const savedLang = (() => {
+  try {
+    const val = localStorage.getItem('i18nextLng');
+    return val === 'en' ? 'en' : 'ar';
+  } catch {
+    return 'ar';
+  }
+})();
 
 i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'ar',
+    lng: savedLang,
     fallbackLng: 'ar',
     defaultNS,
     interpolation: {
@@ -131,32 +194,46 @@ i18n
     },
   });
 
-// Always lock language to Arabic and clean any old cache
-try {
-  localStorage.setItem('i18nextLng', 'ar');
-} catch {}
-
-export function updateDocumentDirection() {
-  document.documentElement.setAttribute('dir', 'rtl');
-  document.documentElement.setAttribute('lang', 'ar');
+export function updateDocumentDirection(lang?: string) {
+  if (typeof document === 'undefined') return;
+  const active = lang === 'en' || (!lang && i18n.language === 'en') ? 'en' : 'ar';
+  document.documentElement.setAttribute('dir', active === 'en' ? 'ltr' : 'rtl');
+  document.documentElement.setAttribute('lang', active);
 }
 
-updateDocumentDirection();
+export function setAppLanguage(lang: SupportedLanguage) {
+  i18n.changeLanguage(lang);
+  try {
+    localStorage.setItem('i18nextLng', lang);
+  } catch {
+    // ignore storage errors
+  }
+  updateDocumentDirection(lang);
+}
+
+updateDocumentDirection(savedLang);
 
 /**
- * Safely resolves any string, LocalizedText, or nested object to a displayable Arabic string.
+ * Safely resolves any string, LocalizedText, or nested object to a displayable string.
  * Guaranteed to NEVER return an object so React never throws "Objects are not valid as a React child".
  */
-export function getLocalizedText(val: any, fallback = ''): string {
+export function getLocalizedText(val: unknown, fallback = ''): string {
   if (val === null || val === undefined) return fallback;
   if (typeof val === 'string') return val;
   if (typeof val === 'number' || typeof val === 'boolean') return String(val);
   if (typeof val === 'object') {
-    if (typeof val.ar === 'string' && val.ar.trim()) return val.ar;
-    if (typeof val.en === 'string' && val.en.trim()) return val.en;
-    if (val.name) return getLocalizedText(val.name, fallback);
-    if (val.title) return getLocalizedText(val.title, fallback);
-    if (val.label) return getLocalizedText(val.label, fallback);
+    const obj = val as Record<string, unknown>;
+    const preferEn = i18n.language === 'en';
+    if (preferEn) {
+      if (typeof obj.en === 'string' && obj.en.trim()) return obj.en;
+      if (typeof obj.ar === 'string' && obj.ar.trim()) return obj.ar;
+    } else {
+      if (typeof obj.ar === 'string' && obj.ar.trim()) return obj.ar;
+      if (typeof obj.en === 'string' && obj.en.trim()) return obj.en;
+    }
+    if (obj.name) return getLocalizedText(obj.name, fallback);
+    if (obj.title) return getLocalizedText(obj.title, fallback);
+    if (obj.label) return getLocalizedText(obj.label, fallback);
   }
   return fallback;
 }

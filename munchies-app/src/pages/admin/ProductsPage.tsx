@@ -10,7 +10,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
-import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
+import { formatPrice } from '@/lib/currency';
 import { useProductStore } from '@/stores/productStore';
 import toast from 'react-hot-toast';
 
@@ -198,7 +198,7 @@ export const ProductsPage: React.FC = () => {
                       : 'فرايز'}
                   </td>
                   <td className="px-5 py-3 font-extrabold text-primary">
-                    <CurrencyDisplay amount={product.price} />
+                    <span className="font-bold tabular-nums number-ltr">{formatPrice(product.price)}</span>
                   </td>
                   <td className="px-5 py-3">
                     <button

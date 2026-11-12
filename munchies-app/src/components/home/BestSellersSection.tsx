@@ -13,7 +13,7 @@ import { useCartStore } from '@/stores/cartStore';
 import { useIsStoreOpen } from '@/stores/restaurantStore';
 import { isCategoryActive } from '@/stores/categoryStore';
 import { CustomizationModal } from '@/components/product/CustomizationModal';
-import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
+import { formatPrice } from '@/lib/currency';
 import type { Product } from '@/types';
 import toast from 'react-hot-toast';
 
@@ -78,7 +78,7 @@ export const BestSellersSection: React.FC = () => {
   return (
     <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
       {/* Section Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-primary-50 flex items-center justify-center text-primary">
             <Flame className="w-4 h-4 text-primary" />
@@ -90,7 +90,7 @@ export const BestSellersSection: React.FC = () => {
 
         <Link
           to={ROUTES.MENU}
-          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-primary hover:text-primary-light transition-colors group cursor-pointer"
+          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-primary hover:text-primary-light transition-colors group cursor-pointer shrink-0 whitespace-nowrap"
         >
           <span>شوف المنيو</span>
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
@@ -121,12 +121,14 @@ export const BestSellersSection: React.FC = () => {
             >
               {/* Image Box */}
               <div className="relative aspect-square rounded-xl overflow-hidden bg-light-gray flex items-center justify-center p-3 select-none">
-                {/* Best Seller Badge */}
-                <div className="absolute top-2 end-2 z-10">
-                  <span className="px-2 py-0.5 rounded-md bg-yellow text-dark text-[10px] sm:text-xs font-black">
-                    الأكثر طلباً
-                  </span>
-                </div>
+                {/* Best Seller Badge — shown strictly when marked isBestSeller in the database */}
+                {Boolean(product.isBestSeller) && (
+                  <div className="absolute top-2 end-2 z-10">
+                    <span className="px-2 py-0.5 rounded-md bg-yellow text-dark text-[10px] sm:text-xs font-black">
+                      الأكثر طلباً
+                    </span>
+                  </div>
+                )}
 
                 {/* Unavailable / Store Closed Overlay if applicable */}
                 {!isOrderable && (
@@ -155,10 +157,7 @@ export const BestSellersSection: React.FC = () => {
                     {product.name.ar}
                   </h3>
                   <div className="mt-0.5">
-                    <CurrencyDisplay
-                      amount={product.price}
-                      className="font-black text-xs sm:text-sm text-primary"
-                    />
+                    <span className="font-bold tabular-nums number-ltr font-black text-xs sm:text-sm text-primary">{formatPrice(product.price)}</span>
                   </div>
                 </div>
 

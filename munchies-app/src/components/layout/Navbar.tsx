@@ -73,7 +73,11 @@ export const Navbar: React.FC = () => {
     { label: 'اعمل ساندوتشك', path: '/build-your-own' },
   ];
 
-  const userAccountRoute = isAdmin ? ROUTES.ADMIN : ROUTES.ORDERS;
+  const userAccountRoute = !isAuthenticated
+    ? ROUTES.LOGIN
+    : isAdmin
+    ? ROUTES.ADMIN
+    : ROUTES.ACCOUNT;
 
   return (
     <header
@@ -146,12 +150,12 @@ export const Navbar: React.FC = () => {
 
           {/* End side (Left in RTL, Right in LTR): Account, Cart, Order CTA & Mobile Hamburger */}
           <div className="flex items-center justify-end lg:justify-self-end gap-1 sm:gap-2 shrink-0">
-            {/* Account */}
+            {/* Account / Login */}
             <Link
               to={userAccountRoute}
               className="relative w-10 h-10 rounded-xl text-white hover:text-[#FFDA35] hover:bg-white/10 transition-colors flex items-center justify-center cursor-pointer select-none active:scale-95"
-              title={isAuthenticated ? user?.fullName || 'حسابي' : 'حسابي'}
-              aria-label="حسابي"
+              title={isAuthenticated ? user?.fullName || 'حسابي' : 'تسجيل الدخول'}
+              aria-label={isAuthenticated ? 'حسابي' : 'تسجيل الدخول'}
             >
               <UserIcon className="w-5 h-5 stroke-[2]" />
               {isAuthenticated && (

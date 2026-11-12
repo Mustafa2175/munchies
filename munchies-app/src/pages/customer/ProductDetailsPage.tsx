@@ -11,7 +11,7 @@ import { COMMON_CUSTOMIZATIONS } from '@/data/mockData';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { QuantitySelector } from '@/components/ui/QuantitySelector';
-import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
+import { formatPrice } from '@/lib/currency';
 import { useCartStore } from '@/stores/cartStore';
 import { useProductStore, isProductAvailable } from '@/stores/productStore';
 import { useIsStoreOpen } from '@/stores/restaurantStore';
@@ -197,7 +197,7 @@ export const ProductDetailsPage: React.FC = () => {
               {productDesc}
             </p>
             <div className="mt-4 text-2xl font-black text-primary">
-              <CurrencyDisplay amount={product.price} />
+              <span className="font-bold tabular-nums number-ltr">{formatPrice(product.price)}</span>
             </div>
           </div>
 
@@ -226,7 +226,7 @@ export const ProductDetailsPage: React.FC = () => {
                     }`}
                   >
                     <span>{opt.name.ar}</span>
-                    {opt.price > 0 && <span>+<CurrencyDisplay amount={opt.price} /></span>}
+                    {opt.price > 0 && <span>+<span className="font-bold tabular-nums number-ltr">{formatPrice(opt.price)}</span></span>}
                   </button>
                 ))}
               </div>
@@ -264,7 +264,7 @@ export const ProductDetailsPage: React.FC = () => {
                         {isChecked && <Check className="w-3.5 h-3.5 text-primary" />}
                       </div>
                       <span className="text-[11px] text-medium-gray mt-1">
-                        +<CurrencyDisplay amount={opt.price} />
+                        +<span className="font-bold tabular-nums number-ltr">{formatPrice(opt.price)}</span>
                       </span>
                     </button>
                   );
@@ -315,7 +315,7 @@ export const ProductDetailsPage: React.FC = () => {
                 <>
                   <span>ضيف للسلة</span>
                   <span className="mx-2">•</span>
-                  <CurrencyDisplay amount={lineTotal} />
+                  <span className="font-bold tabular-nums number-ltr">{formatPrice(lineTotal)}</span>
                 </>
               )}
             </Button>

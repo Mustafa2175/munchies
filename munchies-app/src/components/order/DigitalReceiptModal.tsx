@@ -25,10 +25,11 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { Order } from '@/types';
-import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
+import { formatPrice } from '@/lib/currency';
 import { formatDateTime } from '@/lib/date';
 import { ROUTES } from '@/config/routes';
 import { getLocalizedText } from '@/lib/i18n';
+import { formatDeliveryAddress } from '@/lib/address';
 
 export interface DigitalReceiptModalProps {
   isOpen: boolean;
@@ -237,30 +238,29 @@ export const DigitalReceiptModal: React.FC<DigitalReceiptModalProps> = ({
                   </div>
 
                   {/* Delivery Address Section if Delivery Order */}
-                  {(order.type === 'delivery' || (order as any).deliveryType === 'delivery') && order.deliveryAddress && (
-                    <div className="pt-2">
-                      <div className="p-3 rounded-xl bg-primary-50/50 border border-primary-100 flex items-start gap-2">
-                        <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                        <div className="space-y-0.5 text-xs">
-                          <span className="font-extrabold text-primary block">عنوان التوصيل في أسوان:</span>
-                          <span className="text-gray-800 font-bold block">
-                            {[
-                              getLocalizedText(order.deliveryAddress.area),
-                              getLocalizedText(order.deliveryAddress.addressLine1 || order.deliveryAddress.street),
-                              getLocalizedText(order.deliveryAddress.addressLine2 || order.deliveryAddress.building),
-                            ]
-                              .filter(Boolean)
-                              .join(' – ')}
-                          </span>
-                          {order.deliveryAddress.deliveryInstructions && (
-                            <span className="text-[11px] text-gray-500 block">
-                              علامة مميزة: {getLocalizedText(order.deliveryAddress.deliveryInstructions)}
-                            </span>
-                          )}
+                  {(order.type === 'delivery' || (order as any).deliveryType === 'delivery') &&
+                    order.deliveryAddress &&
+                    (() => {
+                      const addr = formatDeliveryAddress(order.deliveryAddress);
+                      return (
+                        <div className="pt-2">
+                          <div className="p-3 rounded-xl bg-primary-50/50 border border-primary-100 flex items-start gap-2">
+                            <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                            <div className="space-y-0.5 text-xs">
+                              <span className="font-extrabold text-primary block">عنوان التوصيل:</span>
+                              <span className="text-gray-800 font-bold block whitespace-pre-line break-words">
+                                {addr.mainText}
+                              </span>
+                              {addr.landmark && (
+                                <span className="text-[11px] text-gray-500 block">
+                                  علامة مميزة: {addr.landmark}
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  )}
+                      );
+                    })()}
 
                   {/* Itemized List */}
                   <div className="pt-3 space-y-2.5">
@@ -274,7 +274,7 @@ export const DigitalReceiptModal: React.FC<DigitalReceiptModalProps> = ({
                               <span>
                                 <span className="tabular-nums font-mono">{item.quantity}</span>x {itemName}
                               </span>
-                              <CurrencyDisplay amount={item.totalPrice} className="font-black text-primary" />
+                              <span className="font-bold tabular-nums number-ltr font-black text-primary">{formatPrice(item.totalPrice)}</span>
                             </div>
 
                             {/* Customizations */}
@@ -313,12 +313,12 @@ export const DigitalReceiptModal: React.FC<DigitalReceiptModalProps> = ({
                   <div className="pt-3 space-y-1.5 text-gray-600">
                     <div className="flex justify-between">
                       <span>المجموع:</span>
-                      <CurrencyDisplay amount={order.subtotal} />
+                      <span className="font-bold tabular-nums number-ltr">{formatPrice(order.subtotal)}</span>
                     </div>
                     {order.deliveryFee > 0 && (
                       <div className="flex justify-between">
                         <span>رسوم التوصيل:</span>
-                        <CurrencyDisplay amount={order.deliveryFee} />
+                        <span className="font-bold tabular-nums number-ltr">{formatPrice(order.deliveryFee)}</span>
                       </div>
                     )}
                     {order.discount > 0 && (
@@ -329,10 +329,7 @@ export const DigitalReceiptModal: React.FC<DigitalReceiptModalProps> = ({
                     )}
                     <div className="pt-2 border-t border-gray-200 flex justify-between items-center text-sm font-black text-dark">
                       <span>الإجمالي:</span>
-                      <CurrencyDisplay
-                        amount={order.total}
-                        className="text-lg font-black text-primary"
-                      />
+                      <span className="font-bold tabular-nums number-ltr text-lg font-black text-primary">{formatPrice(order.total)}</span>
                     </div>
                   </div>
                 </div>

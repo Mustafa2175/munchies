@@ -173,7 +173,7 @@ export const CategoryShortcuts: React.FC = () => {
   };
 
   return (
-    <section className="w-full max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 pt-1 sm:pt-2 relative z-20">
+    <section className="w-full max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 pt-2 relative z-20">
       <div className="relative">
         <div
           ref={scrollContainerRef}

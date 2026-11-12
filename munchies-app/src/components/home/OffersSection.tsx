@@ -9,7 +9,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Tag } from 'lucide-react';
 import { ROUTES } from '@/config/routes';
 import { useOfferStore, type PromotionOffer } from '@/stores/offerStore';
-import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
+import { formatPrice } from '@/lib/currency';
 
 export const OffersSection: React.FC = () => {
   const navigate = useNavigate();
@@ -91,7 +91,7 @@ export const OffersSection: React.FC = () => {
             {currentOffer.price && (
               <div className="pt-1">
                 <span className="inline-flex items-center px-4 py-1.5 rounded-xl bg-yellow text-dark font-black text-sm sm:text-base shadow-sm">
-                  <CurrencyDisplay amount={Number(currentOffer.price)} />
+                  <span className="font-bold tabular-nums number-ltr">{formatPrice(Number(currentOffer.price))}</span>
                 </span>
               </div>
             )}

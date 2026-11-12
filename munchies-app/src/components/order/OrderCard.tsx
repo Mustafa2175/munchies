@@ -9,7 +9,7 @@ import { ArrowLeft, Clock } from 'lucide-react';
 import type { Order } from '@/types';
 import { Card } from '@/components/ui/Card';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
+import { formatPrice } from '@/lib/currency';
 import { formatDate } from '@/lib/date';
 import { ROUTES } from '@/config/routes';
 import { getLocalizedText } from '@/lib/i18n';
@@ -42,7 +42,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
             <span>
               <span className="tabular-nums font-mono">{item.quantity}</span>x {getLocalizedText(item.name, 'صنف')}
             </span>
-            <CurrencyDisplay amount={item.totalPrice} />
+            <span className="font-bold tabular-nums number-ltr">{formatPrice(item.totalPrice)}</span>
           </div>
         ))}
         {order.items.length > 3 && (
@@ -55,7 +55,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
       <div className="flex items-center justify-between pt-3 border-t border-gray-100">
         <div className="flex items-baseline gap-1.5">
           <span className="text-xs text-gray-500">الإجمالي:</span>
-          <CurrencyDisplay amount={order.total} className="text-sm font-extrabold text-primary" />
+          <span className="font-bold tabular-nums number-ltr text-sm font-extrabold text-primary">{formatPrice(order.total)}</span>
         </div>
 
         <Link

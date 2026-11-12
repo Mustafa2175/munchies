@@ -153,6 +153,7 @@ export interface OrderStatusEntry {
 export interface Order {
   id: string;
   orderNumber: string;
+  customerId?: string;
   userId: string;
   items: OrderItem[];
   subtotal: number;
@@ -207,8 +208,11 @@ export interface UserProfile {
   addresses?: Address[];
   preferredLanguage?: SupportedLanguage;
   role?: string;
-  createdAt: string;
-  updatedAt: string;
+  authProvider?: 'password' | 'google';
+  isActive?: boolean;
+  favouriteProductIds?: string[];
+  createdAt: unknown;
+  updatedAt: unknown;
 }
 
 export type User = UserProfile;

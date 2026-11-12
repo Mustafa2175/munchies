@@ -293,14 +293,14 @@ html[dir="rtl"] .phone-number {
 
 /* Smooth continuous curved top transition for homepage content surface */
 .curved-top-surface {
-  border-top-left-radius: 50% 24px;
-  border-top-right-radius: 50% 24px;
+  border-top-left-radius: 50% 11px;
+  border-top-right-radius: 50% 11px;
 }
 
 @media (min-width: 640px) {
   .curved-top-surface {
-    border-top-left-radius: 50% 34px;
-    border-top-right-radius: 50% 34px;
+    border-top-left-radius: 50% 20px;
+    border-top-right-radius: 50% 20px;
   }
 }
 
@@ -332,3 +332,51 @@ html[dir="rtl"] .phone-number {
   background-size: 400% 100%;
   animation: skeleton-loading 1.4s ease infinite;
 }
+
+/* Step Builder Animations */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 218, 53, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(255, 218, 53, 0);
+  }
+}
+
+.animate-fade-slide-in {
+  animation: fadeSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-bounce-in {
+  animation: bounceIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s infinite;
+}
+

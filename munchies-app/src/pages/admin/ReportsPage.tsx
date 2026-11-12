@@ -8,7 +8,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pi
 import { TrendingUp, DollarSign, ShoppingBag, Award, Calendar } from 'lucide-react';
 import type { Order } from '@/types';
 import { Card } from '@/components/ui/Card';
-import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
+import { formatPrice } from '@/lib/currency';
 import { getLocalizedText } from '@/lib/i18n';
 
 const COLORS = ['#512080', '#FFDA35', '#27834B', '#3B82F6', '#E84D45'];
@@ -69,7 +69,7 @@ export const ReportsPage: React.FC = () => {
           <div>
             <span className="text-xs text-gray-400 font-bold block">إجمالي إيرادات الأسبوع</span>
             <span className="text-xl font-black text-emerald-600 mt-1 block">
-              <CurrencyDisplay amount={weeklyRevenue} />
+              <span className="font-bold tabular-nums number-ltr">{formatPrice(weeklyRevenue)}</span>
             </span>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -93,7 +93,7 @@ export const ReportsPage: React.FC = () => {
           <div>
             <span className="text-xs text-gray-400 font-bold block">متوسط قيمة الطلب</span>
             <span className="text-xl font-black text-dark mt-1 block">
-              <CurrencyDisplay amount={131} />
+              <span className="font-bold tabular-nums number-ltr">{formatPrice(131)}</span>
             </span>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
@@ -219,7 +219,7 @@ export const ReportsPage: React.FC = () => {
                     {item.count} طلب
                   </td>
                   <td className="px-5 py-3.5 font-extrabold text-emerald-600">
-                    <CurrencyDisplay amount={item.revenue} />
+                    <span className="font-bold tabular-nums number-ltr">{formatPrice(item.revenue)}</span>
                   </td>
                 </tr>
               ))}

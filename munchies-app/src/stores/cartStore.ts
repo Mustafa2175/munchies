@@ -6,7 +6,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
-import type { LocalizedText } from '@/types';
+import type { LocalizedText, Product } from '@/types';
 
 export interface SelectedOption {
   optionId: string;
@@ -42,6 +42,7 @@ interface CartState {
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
+  revalidatePrices: (products: Product[]) => string[];
   applyCoupon: (code: string, discount: number) => void;
   removeCoupon: () => void;
   
@@ -137,6 +138,53 @@ export const useCartStore = create<CartState>()(
 
       clearCart: () => {
         set({ items: [], couponCode: null, discountAmount: 0 });
+      },
+
+      revalidatePrices: (products) => {
+        const currentItems = get().items;
+        if (currentItems.length === 0 || products.length === 0) return [];
+
+        const updatedNames: string[] = [];
+        let changed = false;
+
+        const nextItems = currentItems.map((item) => {
+          if (item.productId === 'custom_sandwich') return item;
+          const prod = products.find((p) => p.id === item.productId);
+          if (!prod || typeof prod.price !== 'number') return item;
+
+          const optionSum = item.customizations.reduce(
+            (acc, group) =>
+              acc + group.selectedOptions.reduce((oAcc, opt) => oAcc + opt.price, 0),
+            0
+          );
+          const expectedUnitPrice = prod.price + optionSum;
+          const expectedLineTotal = expectedUnitPrice * item.quantity;
+
+          if (item.basePrice !== prod.price || item.lineTotal !== expectedLineTotal) {
+            changed = true;
+            const label =
+              typeof item.name === 'object' && item.name?.ar
+                ? item.name.ar
+                : typeof prod.name === 'object' && prod.name?.ar
+                ? prod.name.ar
+                : 'صنف';
+            if (item.basePrice !== prod.price) {
+              updatedNames.push(label);
+            }
+            return {
+              ...item,
+              basePrice: prod.price,
+              lineTotal: expectedLineTotal,
+            };
+          }
+
+          return item;
+        });
+
+        if (changed) {
+          set({ items: nextItems });
+        }
+        return updatedNames;
       },
 
       applyCoupon: (code, discount) => {

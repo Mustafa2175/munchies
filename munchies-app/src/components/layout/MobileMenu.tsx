@@ -1,19 +1,20 @@
 /**
  * @module components/layout/MobileMenu
- * @description Slide-in drawer for mobile navigation matching simplified navbar routes in Arabic.
+ * @description Slide-in drawer for mobile navigation with customer authentication links.
  */
 
 import React, { useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { X, Phone, MapPin, PackageSearch, User as UserIcon } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { X, Phone, MapPin, PackageSearch, User as UserIcon, LogIn, UserPlus, LogOut, ShoppingBag } from 'lucide-react';
 import { useUIStore } from '@/stores/uiStore';
 import { useAuthStore } from '@/stores/authStore';
 import { ROUTES } from '@/config/routes';
 
 export const MobileMenu: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { isMobileMenuOpen, closeMobileMenu } = useUIStore();
-  const { isAdmin, isAuthenticated } = useAuthStore();
+  const { isAdmin, isAuthenticated, logout } = useAuthStore();
 
   useEffect(() => {
     if (!isMobileMenuOpen) return;
@@ -31,18 +32,30 @@ export const MobileMenu: React.FC = () => {
     { label: 'المنيو', path: ROUTES.MENU },
     { label: 'العروض', path: ROUTES.OFFERS },
     { label: 'اعمل ساندوتشك', path: '/build-your-own' },
-    { label: 'تابع طلبك', path: ROUTES.TRACK_ORDER, icon: PackageSearch },
     { label: 'حكايتنا', path: ROUTES.ABOUT },
     { label: 'كلمنا', path: ROUTES.CONTACT },
-    {
-      label: 'حسابي',
-      path: isAdmin ? ROUTES.ADMIN : ROUTES.ORDERS,
-      icon: UserIcon,
-    },
+    ...(isAuthenticated
+      ? isAdmin
+        ? [{ label: 'لوحة التحكم', path: ROUTES.ADMIN, icon: UserIcon }]
+        : [
+            { label: 'حسابي', path: ROUTES.ACCOUNT, icon: UserIcon },
+            { label: 'طلباتي', path: ROUTES.ACCOUNT_ORDERS, icon: ShoppingBag },
+            { label: 'تابع طلبك', path: ROUTES.TRACK_ORDER, icon: PackageSearch },
+          ]
+      : [
+          { label: 'تسجيل الدخول', path: ROUTES.LOGIN, icon: LogIn },
+          { label: 'إنشاء حساب جديد', path: ROUTES.REGISTER, icon: UserPlus },
+        ]),
   ];
 
   const handleLinkClick = () => {
     closeMobileMenu();
+  };
+
+  const handleLogout = async () => {
+    closeMobileMenu();
+    await logout();
+    navigate(ROUTES.HOME, { replace: true });
   };
 
   return (
@@ -112,6 +125,17 @@ export const MobileMenu: React.FC = () => {
               </Link>
             );
           })}
+
+          {isAuthenticated && (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold text-danger hover:bg-danger-light transition-colors cursor-pointer"
+            >
+              <span>تسجيل الخروج</span>
+              <LogOut className="w-4 h-4" />
+            </button>
+          )}
 
           <div className="pt-3 px-1">
             <Link

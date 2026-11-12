@@ -16,13 +16,14 @@ import {
 } from 'lucide-react';
 import type { Order, OrderStatus } from '@/types';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
+import { formatPrice } from '@/lib/currency';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ROUTES } from '@/config/routes';
 import { formatTime } from '@/lib/date';
 import { subscribeToCollection, updateOrderStatusInFirestore } from '@/lib/firestore';
 import { getLocalizedText } from '@/lib/i18n';
+import { formatDeliveryAddress } from '@/lib/address';
 import toast from 'react-hot-toast';
 
 export const DashboardPage: React.FC = () => {
@@ -120,7 +121,7 @@ export const DashboardPage: React.FC = () => {
               إجمالي الإيرادات
             </span>
             <span className="text-xl font-black text-emerald-600 mt-1 block">
-              <CurrencyDisplay amount={totalRevenue} />
+              <span className="font-bold tabular-nums number-ltr">{formatPrice(totalRevenue)}</span>
             </span>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -174,19 +175,23 @@ export const DashboardPage: React.FC = () => {
                       <div className="text-gray-400 text-[10px] number-ltr tabular-nums">
                         {order.customerPhone}
                       </div>
-                      {(order.type === 'delivery' || (order as any).deliveryType === 'delivery') && (
-                        <div className="mt-0.5">
-                          <span className="inline-block text-[10px] font-bold text-primary bg-primary-50 px-1.5 py-0.5 rounded border border-primary-100">
-                            ديليفري {order.deliveryAddress?.area ? `(${getLocalizedText(order.deliveryAddress.area)})` : ''}
-                          </span>
-                        </div>
-                      )}
+                      {(order.type === 'delivery' || (order as any).deliveryType === 'delivery') && (() => {
+                        const addr = formatDeliveryAddress(order.deliveryAddress);
+                        const suffix = addr.area || addr.mainText;
+                        return (
+                          <div className="mt-0.5">
+                            <span className="inline-block text-[10px] font-bold text-primary bg-primary-50 px-1.5 py-0.5 rounded border border-primary-100 max-w-[200px] truncate">
+                              ديليفري {suffix ? `(${suffix})` : ''}
+                            </span>
+                          </div>
+                        );
+                      })()}
                     </td>
                     <td className="px-5 py-3.5 text-gray-600 max-w-xs truncate">
                       {order.items.map((i) => `${i.quantity}x ${getLocalizedText(i.name, 'صنف')}`).join('، ')}
                     </td>
                     <td className="px-5 py-3.5 font-extrabold text-dark">
-                      <CurrencyDisplay amount={order.total} />
+                      <span className="font-bold tabular-nums number-ltr">{formatPrice(order.total)}</span>
                     </td>
                     <td className="px-5 py-3.5">
                       <StatusBadge status={order.status} />

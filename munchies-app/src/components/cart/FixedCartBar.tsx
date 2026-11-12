@@ -9,7 +9,7 @@ import React from 'react';
 import { ShoppingBag, ArrowLeft } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 import { useUIStore } from '@/stores/uiStore';
-import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
+import { formatPrice } from '@/lib/currency';
 
 export const FixedCartBar: React.FC = () => {
   const itemCount = useCartStore((state) => state.getItemCount());
@@ -47,10 +47,7 @@ export const FixedCartBar: React.FC = () => {
         {/* Center in RTL: Subtotal */}
         <div className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-gray-100 truncate">
           <span className="text-gray-300">المجموع:</span>
-          <CurrencyDisplay
-            amount={subtotal}
-            className="text-xs sm:text-base font-black text-yellow tracking-tight"
-          />
+          <span className="font-bold tabular-nums number-ltr text-xs sm:text-base font-black text-yellow tracking-tight">{formatPrice(subtotal)}</span>
         </div>
 
         {/* Left side in RTL: Action Button "شوف السلة" with Arrow */}

@@ -2,19 +2,293 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {uid} (matches Firebase Auth UID)
+    // Fields:
+    //   - uid: string (required, immutable, must equal request.auth.uid on create)
+    //   - fullName: string (required, 2..80 chars)
+    //   - displayName: string (optional, 1..100 chars)
+    //   - phone: string (required, empty string "" for Google Sign-In before phone added, or Egyptian mobile format ^01[0125][0-9]{8}$)
+    //   - email: string (required, valid email, <= 254 chars)
+    //   - role: string (required, 'customer' on customer create, immutable by customer)
+    //   - authProvider: string (optional, 'password' | 'google')
+    //   - preferredLanguage: string (optional, 'ar' | 'en')
+    //   - isActive: bool (optional, default true on create, immutable by customer)
+    //   - addresses: list (optional, <= 15 Address maps)
+    //   - favouriteProductIds: list (optional, <= 100 product ID strings)
+    //   - photoURL: string (optional, http(s) URL, <= 500 chars)
+    //   - createdAt: timestamp | ISO-8601 string (required, immutable by customer)
+    //   - updatedAt: timestamp | ISO-8601 string (required)
+    //   - lastLoginAt: timestamp | ISO-8601 string (optional)
+    //
+    // Collection: adminUsers
+    // Document ID: {uid} (matches Firebase Auth UID)
+    // Fields:
+    //   - uid: string (required, 1..128 chars)
+    //   - email: string (required, valid email, <= 254 chars)
+    //   - name: string (optional, 1..100 chars)
+    //   - displayName: string (optional, 1..100 chars)
+    //   - phone: string (optional, 7..20 chars)
+    //   - photoURL: string (optional, http(s) URL, <= 500 chars)
+    //   - role: string (required, 'super_admin' | 'admin' | 'manager' | 'staff')
+    //   - permissions: list (optional, <= 30 permission strings)
+    //   - isActive: bool (required)
+    //   - lastLoginAt: timestamp | ISO-8601 string (optional)
+    //   - createdAt: timestamp | ISO-8601 string (optional)
+    //   - createdBy: string (optional, 1..128 chars)
+    //   - updatedAt: timestamp | ISO-8601 string (optional)
+    //
+    // Collection: orders
+    // Document ID: {orderId}
+    // Fields:
+    //   - id: string (optional, 1..128 chars)
+    //   - orderNumber: string (required, 1..40 chars)
+    //   - orderNumberNum: int (optional, >= 0)
+    //   - customerId: string (required on customer create = auth.uid, immutable)
+    //   - userId: string (required, = auth.uid on customer create, immutable)
+    //   - customerName: string (required, 1..100 chars)
+    //   - customerPhone: string (required, 7..20 chars)
+    //   - customerEmail: string | null (optional, <= 254 chars)
+    //   - type / orderType / deliveryType: string (optional, 'delivery' | 'pickup')
+    //   - deliveryAddress: map | null (optional, <= 20 keys)
+    //   - status: string (required, 'pending' on customer create; customer update only -> 'cancelled' from 'pending' | 'confirmed')
+    //   - statusHistory: list (optional, <= 50 entries)
+    //   - events: list (optional, <= 50 entries)
+    //   - paymentMethod: string (required, 'cash' | 'card')
+    //   - paymentStatus: string (required, 'pending' on customer create)
+    //   - paymentReference: string (optional, <= 200 chars)
+    //   - items: list (required, 1..100 items)
+    //   - subtotal: number (required, 0..1000000)
+    //   - deliveryFee: number (required, 0..10000)
+    //   - discount / discountAmount: number (optional, 0..1000000)
+    //   - total: number (required, 0..1000000)
+    //   - notes / adminNotes: string (optional, <= 500 chars)
+    //   - couponCode: string | null (optional, <= 50 chars)
+    //   - couponId: string | null (optional, <= 128 chars)
+    //   - estimatedTime / estimatedDeliveryTime: timestamp | ISO-8601 string | null (optional)
+    //   - cancellationReason / refundReason: string (optional, <= 500 chars)
+    //   - createdAt: timestamp | ISO-8601 string (required, immutable)
+    //   - updatedAt: timestamp | ISO-8601 string (required)
+    //
+    // Collection: settings
+    // Document ID: orderCounter (authenticated checkout counter)
+    //   - lastOrderNumber: int (required, >= 1001; increments by +1 on non-admin update)
+    //   - updatedAt: timestamp | ISO-8601 string (optional)
+    // Document ID: {docId} != 'orderCounter' (publicly readable, admin-writable)
+    //
+    // Public Catalog Collections: products, categories, offers
+    //   - Publicly readable, admin-writable
+    //
+    // Admin-Only Collection: auditLogs
+    //   - Admin read and create only (immutable)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
     function isAuthenticated() {
       return request.auth != null;
     }
 
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
     function isAdmin() {
       return isAuthenticated() && (
-        request.auth.token.email == 'admin@munchies.com' ||
+        ('email' in request.auth.token && request.auth.token.email == 'admin@munchies.com') ||
         (exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid)) &&
          get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.isActive == true)
       );
     }
 
-    // Public collections
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    function isValidOptionalString(field, minLen, maxLen) {
+      return !(field in request.resource.data) ||
+        (request.resource.data[field] is string &&
+         request.resource.data[field].size() >= minLen &&
+         request.resource.data[field].size() <= maxLen);
+    }
+
+    function isValidUrl(url) {
+      return url is string &&
+        (url.matches("^https://.*") || url.matches("^http://.*"));
+    }
+
+    function isValidEmail(email) {
+      return email is string &&
+        email.size() <= 254 &&
+        email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidEgyptianPhone(phone) {
+      return phone is string &&
+        phone.matches("^01[0125][0-9]{8}$");
+    }
+
+    function isValidList(listVal, maxSize) {
+      return listVal is list && listVal.size() <= maxSize;
+    }
+
+    function isValidTimestampValue(val) {
+      return val is timestamp ||
+        (val is string && val.size() >= 10 && val.size() <= 40 &&
+         val.matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.*$"));
+    }
+
+    function isOrderOwner() {
+      return isAuthenticated() && (
+        ('customerId' in resource.data && resource.data.customerId == request.auth.uid) ||
+        ('userId' in resource.data && resource.data.userId == request.auth.uid)
+      );
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasOnlyAllowedFields([
+          'uid', 'fullName', 'displayName', 'phone', 'email', 'role', 'authProvider',
+          'preferredLanguage', 'isActive', 'addresses', 'favouriteProductIds',
+          'photoURL', 'createdAt', 'updatedAt', 'lastLoginAt'
+        ]) &&
+        hasRequiredFields([
+          'uid', 'fullName', 'phone', 'email', 'role', 'createdAt', 'updatedAt'
+        ]) &&
+        data.uid is string && data.uid.size() > 0 && data.uid.size() <= 128 &&
+        data.fullName is string && data.fullName.size() >= 2 && data.fullName.size() <= 80 &&
+        isValidOptionalString('displayName', 1, 100) &&
+        data.phone is string && (data.phone == '' || isValidEgyptianPhone(data.phone)) &&
+        isValidEmail(data.email) &&
+        data.role in ['customer', 'admin'] &&
+        (!('authProvider' in data) || (data.authProvider is string && data.authProvider in ['password', 'google'])) &&
+        (!('preferredLanguage' in data) || data.preferredLanguage in ['ar', 'en']) &&
+        (!('isActive' in data) || data.isActive is bool) &&
+        (!('addresses' in data) || (
+          isValidList(data.addresses, 15) &&
+          (data.addresses.size() == 0 || (data.addresses[0] is map && data.addresses[0].keys().size() <= 20))
+        )) &&
+        (!('favouriteProductIds' in data) || (
+          isValidList(data.favouriteProductIds, 100) &&
+          (data.favouriteProductIds.size() == 0 || (data.favouriteProductIds[0] is string && data.favouriteProductIds[0].size() > 0 && data.favouriteProductIds[0].size() <= 128))
+        )) &&
+        (!('photoURL' in data) || (data.photoURL.size() <= 500 && isValidUrl(data.photoURL))) &&
+        isValidTimestampValue(data.createdAt) &&
+        isValidTimestampValue(data.updatedAt) &&
+        (!('lastLoginAt' in data) || isValidTimestampValue(data.lastLoginAt));
+    }
+
+    function isValidAdminUser(data) {
+      return hasOnlyAllowedFields([
+          'uid', 'email', 'name', 'displayName', 'phone', 'photoURL',
+          'role', 'permissions', 'isActive', 'lastLoginAt',
+          'createdAt', 'createdBy', 'updatedAt'
+        ]) &&
+        hasRequiredFields(['uid', 'email', 'role', 'isActive']) &&
+        data.uid is string && data.uid.size() > 0 && data.uid.size() <= 128 &&
+        isValidEmail(data.email) &&
+        isValidOptionalString('name', 1, 100) &&
+        isValidOptionalString('displayName', 1, 100) &&
+        isValidOptionalString('phone', 7, 20) &&
+        (!('photoURL' in data) || (data.photoURL.size() <= 500 && isValidUrl(data.photoURL))) &&
+        data.role in ['super_admin', 'admin', 'manager', 'staff'] &&
+        (!('permissions' in data) || isValidList(data.permissions, 30)) &&
+        data.isActive is bool &&
+        (!('lastLoginAt' in data) || isValidTimestampValue(data.lastLoginAt)) &&
+        (!('createdAt' in data) || isValidTimestampValue(data.createdAt)) &&
+        isValidOptionalString('createdBy', 1, 128) &&
+        (!('updatedAt' in data) || isValidTimestampValue(data.updatedAt));
+    }
+
+    function isValidOrder(data) {
+      return hasOnlyAllowedFields([
+          'id', 'orderNumber', 'orderNumberNum', 'customerId', 'userId',
+          'customerName', 'customerPhone', 'customerEmail',
+          'type', 'orderType', 'deliveryType', 'deliveryAddress',
+          'status', 'statusHistory', 'events',
+          'paymentMethod', 'paymentStatus', 'paymentReference',
+          'items', 'subtotal', 'discount', 'discountAmount', 'deliveryFee', 'total',
+          'notes', 'adminNotes', 'couponCode', 'couponId',
+          'estimatedTime', 'estimatedDeliveryTime',
+          'cancellationReason', 'refundReason',
+          'createdAt', 'updatedAt'
+        ]) &&
+        hasRequiredFields([
+          'orderNumber', 'userId', 'customerName', 'customerPhone',
+          'items', 'subtotal', 'deliveryFee', 'total',
+          'status', 'paymentMethod', 'paymentStatus',
+          'createdAt', 'updatedAt'
+        ]) &&
+        isValidOptionalString('id', 1, 128) &&
+        data.orderNumber is string && data.orderNumber.size() >= 1 && data.orderNumber.size() <= 40 &&
+        (!('orderNumberNum' in data) || (data.orderNumberNum is int && data.orderNumberNum >= 0)) &&
+        (!('customerId' in data) || (data.customerId is string && data.customerId.size() >= 1 && data.customerId.size() <= 128)) &&
+        data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+        data.customerName is string && data.customerName.size() >= 1 && data.customerName.size() <= 100 &&
+        data.customerPhone is string && data.customerPhone.size() >= 7 && data.customerPhone.size() <= 20 &&
+        (!('customerEmail' in data) || data.customerEmail == null || data.customerEmail == '' || isValidEmail(data.customerEmail)) &&
+        (!('type' in data) || data.type in ['delivery', 'pickup']) &&
+        (!('orderType' in data) || data.orderType in ['delivery', 'pickup']) &&
+        (!('deliveryType' in data) || data.deliveryType in ['delivery', 'pickup']) &&
+        (!('deliveryAddress' in data) || data.deliveryAddress == null || (data.deliveryAddress is map && data.deliveryAddress.keys().size() <= 20)) &&
+        data.status in [
+          'pending', 'confirmed', 'preparing', 'ready',
+          'out_for_delivery', 'delivered', 'picked_up', 'cancelled', 'refunded'
+        ] &&
+        (!('statusHistory' in data) || isValidList(data.statusHistory, 50)) &&
+        (!('events' in data) || isValidList(data.events, 50)) &&
+        data.paymentMethod in ['cash', 'card'] &&
+        data.paymentStatus in ['pending', 'paid', 'failed', 'refunded'] &&
+        isValidOptionalString('paymentReference', 0, 200) &&
+        data.items is list && data.items.size() >= 1 && data.items.size() <= 100 &&
+        data.subtotal is number && data.subtotal >= 0 && data.subtotal <= 1000000 &&
+        data.deliveryFee is number && data.deliveryFee >= 0 && data.deliveryFee <= 10000 &&
+        (!('discount' in data) || (data.discount is number && data.discount >= 0 && data.discount <= 1000000)) &&
+        (!('discountAmount' in data) || (data.discountAmount is number && data.discountAmount >= 0 && data.discountAmount <= 1000000)) &&
+        data.total is number && data.total >= 0 && data.total <= 1000000 &&
+        isValidOptionalString('notes', 0, 500) &&
+        isValidOptionalString('adminNotes', 0, 500) &&
+        (!('couponCode' in data) || data.couponCode == null || (data.couponCode is string && data.couponCode.size() <= 50)) &&
+        (!('couponId' in data) || data.couponId == null || (data.couponId is string && data.couponId.size() <= 128)) &&
+        (!('estimatedTime' in data) || data.estimatedTime == null || isValidTimestampValue(data.estimatedTime)) &&
+        (!('estimatedDeliveryTime' in data) || data.estimatedDeliveryTime == null || isValidTimestampValue(data.estimatedDeliveryTime)) &&
+        isValidOptionalString('cancellationReason', 0, 500) &&
+        isValidOptionalString('refundReason', 0, 500) &&
+        isValidTimestampValue(data.createdAt) &&
+        isValidTimestampValue(data.updatedAt);
+    }
+
+    function isValidOrderCounter(data) {
+      return hasOnlyAllowedFields(['lastOrderNumber', 'updatedAt']) &&
+        hasRequiredFields(['lastOrderNumber']) &&
+        data.lastOrderNumber is int &&
+        data.lastOrderNumber >= 1001 &&
+        (!('updatedAt' in data) || isValidTimestampValue(data.updatedAt));
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // Public catalog collections
     match /products/{productId} {
       allow read: if true;
       allow write: if isAdmin();
@@ -30,41 +304,95 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Settings collection
+    // Order counter used in authenticated checkout transactions
     match /settings/orderCounter {
-      allow read: if true;
-      allow create, update: if true;
-    }
-
-    match /settings/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // User profile collection
-    match /users/{uid} {
-      allow read, write: if isAuthenticated() && (request.auth.uid == uid || isAdmin());
-    }
-
-    // Guest Checkout & Order Tracking
-    match /orders/{orderId} {
-      allow create: if true;
-      allow get, list: if true;
-      allow update: if isAdmin() || (
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt', 'statusHistory']) &&
-        request.resource.data.status == 'cancelled' &&
-        resource.data.status in ['pending', 'confirmed']
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidOrderCounter(request.resource.data);
+      allow update: if isAuthenticated() && isValidOrderCounter(request.resource.data) && (
+        isAdmin() || (
+          'lastOrderNumber' in resource.data &&
+          resource.data.lastOrderNumber is int &&
+          request.resource.data.lastOrderNumber == resource.data.lastOrderNumber + 1
+        )
       );
       allow delete: if isAdmin();
     }
 
-    // Admin-only collections
-    match /adminUsers/{uid} {
-      allow read, write: if isAdmin();
+    // Public settings (excluding orderCounter so authenticated restriction cannot be bypassed)
+    match /settings/{docId} {
+      allow read: if docId != 'orderCounter';
+      allow write: if docId != 'orderCounter' && isAdmin();
     }
 
+    // Customer profile collection (owner-only PII protection + admin management)
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create: if isAuthenticated() && isValidUser(request.resource.data) && (
+        (
+          isOwner(uid) &&
+          request.resource.data.uid == request.auth.uid &&
+          request.resource.data.role == 'customer' &&
+          (!('isActive' in request.resource.data) || request.resource.data.isActive == true)
+        ) ||
+        isAdmin()
+      );
+      allow update: if isAuthenticated() && isValidUser(request.resource.data) && (
+        (
+          isOwner(uid) &&
+          areImmutableFieldsUnchanged(['uid', 'role', 'isActive', 'createdAt'])
+        ) ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Orders collection (authenticated customer ownership + admin full access)
+    match /orders/{orderId} {
+      allow get, list: if isAdmin() || isOrderOwner();
+      allow create: if isAuthenticated() && isValidOrder(request.resource.data) && (
+        isAdmin() || (
+          hasRequiredFields(['customerId', 'userId']) &&
+          request.resource.data.customerId == request.auth.uid &&
+          request.resource.data.userId == request.auth.uid &&
+          request.resource.data.status == 'pending' &&
+          request.resource.data.paymentStatus == 'pending'
+        )
+      );
+      allow update: if isAuthenticated() && isValidOrder(request.resource.data) && (
+        isAdmin() || (
+          isOrderOwner() &&
+          areImmutableFieldsUnchanged(['customerId', 'userId', 'createdAt']) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt', 'statusHistory']) &&
+          request.resource.data.status == 'cancelled' &&
+          resource.data.status in ['pending', 'confirmed'] &&
+          (!('statusHistory' in resource.data) || (
+            'statusHistory' in request.resource.data &&
+            request.resource.data.statusHistory is list &&
+            request.resource.data.statusHistory.size() >= resource.data.statusHistory.size() &&
+            request.resource.data.statusHistory.size() <= resource.data.statusHistory.size() + 1
+          ))
+        )
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Admin users collection: allow own `get` for App.tsx auth check without permission warnings
+    match /adminUsers/{uid} {
+      allow get: if isOwner(uid) || isAdmin();
+      allow list: if isAdmin();
+      allow create, update: if isAdmin() && isValidAdminUser(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // Immutable audit log (admin only)
     match /auditLogs/{logId} {
       allow read, create: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // Default deny fallback
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

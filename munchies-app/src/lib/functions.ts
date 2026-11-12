@@ -1,13 +1,14 @@
 /**
  * @module lib/functions
- * @description Cloud Functions callable wrappers with local fallback for offline/demo development.
+ * @description Order creation and cancellation helpers bound strictly to authenticated Firebase user UID.
  */
 
-import { httpsCallable } from 'firebase/functions';
-import { doc, collection, setDoc, runTransaction, serverTimestamp } from 'firebase/firestore';
-import { functions, db } from '@/config/firebase';
+import { doc, collection, getDoc, setDoc, runTransaction, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from '@/config/firebase';
 import { updateOrderStatusInFirestore } from '@/lib/firestore';
 import { isStoreCurrentlyOpen } from '@/stores/restaurantStore';
+import { isProductAvailable, useProductStore } from '@/stores/productStore';
+import { normalizeEgyptianPhone, normalizeEmail, normalizeFullName } from '@/lib/validators';
 import type { Order, OrderStatus } from '@/types';
 
 export interface CreateOrderPayload {
@@ -27,41 +28,32 @@ export interface CreateOrderPayload {
 
 /**
  * Atomically generates the next sequential order number (starting at 1001)
- * from Firestore settings/orderCounter with a localStorage fallback.
+ * from Firestore settings/orderCounter.
  */
 export async function getNextOrderNumber(): Promise<string> {
-  try {
-    const counterRef = doc(db, 'settings', 'orderCounter');
-    const nextNum = await runTransaction(db, async (transaction) => {
-      const snap = await transaction.get(counterRef);
-      let current = 1000;
-      if (snap.exists()) {
-        const val = snap.data()?.lastOrderNumber;
-        if (typeof val === 'number') {
-          current = val;
-        }
+  const counterRef = doc(db, 'settings', 'orderCounter');
+  const nextNum = await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(counterRef);
+    let current = 1000;
+    if (snap.exists()) {
+      const val = snap.data()?.lastOrderNumber;
+      if (typeof val === 'number') {
+        current = val;
       }
-      const next = current + 1;
-      transaction.set(
-        counterRef,
-        {
-          lastOrderNumber: next,
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
-      return next;
-    });
+    }
+    const next = current + 1;
+    transaction.set(
+      counterRef,
+      {
+        lastOrderNumber: next,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+    return next;
+  });
 
-    localStorage.setItem('munchies_last_order_num', nextNum.toString());
-    return nextNum.toString();
-  } catch (error) {
-    console.warn('Could not increment Firestore orderCounter in transaction, using fallback:', error);
-    const localVal = Number(localStorage.getItem('munchies_last_order_num') || '1000');
-    const nextNum = localVal + 1;
-    localStorage.setItem('munchies_last_order_num', nextNum.toString());
-    return nextNum.toString();
-  }
+  return nextNum.toString();
 }
 
 /**
@@ -87,55 +79,138 @@ function stripUndefined<T>(val: T): T {
 }
 
 /**
- * Direct client-side creation directly into Firestore (Spark plan compatible, no Cloud Functions dependency).
+ * Creates a new order in Cloud Firestore tied strictly to `auth.currentUser.uid`.
+ * Revalidates product availability and base prices before persisting.
  */
 export async function callCreateOrder(
   payload: CreateOrderPayload
 ): Promise<{ orderId: string; orderNumber: string; order: Order }> {
-  // Guard: Verify restaurant is currently accepting orders
+  const currentUser = auth.currentUser;
+  if (!currentUser) {
+    throw new Error('يجب تسجيل الدخول أولاً لإتمام الطلب.');
+  }
+
   if (!isStoreCurrentlyOpen()) {
     throw new Error('معلش، إحنا قافلين دلوقتي ومبنستقبلش طلبات جديدة. راجعنا قريب!');
   }
+
+  const storeProducts = useProductStore.getState().products;
+
+  // Revalidate availability and authoritative prices for every cart line
+  const validatedItems = await Promise.all(
+    payload.items.map(async (item) => {
+      const quantity = Math.max(1, Number(item.quantity) || 1);
+      const optionSum = Array.isArray(item.customizations)
+        ? item.customizations.reduce(
+            (acc: number, group: any) =>
+              acc +
+              (Array.isArray(group.selectedOptions)
+                ? group.selectedOptions.reduce(
+                    (oAcc: number, opt: any) => oAcc + Number(opt.price || 0),
+                    0
+                  )
+                : 0),
+            0
+          )
+        : 0;
+
+      if (item.productId === 'custom_sandwich') {
+        const unitPrice = Number(item.basePrice || item.unitPrice || 50) + optionSum;
+        return {
+          id: item.id || `item_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          productId: 'custom_sandwich',
+          name: typeof item.name === 'string' ? { ar: item.name, en: item.name } : item.name || { ar: '', en: '' },
+          image: item.image || '',
+          unitPrice,
+          quantity,
+          totalPrice: unitPrice * quantity,
+          customizations: item.customizations || [],
+          specialInstructions: item.specialInstructions || '',
+        };
+      }
+
+      // Check Firestore product doc first, falling back to synced store
+      let authoritativeProduct: Record<string, any> | undefined = storeProducts.find(
+        (p) => p.id === item.productId
+      );
+      try {
+        const snap = await getDoc(doc(db, 'products', item.productId));
+        if (snap.exists()) {
+          authoritativeProduct = { id: snap.id, ...snap.data() };
+        }
+      } catch {
+        // Use store snapshot if offline
+      }
+
+      if (authoritativeProduct && !isProductAvailable(authoritativeProduct)) {
+        const name =
+          typeof authoritativeProduct.name === 'object' && authoritativeProduct.name?.ar
+            ? authoritativeProduct.name.ar
+            : 'أحد الأصناف';
+        throw new Error(`"${name}" غير متاح حالياً. من فضلك شيله من السلة.`);
+      }
+
+      const basePrice =
+        authoritativeProduct && typeof authoritativeProduct.price === 'number'
+          ? authoritativeProduct.price
+          : Number(item.basePrice || item.unitPrice || 0);
+      const unitPrice = basePrice + optionSum;
+
+      return {
+        id: item.id || `item_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        productId: item.productId || '',
+        name: typeof item.name === 'string' ? { ar: item.name, en: item.name } : item.name || { ar: '', en: '' },
+        image: item.image || '',
+        unitPrice,
+        quantity,
+        totalPrice: unitPrice * quantity,
+        customizations: item.customizations || [],
+        specialInstructions: item.specialInstructions || '',
+      };
+    })
+  );
 
   const orderNumber = await getNextOrderNumber();
   const rawNum = String(orderNumber).replace(/^#/, '');
   const numericVal = parseInt(rawNum, 10);
 
-  // Generate official Firestore document reference
   const orderRef = doc(collection(db, 'orders'));
   const orderId = orderRef.id;
 
-  const subtotal = payload.items.reduce((sum, item) => sum + (item.lineTotal || 0), 0);
-  const deliveryFee = payload.orderType === 'delivery' ? (payload.deliveryFee !== undefined ? payload.deliveryFee : 25) : 0;
+  const subtotal = validatedItems.reduce((sum, item) => sum + item.totalPrice, 0);
+  const deliveryFee =
+    payload.orderType === 'delivery'
+      ? payload.deliveryFee !== undefined
+        ? payload.deliveryFee
+        : 25
+      : 0;
   const discount = 0;
   const total = subtotal + deliveryFee - discount;
   const nowIso = new Date().toISOString();
+
+  // Strictly bind ownership to the authenticated Firebase user UID
+  const authenticatedUid = currentUser.uid;
+  const customerEmail = normalizeEmail(currentUser.email || payload.customerSnapshot.email || '');
 
   const newOrder: Order & { orderNumberNum: number } = {
     id: orderId,
     orderNumber: rawNum,
     orderNumberNum: isNaN(numericVal) ? 0 : numericVal,
-    userId: payload.customerSnapshot.email || 'guest',
-    customerName: payload.customerSnapshot.name || 'عميل مانشيز',
-    customerPhone: payload.customerSnapshot.phone || '',
-    customerEmail: payload.customerSnapshot.email || '',
+    customerId: authenticatedUid,
+    userId: authenticatedUid,
+    customerName: normalizeFullName(payload.customerSnapshot.name) || currentUser.displayName || 'عميل مانشيز',
+    customerPhone: normalizeEgyptianPhone(payload.customerSnapshot.phone),
+    customerEmail,
     type: payload.orderType || 'pickup',
     deliveryType: payload.orderType || 'pickup',
-    deliveryAddress: payload.orderType === 'delivery' && payload.deliveryAddress ? payload.deliveryAddress : null,
+    deliveryAddress:
+      payload.orderType === 'delivery' && payload.deliveryAddress
+        ? payload.deliveryAddress
+        : null,
     status: 'pending' as OrderStatus,
     paymentMethod: payload.paymentMethod || 'cash',
     paymentStatus: 'pending',
-    items: payload.items.map((i) => ({
-      id: i.id || `item_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      productId: i.productId || '',
-      name: typeof i.name === 'string' ? { ar: i.name, en: i.name } : (i.name || { ar: '', en: '' }),
-      image: i.image || '',
-      unitPrice: i.basePrice || i.unitPrice || 0,
-      quantity: i.quantity || 1,
-      totalPrice: i.lineTotal || i.totalPrice || 0,
-      customizations: i.customizations || [],
-      specialInstructions: i.specialInstructions || '',
-    })),
+    items: validatedItems,
     subtotal,
     discount,
     deliveryFee,
@@ -152,10 +227,8 @@ export async function callCreateOrder(
     ],
   };
 
-  // Strip any remaining undefined values recursively
   const sanitizedOrder = stripUndefined(newOrder);
 
-  // 1. Direct write to Cloud Firestore
   try {
     await setDoc(orderRef, sanitizedOrder);
   } catch (firestoreErr) {
@@ -163,40 +236,18 @@ export async function callCreateOrder(
     throw new Error('حصلت مشكلة أثناء إرسال الطلب، جرّب تاني من فضلك.');
   }
 
-  // 2. Keep local storage in sync for backup / fast offline read
-  try {
-    const localOrders = JSON.parse(localStorage.getItem('munchies_orders') || '[]');
-    localOrders.unshift(sanitizedOrder);
-    localStorage.setItem('munchies_orders', JSON.stringify(localOrders));
-  } catch {
-    // Ignore local storage error
-  }
-
   return { orderId, orderNumber: rawNum, order: sanitizedOrder as Order };
 }
 
 export async function callCancelOrder(orderId: string, reason?: string): Promise<boolean> {
+  if (!auth.currentUser) {
+    throw new Error('يجب تسجيل الدخول أولاً.');
+  }
   try {
-    // Write directly to Cloud Firestore (Spark plan, no Cloud Functions needed)
     await updateOrderStatusInFirestore(orderId, 'cancelled', reason || 'العميل لغى الطلب');
-
-    // Also update local storage if present
-    try {
-      const localOrders = JSON.parse(localStorage.getItem('munchies_orders') || '[]');
-      const idx = localOrders.findIndex((o: any) => o.id === orderId);
-      if (idx > -1) {
-        localOrders[idx].status = 'cancelled';
-        localOrders[idx].updatedAt = new Date().toISOString();
-        localStorage.setItem('munchies_orders', JSON.stringify(localOrders));
-      }
-    } catch {
-      // ignore
-    }
-
     return true;
   } catch (firestoreErr) {
     console.error('Could not cancel order in Firestore:', firestoreErr);
     return false;
   }
 }
-

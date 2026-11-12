@@ -21,7 +21,7 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import type { Product, CustomizationGroup, CustomizationOption } from '@/types';
-import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
+import { formatPrice } from '@/lib/currency';
 import { useCartStore } from '@/stores/cartStore';
 import { isProductAvailable } from '@/stores/productStore';
 import { useIsStoreOpen } from '@/stores/restaurantStore';
@@ -311,7 +311,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                   {productName}
                 </h1>
                 <div className="text-lg sm:text-xl font-extrabold text-primary shrink-0">
-                  <CurrencyDisplay amount={product.price} />
+                  <span className="font-bold tabular-nums number-ltr">{formatPrice(product.price)}</span>
                 </div>
               </div>
 
@@ -463,7 +463,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                                 <div className="shrink-0 text-start">
                                   {option.price > 0 ? (
                                     <span className="text-xs sm:text-sm font-black text-primary">
-                                      +<CurrencyDisplay amount={option.price} />
+                                      +<span className="font-bold tabular-nums number-ltr">{formatPrice(option.price)}</span>
                                     </span>
                                   ) : (
                                     <span className="text-xs text-medium-gray font-bold">
@@ -535,7 +535,7 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                 الإجمالي
               </span>
               <div className="text-xl sm:text-2xl font-black text-primary">
-                <CurrencyDisplay amount={totalPrice} />
+                <span className="font-bold tabular-nums number-ltr">{formatPrice(totalPrice)}</span>
               </div>
             </div>
           </div>

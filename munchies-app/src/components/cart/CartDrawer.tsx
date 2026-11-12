@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { X, ShoppingBag, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 import { useUIStore } from '@/stores/uiStore';
+import { useAuthStore } from '@/stores/authStore';
 import { useProductStore, isProductAvailable } from '@/stores/productStore';
 import { useIsStoreOpen, useRestaurantStore } from '@/stores/restaurantStore';
 import { useCategoryStore, isCategoryActive, getCategoryName } from '@/stores/categoryStore';
@@ -23,6 +24,8 @@ export const CartDrawer: React.FC = () => {
   const navigate = useNavigate();
 
   const { isCartDrawerOpen, closeCartDrawer } = useUIStore();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const needsProfileRecovery = useAuthStore((state) => state.needsProfileRecovery);
   const items = useCartStore((state) => state.items);
   const itemCount = useCartStore((state) => state.getItemCount());
   const products = useProductStore((state) => state.products);
@@ -90,6 +93,10 @@ export const CartDrawer: React.FC = () => {
     }
 
     closeCartDrawer();
+    if (!isAuthenticated || needsProfileRecovery) {
+      navigate(`${ROUTES.LOGIN}?redirect=${encodeURIComponent(ROUTES.CHECKOUT)}`);
+      return;
+    }
     navigate(ROUTES.CHECKOUT);
   };
 
@@ -150,7 +157,7 @@ export const CartDrawer: React.FC = () => {
           )}
 
           {/* Items list */}
-          <div className="flex-1 overflow-y-auto px-6 py-4">
+          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 w-full min-w-0">
             {items.length === 0 ? (
               <div className="py-12">
                 <EmptyState
@@ -165,7 +172,7 @@ export const CartDrawer: React.FC = () => {
                 />
               </div>
             ) : (
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-gray-100 w-full min-w-0">
                 {items.map((item) => (
                   <CartItem key={item.id} item={item} />
                 ))}
@@ -176,7 +183,7 @@ export const CartDrawer: React.FC = () => {
           {/* Footer / Summary */}
           {items.length > 0 && (
             <div className="p-6 border-t border-gray-100 bg-white shadow-lg space-y-4">
-              <CartSummary orderType="pickup" />
+              <CartSummary />
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <Button variant="secondary" onClick={handleViewCart} size="md">
                   شوف السلة

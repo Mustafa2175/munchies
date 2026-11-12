@@ -8,6 +8,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShoppingBag, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
+import { useAuthStore } from '@/stores/authStore';
 import { useProductStore, isProductAvailable } from '@/stores/productStore';
 import { useIsStoreOpen, useRestaurantStore, getTodayWorkingHoursText } from '@/stores/restaurantStore';
 import { useCategoryStore, isCategoryActive, getCategoryName } from '@/stores/categoryStore';
@@ -22,6 +23,8 @@ export const CartPage: React.FC = () => {
   const navigate = useNavigate();
 
   const { items, clearCart } = useCartStore();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const needsProfileRecovery = useAuthStore((state) => state.needsProfileRecovery);
   const itemCount = useCartStore((state) => state.getItemCount());
   const products = useProductStore((state) => state.products);
   const isStoreOpen = useIsStoreOpen();
@@ -72,6 +75,10 @@ export const CartPage: React.FC = () => {
       return;
     }
 
+    if (!isAuthenticated || needsProfileRecovery) {
+      navigate(`${ROUTES.LOGIN}?redirect=${encodeURIComponent(ROUTES.CHECKOUT)}`);
+      return;
+    }
     navigate(ROUTES.CHECKOUT);
   };
 
@@ -90,7 +97,7 @@ export const CartPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 w-full min-w-0">
       {/* Restaurant Closed Warning Alert */}
       {!isStoreOpen && (
         <div className="mb-6 p-4 rounded-2xl bg-danger-light border border-danger/30 flex items-start gap-3">
@@ -127,7 +134,8 @@ export const CartPage: React.FC = () => {
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-8">
+      {/* Page Title & Clear Cart Action */}
+      <div className="flex items-center justify-between mb-6 sm:mb-8">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-dark">
             السلة
@@ -145,20 +153,22 @@ export const CartPage: React.FC = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Items list */}
-        <div className="lg:col-span-8 bg-white rounded-2xl p-6 border border-border shadow-card space-y-2">
-          {items.map((item) => (
-            <CartItem key={item.id} item={item} />
-          ))}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start w-full min-w-0">
+        {/* Items List Card */}
+        <div className="lg:col-span-8 bg-white rounded-2xl p-4 sm:p-6 border border-border shadow-card w-full min-w-0">
+          <div className="divide-y divide-border">
+            {items.map((item) => (
+              <CartItem key={item.id} item={item} />
+            ))}
+          </div>
         </div>
 
-        {/* Summary */}
-        <div className="lg:col-span-4 bg-white rounded-2xl p-6 border border-border shadow-card space-y-6 sticky top-28">
+        {/* Order Summary Card */}
+        <div className="lg:col-span-4 bg-white rounded-2xl p-4 sm:p-6 border border-border shadow-card space-y-5 sticky top-28 w-full min-w-0">
           <h3 className="font-bold text-base text-dark">
             ملخص الطلب
           </h3>
-          <CartSummary orderType="pickup" />
+          <CartSummary />
           <div className="pt-2">
             <Button
               variant={!isStoreOpen || hasDisabledCategoryItems ? 'ghost' : 'yellow'}

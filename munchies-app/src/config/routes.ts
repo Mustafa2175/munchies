@@ -15,11 +15,13 @@ export const ROUTES = {
   CART: '/cart',
   CHECKOUT: '/checkout',
   ORDER_SUCCESS: '/order-success/:id',
-  ORDER_TRACKING: '/orders/:id',
+  ORDER_TRACKING: '/order/:id',
   TRACK_ORDER: '/track-order',
-  ORDERS: '/orders',
-  PROFILE: '/profile',
-  ADDRESSES: '/profile/addresses',
+  ORDERS: '/account/orders',
+  ACCOUNT: '/account',
+  ACCOUNT_ORDERS: '/account/orders',
+  PROFILE: '/account',
+  ADDRESSES: '/account/addresses',
   OFFERS: '/offers',
   ABOUT: '/about',
   CONTACT: '/contact',
@@ -27,10 +29,10 @@ export const ROUTES = {
 
   /** Authentication */
   AUTH: '/auth',
-  LOGIN: '/admin/login',
-  REGISTER: '/auth/register',
-  FORGOT_PASSWORD: '/auth/forgot-password',
-  RESET_PASSWORD: '/auth/reset-password',
+  LOGIN: '/login',
+  REGISTER: '/register',
+  FORGOT_PASSWORD: '/forgot-password',
+  RESET_PASSWORD: '/reset-password',
 
   /** Admin */
   ADMIN: '/admin',
@@ -121,6 +123,28 @@ export function getAdminCategoryEditRoute(id: string): string {
  */
 export function getAdminUserRoute(id: string): string {
   return ROUTES.ADMIN_USER_DETAIL.replace(':id', id);
+}
+
+/**
+ * Validates that a redirect target is a safe internal relative path (prevents open redirects).
+ */
+export function getSafeRedirectPath(
+  rawRedirect: string | null | undefined,
+  fallback: string = ROUTES.HOME
+): string {
+  if (!rawRedirect) return fallback;
+  const trimmed = rawRedirect.trim();
+  if (!trimmed.startsWith('/') || trimmed.startsWith('//')) {
+    return fallback;
+  }
+  if (
+    trimmed.startsWith(ROUTES.LOGIN) ||
+    trimmed.startsWith(ROUTES.REGISTER) ||
+    trimmed.startsWith(ROUTES.FORGOT_PASSWORD)
+  ) {
+    return fallback;
+  }
+  return trimmed;
 }
 
 /**

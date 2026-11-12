@@ -24,13 +24,14 @@ import {
   SlidersHorizontal,
 } from 'lucide-react';
 import type { Order, OrderStatus } from '@/types';
-import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
+import { formatPrice } from '@/lib/currency';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { formatTime, formatDateTime } from '@/lib/date';
 import { subscribeToCollection, updateOrderStatusInFirestore } from '@/lib/firestore';
 import { getLocalizedText } from '@/lib/i18n';
+import { formatDeliveryAddress } from '@/lib/address';
 import { getTodayWorkingHoursText } from '@/stores/restaurantStore';
 import { TIMEZONE } from '@/config/constants';
 import { toZonedTime } from 'date-fns-tz';
@@ -381,7 +382,7 @@ export const OrdersPage: React.FC = () => {
           <div>
             <span className="text-xs text-gray-400 font-bold block">إجمالي الإيرادات اليوم</span>
             <span className="text-xl font-black text-emerald-600 mt-1 block">
-              <CurrencyDisplay amount={kpiRevenue} />
+              <span className="font-bold tabular-nums number-ltr">{formatPrice(kpiRevenue)}</span>
             </span>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -696,26 +697,34 @@ export const OrdersPage: React.FC = () => {
                   </div>
 
                   {/* Delivery address details if delivery */}
-                  {isDelivery && order.deliveryAddress && (
-                    <div className="text-[10px] text-gray-600 bg-white p-2 rounded-lg border border-gray-200/60 space-y-0.5">
-                      <div className="font-bold text-primary">
-                        منطقة: {getLocalizedText(order.deliveryAddress.area, 'أسوان')}
-                      </div>
-                      <div className="truncate">
-                        {[
-                          getLocalizedText(order.deliveryAddress.street || order.deliveryAddress.addressLine1),
-                          getLocalizedText(order.deliveryAddress.building || order.deliveryAddress.addressLine2),
-                        ]
-                          .filter(Boolean)
-                          .join(' – ')}
-                      </div>
-                      {order.deliveryAddress.deliveryInstructions && (
-                        <div className="text-gray-400">
-                          علامة: {getLocalizedText(order.deliveryAddress.deliveryInstructions)}
+                  {isDelivery &&
+                    order.deliveryAddress &&
+                    (() => {
+                      const addr = formatDeliveryAddress(order.deliveryAddress);
+                      return (
+                        <div className="text-[10px] text-gray-600 bg-white p-2 rounded-lg border border-gray-200/60 space-y-0.5">
+                          {addr.area ? (
+                            <>
+                              <div className="font-bold text-primary">
+                                منطقة: {addr.area}
+                              </div>
+                              <div className="truncate">
+                                {[addr.street, addr.building].filter(Boolean).join(' – ')}
+                              </div>
+                            </>
+                          ) : (
+                            <div className="font-semibold text-gray-800 whitespace-pre-line break-words leading-relaxed">
+                              {addr.mainText}
+                            </div>
+                          )}
+                          {addr.landmark && (
+                            <div className="text-gray-400">
+                              علامة: {addr.landmark}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  )}
+                      );
+                    })()}
                 </div>
 
                 {/* ── ORDERED ITEMS SECTION ── */}
@@ -743,7 +752,7 @@ export const OrdersPage: React.FC = () => {
                                 <span className="font-bold text-dark truncate">{itemName}</span>
                               </div>
                               <span className="font-extrabold text-dark shrink-0">
-                                <CurrencyDisplay amount={itemPrice} />
+                                <span className="font-bold tabular-nums number-ltr">{formatPrice(itemPrice)}</span>
                               </span>
                             </div>
 
@@ -786,7 +795,7 @@ export const OrdersPage: React.FC = () => {
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-xs text-gray-400 font-bold">الإجمالي:</span>
                     <span className="text-base font-black text-primary">
-                      <CurrencyDisplay amount={order.total} />
+                      <span className="font-bold tabular-nums number-ltr">{formatPrice(order.total)}</span>
                     </span>
                   </div>
 
@@ -926,33 +935,25 @@ export const OrdersPage: React.FC = () => {
                 <span className="text-gray-500">رقم الموبايل:</span>
                 <span className="font-bold number-ltr tabular-nums">{selectedTicketOrder.customerPhone}</span>
               </div>
-              {selectedTicketOrder.deliveryAddress && (
-                <div className="p-2 my-1 rounded-lg bg-amber-50 border border-amber-200 text-xs">
-                  <span className="font-extrabold text-amber-900 block mb-0.5">
-                    عنوان التوصيل في أسوان:
-                  </span>
-                  <span className="font-bold text-gray-800 block">
-                    {[
-                      getLocalizedText(selectedTicketOrder.deliveryAddress.area),
-                      getLocalizedText(
-                        selectedTicketOrder.deliveryAddress.addressLine1 ||
-                          selectedTicketOrder.deliveryAddress.street
-                      ),
-                      getLocalizedText(
-                        selectedTicketOrder.deliveryAddress.addressLine2 ||
-                          selectedTicketOrder.deliveryAddress.building
-                      ),
-                    ]
-                      .filter(Boolean)
-                      .join(' – ')}
-                  </span>
-                  {selectedTicketOrder.deliveryAddress.deliveryInstructions && (
-                    <span className="text-[10px] text-gray-600 block mt-0.5">
-                      علامة مميزة: {getLocalizedText(selectedTicketOrder.deliveryAddress.deliveryInstructions)}
-                    </span>
-                  )}
-                </div>
-              )}
+              {selectedTicketOrder.deliveryAddress &&
+                (() => {
+                  const addr = formatDeliveryAddress(selectedTicketOrder.deliveryAddress);
+                  return (
+                    <div className="p-2 my-1 rounded-lg bg-amber-50 border border-amber-200 text-xs">
+                      <span className="font-extrabold text-amber-900 block mb-0.5">
+                        عنوان التوصيل:
+                      </span>
+                      <span className="font-bold text-gray-800 block whitespace-pre-line break-words">
+                        {addr.mainText}
+                      </span>
+                      {addr.landmark && (
+                        <span className="text-[10px] text-gray-600 block mt-0.5">
+                          علامة مميزة: {addr.landmark}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
               <div className="flex justify-between">
                 <span className="text-gray-500">طريقة الدفع:</span>
                 <span className="font-bold text-emerald-700">
@@ -971,7 +972,7 @@ export const OrdersPage: React.FC = () => {
                       <span>
                         <span className="tabular-nums font-mono">{item.quantity}</span>x {getLocalizedText(item.name || item.productName, 'صنف')}
                       </span>
-                      <CurrencyDisplay amount={item.totalPrice} />
+                      <span className="font-bold tabular-nums number-ltr">{formatPrice(item.totalPrice)}</span>
                     </div>
                     {item.customizations && item.customizations.length > 0 && (
                       <div className="ps-4 text-[11px] text-gray-500 space-y-0.5 mt-0.5">
@@ -1004,10 +1005,7 @@ export const OrdersPage: React.FC = () => {
             {/* Total */}
             <div className="pt-2 flex justify-between items-center text-base font-black">
               <span>الإجمالي المطلوب:</span>
-              <CurrencyDisplay
-                amount={selectedTicketOrder.total}
-                className="text-lg text-primary"
-              />
+              <span className="font-bold tabular-nums number-ltr text-lg text-primary">{formatPrice(selectedTicketOrder.total)}</span>
             </div>
 
             {/* Actions */}

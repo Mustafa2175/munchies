@@ -11,7 +11,7 @@
 import React, { useState } from 'react';
 import { ShoppingCart } from 'lucide-react';
 import type { Product, CustomizationGroup } from '@/types';
-import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
+import { formatPrice } from '@/lib/currency';
 import { CustomizationModal } from './CustomizationModal';
 import { useCartStore, type SelectedCustomization } from '@/stores/cartStore';
 import { isProductAvailable } from '@/stores/productStore';
@@ -229,12 +229,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
           {/* Price */}
           <div className="mt-2 flex items-baseline gap-1">
-            <CurrencyDisplay
-              amount={product.price}
-              className={`font-black text-sm sm:text-base ${
+            <span className={`font-bold tabular-nums number-ltr font-black text-sm sm:text-base ${
                 isOrderable ? 'text-primary' : 'text-medium-gray'
-              }`}
-            />
+              }`}>{formatPrice(product.price)}</span>
           </div>
         </div>
 

@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
+import { formatPrice } from '@/lib/currency';
 import { ROUTES } from '@/config/routes';
 
 export const OffersPage: React.FC = () => {
@@ -83,7 +83,7 @@ export const OffersPage: React.FC = () => {
 
               <div className="flex items-center justify-between pt-4 border-t border-border">
                 <div className="flex items-baseline gap-2">
-                  <CurrencyDisplay amount={offer.price} className="text-xl font-black text-primary" />
+                  <span className="font-bold tabular-nums number-ltr text-xl font-black text-primary">{formatPrice(offer.price)}</span>
                   <span className="text-xs text-medium-gray line-through tabular-nums">
                     {offer.oldPrice} ج.م
                   </span>

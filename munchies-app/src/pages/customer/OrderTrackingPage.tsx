@@ -3,7 +3,7 @@
  * @description Real-time order progress timeline and lookup by Order Number + Phone Number. Strictly Arabic.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useSearchParams, useLocation, Link, useNavigate } from 'react-router-dom';
 import {
   MapPin,
@@ -17,20 +17,21 @@ import {
   Truck,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, doc, query, where, getDocs, onSnapshot } from 'firebase/firestore';
 import { db } from '@/config/firebase';
+import { useAuthStore } from '@/stores/authStore';
 import type { Order } from '@/types';
 import { OrderTimeline } from '@/components/order/OrderTimeline';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay';
+import { formatPrice } from '@/lib/currency';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { getLocalizedText } from '@/lib/i18n';
+import { formatDeliveryAddress } from '@/lib/address';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { callCancelOrder } from '@/lib/functions';
-import { subscribeToDoc } from '@/lib/firestore';
 import { formatDateTime } from '@/lib/date';
 import { ROUTES } from '@/config/routes';
 
@@ -39,6 +40,11 @@ export const OrderTrackingPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
+
+  const user = useAuthStore((state) => state.user);
+  const customerProfile = useAuthStore((state) => state.customerProfile);
+  const isAdmin = useAuthStore((state) => state.isAdmin);
+  const currentUid = customerProfile?.uid || user?.uid;
 
   // Search form fields
   const [orderNumberInput, setOrderNumberInput] = useState('');
@@ -55,7 +61,20 @@ export const OrderTrackingPage: React.FC = () => {
   const normalizeOrderNumber = (num: string) => String(num || '').trim().replace(/^#/, '');
   const normalizePhone = (p: string) => String(p || '').replace(/\D/g, '');
 
-  const findOrder = async (targetOrderNum: string, targetPhone?: string): Promise<Order | null> => {
+  const isOrderOwnedByCurrentUser = useCallback(
+    (candidate: Order | null | undefined): boolean => {
+      if (!candidate) return false;
+      if (isAdmin) return true;
+      if (!currentUid) return false;
+      return candidate.customerId === currentUid || candidate.userId === currentUid;
+    },
+    [isAdmin, currentUid]
+  );
+
+  const findOrder = useCallback(
+    async (targetOrderNum: string, targetPhone?: string): Promise<Order | null> => {
+    if (!currentUid && !isAdmin) return null;
+
     const cleanNum = normalizeOrderNumber(targetOrderNum);
     const cleanDigits = targetPhone ? normalizePhone(targetPhone) : '';
     const numVariant = parseInt(cleanNum, 10);
@@ -67,15 +86,17 @@ export const OrderTrackingPage: React.FC = () => {
         variants.push(numVariant);
       }
 
-      const q = query(
-        ordersCol,
-        where('orderNumber', 'in', variants)
-      );
+      const constraints = isAdmin
+        ? [where('orderNumber', 'in', variants)]
+        : [where('customerId', '==', currentUid), where('orderNumber', 'in', variants)];
+
+      const q = query(ordersCol, ...constraints);
       const snap = await getDocs(q);
 
       let matched: Order | null = null;
       snap.forEach((docSnap) => {
         const data = { id: docSnap.id, ...docSnap.data() } as Order;
+        if (!isOrderOwnedByCurrentUser(data)) return;
         if (cleanDigits) {
           const docDigits = normalizePhone(data.customerPhone || '');
           if (
@@ -91,10 +112,14 @@ export const OrderTrackingPage: React.FC = () => {
       });
 
       if (!matched && !isNaN(numVariant)) {
-        const qNum = query(ordersCol, where('orderNumberNum', '==', numVariant));
+        const numConstraints = isAdmin
+          ? [where('orderNumberNum', '==', numVariant)]
+          : [where('customerId', '==', currentUid), where('orderNumberNum', '==', numVariant)];
+        const qNum = query(ordersCol, ...numConstraints);
         const snapNum = await getDocs(qNum);
         snapNum.forEach((docSnap) => {
           const data = { id: docSnap.id, ...docSnap.data() } as Order;
+          if (!isOrderOwnedByCurrentUser(data)) return;
           if (cleanDigits) {
             const docDigits = normalizePhone(data.customerPhone || '');
             if (
@@ -115,32 +140,15 @@ export const OrderTrackingPage: React.FC = () => {
       console.warn('Firestore order lookup error:', err);
     }
 
-    try {
-      const localOrders: Order[] = JSON.parse(
-        localStorage.getItem('munchies_orders') || '[]'
-      );
-      const localFound = localOrders.find((o) => {
-        const oNum = normalizeOrderNumber(o.orderNumber || '');
-        if (cleanDigits) {
-          const oPhone = normalizePhone(o.customerPhone || '');
-          return oNum === cleanNum && (oPhone === cleanDigits || oPhone.endsWith(cleanDigits.slice(-8)));
-        }
-        return oNum === cleanNum;
-      });
-      if (localFound) return localFound;
-    } catch {
-      // Ignore local storage parse error
-    }
-
     return null;
-  };
+  }, [currentUid, isAdmin, isOrderOwnedByCurrentUser]);
 
   useEffect(() => {
     let isMounted = true;
 
     const initialize = async () => {
       const state = location.state as { order?: Order; orderNumber?: string; phone?: string } | null;
-      if (state?.order?.id) {
+      if (state?.order?.id && isOrderOwnedByCurrentUser(state.order)) {
         setActiveOrderId(state.order.id);
         setOrder(state.order);
         setOrderNumberInput(normalizeOrderNumber(state.order.orderNumber));
@@ -182,38 +190,45 @@ export const OrderTrackingPage: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [id, searchParams, location.state]);
+  }, [id, searchParams, location.state, findOrder, isOrderOwnedByCurrentUser]);
 
   useEffect(() => {
     if (!activeOrderId) return;
 
-    const unsub = subscribeToDoc<Order>('orders', activeOrderId, (remoteOrder) => {
-      if (remoteOrder) {
+    const orderRef = doc(db, 'orders', activeOrderId);
+    const unsub = onSnapshot(
+      orderRef,
+      (snap) => {
+        if (!snap.exists()) {
+          setOrder(null);
+          setActiveOrderId(null);
+          setSearchError('ملقيناش طلب بالرقم ده. تقدر تدور برقم الطلب ورقم موبايلك تحت.');
+          return;
+        }
+
+        const remoteOrder = { id: snap.id, ...snap.data() } as Order;
+        if (!isAdmin && (!currentUid || (remoteOrder.customerId !== currentUid && remoteOrder.userId !== currentUid))) {
+          setOrder(null);
+          setActiveOrderId(null);
+          setSearchError('ليس لديك صلاحية للوصول إلى هذا الطلب.');
+          return;
+        }
+
         setOrder(remoteOrder);
         setSearchError(null);
         setOrderNumberInput(normalizeOrderNumber(remoteOrder.orderNumber));
         setPhoneInput(remoteOrder.customerPhone || '');
-      } else {
-        try {
-          const localOrders: Order[] = JSON.parse(
-            localStorage.getItem('munchies_orders') || '[]'
-          );
-          const foundLocal = localOrders.find((o) => o.id === activeOrderId);
-          if (foundLocal) {
-            setOrder(foundLocal);
-            setSearchError(null);
-          } else if (id === activeOrderId) {
-            setActiveOrderId(null);
-            setSearchError('ملقيناش طلب بالرقم ده. تقدر تدور برقم الطلب ورقم موبايلك تحت.');
-          }
-        } catch {
-          // ignore
-        }
+      },
+      (err) => {
+        console.warn('Order subscription error:', err);
+        setOrder(null);
+        setActiveOrderId(null);
+        setSearchError('ملقيناش الطلب ده أو ليس لديك صلاحية لعرضه.');
       }
-    });
+    );
 
     return () => unsub();
-  }, [activeOrderId, id]);
+  }, [activeOrderId, currentUid, isAdmin]);
 
   const handleSearchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -488,25 +503,47 @@ export const OrderTrackingPage: React.FC = () => {
                   </div>
 
                   {order.deliveryAddress ? (
-                    <div className="space-y-1.5 text-xs text-dark">
-                      <div className="font-extrabold text-dark text-sm flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-primary" />
-                        <span>{getLocalizedText(order.deliveryAddress.area, 'أسوان')} – أسوان</span>
-                      </div>
-                      <p className="font-semibold text-dark">
-                        الشارع: {getLocalizedText(order.deliveryAddress.addressLine1 || order.deliveryAddress.street, '')}
-                      </p>
-                      {(order.deliveryAddress.addressLine2 || order.deliveryAddress.building) && (
-                        <p className="text-medium-gray">
-                          العمارة / الشقة: {getLocalizedText(order.deliveryAddress.addressLine2 || order.deliveryAddress.building, '')}
-                        </p>
-                      )}
-                      {order.deliveryAddress.deliveryInstructions && (
-                        <p className="text-[11px] text-warning-800 bg-warning-light p-2 rounded-lg border border-warning/20">
-                          علامة مميزة: {getLocalizedText(order.deliveryAddress.deliveryInstructions, '')}
-                        </p>
-                      )}
-                    </div>
+                    (() => {
+                      const addr = formatDeliveryAddress(order.deliveryAddress);
+                      return addr.isStructured ? (
+                        <div className="space-y-1.5 text-xs text-dark">
+                          <div className="font-extrabold text-dark text-sm flex items-center gap-1.5">
+                            <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                            <span>{addr.area || 'عنوان التوصيل'}</span>
+                          </div>
+                          {addr.street && (
+                            <p className="font-semibold text-dark">
+                              الشارع: {addr.street}
+                            </p>
+                          )}
+                          {addr.building && (
+                            <p className="text-medium-gray">
+                              العمارة / الشقة: {addr.building}
+                            </p>
+                          )}
+                          {addr.landmark && (
+                            <p className="text-[11px] text-warning-800 bg-warning-light p-2 rounded-lg border border-warning/20">
+                              علامة مميزة: {addr.landmark}
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="space-y-1.5 text-xs text-dark">
+                          <div className="font-extrabold text-dark text-sm flex items-center gap-1.5">
+                            <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                            <span>عنوان التوصيل</span>
+                          </div>
+                          <p className="font-semibold text-dark whitespace-pre-line break-words leading-relaxed">
+                            {addr.mainText}
+                          </p>
+                          {addr.landmark && (
+                            <p className="text-[11px] text-warning-800 bg-warning-light p-2 rounded-lg border border-warning/20">
+                              علامة مميزة: {addr.landmark}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })()
                   ) : (
                     <p className="text-xs text-medium-gray">طلب Delivery متسجل</p>
                   )}
@@ -574,7 +611,7 @@ export const OrderTrackingPage: React.FC = () => {
                         <span>
                           {item.quantity}x {getLocalizedText(item.name, 'صنف')}
                         </span>
-                        <CurrencyDisplay amount={item.totalPrice} />
+                        <span className="font-bold tabular-nums number-ltr">{formatPrice(item.totalPrice)}</span>
                       </div>
                       {item.customizations && item.customizations.length > 0 && (
                         <div className="mt-0.5 ps-3 text-[11px] text-medium-gray space-y-0.5">
@@ -601,12 +638,12 @@ export const OrderTrackingPage: React.FC = () => {
                 <div className="border-t border-border pt-3 space-y-1 text-xs text-medium-gray">
                   <div className="flex justify-between">
                     <span>المجموع:</span>
-                    <CurrencyDisplay amount={order.subtotal} className="text-dark font-semibold" />
+                    <span className="font-bold tabular-nums number-ltr text-dark font-semibold">{formatPrice(order.subtotal)}</span>
                   </div>
                   {order.deliveryFee > 0 && (
                     <div className="flex justify-between">
                       <span>رسوم التوصيل:</span>
-                      <CurrencyDisplay amount={order.deliveryFee} className="text-dark font-semibold" />
+                      <span className="font-bold tabular-nums number-ltr text-dark font-semibold">{formatPrice(order.deliveryFee)}</span>
                     </div>
                   )}
                   {order.discount > 0 && (
@@ -617,7 +654,7 @@ export const OrderTrackingPage: React.FC = () => {
                   )}
                   <div className="pt-2 border-t border-border flex justify-between items-center text-sm font-black text-dark">
                     <span>الإجمالي (كاش عند الاستلام):</span>
-                    <CurrencyDisplay amount={order.total} className="text-base text-primary font-black" />
+                    <span className="font-bold tabular-nums number-ltr text-base text-primary font-black">{formatPrice(order.total)}</span>
                   </div>
                 </div>
               </Card>

@@ -18,21 +18,24 @@ import { FullMenuCTA } from '@/components/home/FullMenuCTA';
 
 export const HomePage: React.FC = () => {
   return (
-    <div className="space-y-10 sm:space-y-14 pb-12 w-full overflow-x-clip">
+    <div className="w-full overflow-x-clip">
       {/* ─── 1. Hero Section ─── */}
       <HeroSection />
 
-      {/* ─── 2. Categories Section (Navigation Shortcuts) ─── */}
-      <CategoryShortcuts />
+      {/* ─── Curved White Content Surface Emerging Over Hero ─── */}
+      <div className="curved-top-surface relative z-20 -mt-7 sm:-mt-10 lg:-mt-14 bg-[#FDFCFE] pt-6 sm:pt-8 lg:pt-10 pb-12 space-y-10 sm:space-y-14 shadow-[0_-10px_28px_rgba(18,3,38,0.14)]">
+        {/* ─── 2. Categories Section (Navigation Shortcuts) ─── */}
+        <CategoryShortcuts />
 
-      {/* ─── 3. Best Sellers Section ("الأكثر مبيعاً") ─── */}
-      <BestSellersSection />
+        {/* ─── 3. Best Sellers Section ("الأكثر مبيعاً") ─── */}
+        <BestSellersSection />
 
-      {/* ─── 4. Offers Section ("العروض") ─── */}
-      <OffersSection />
+        {/* ─── 4. Offers Section ("العروض") ─── */}
+        <OffersSection />
 
-      {/* ─── 5. Full Menu CTA ("شوف المنيو كامل") ─── */}
-      <FullMenuCTA />
+        {/* ─── 5. Full Menu CTA ("شوف المنيو كامل") ─── */}
+        <FullMenuCTA />
+      </div>
     </div>
   );
 };

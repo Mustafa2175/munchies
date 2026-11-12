@@ -4,7 +4,7 @@
  * Clean, touch-friendly shortcuts navigating to the menu filtered by category.
  */
 
-import React from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
 import { useCategoryStore } from '@/stores/categoryStore';
@@ -94,6 +94,11 @@ function getCategoryIconType(cat: Category | { id: string; name: { ar: string; e
 export const CategoryShortcuts: React.FC = () => {
   const navigate = useNavigate();
   const storeCategories = useCategoryStore((s) => s.categories);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [edgeFades, setEdgeFades] = useState<{ left: boolean; right: boolean }>({
+    left: false,
+    right: false,
+  });
 
   const activeCategories = storeCategories.filter(
     (c) => c.id !== 'all' && c.isActive !== false
@@ -117,6 +122,47 @@ export const CategoryShortcuts: React.FC = () => {
     });
   }
 
+  const updateEdgeFades = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    if (maxScroll <= 2) {
+      setEdgeFades((prev) => (prev.left || prev.right ? { left: false, right: false } : prev));
+      return;
+    }
+
+    const isRtl = getComputedStyle(el).direction === 'rtl';
+    const absScroll = Math.abs(el.scrollLeft);
+    const hasMoreAtStart = absScroll > 4;
+    const hasMoreAtEnd = absScroll < maxScroll - 4;
+
+    const nextLeft = isRtl ? hasMoreAtEnd : hasMoreAtStart;
+    const nextRight = isRtl ? hasMoreAtStart : hasMoreAtEnd;
+
+    setEdgeFades((prev) =>
+      prev.left === nextLeft && prev.right === nextRight
+        ? prev
+        : { left: nextLeft, right: nextRight }
+    );
+  }, []);
+
+  useEffect(() => {
+    updateEdgeFades();
+    const el = scrollContainerRef.current;
+    if (!el) return;
+
+    const resizeObserver =
+      typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateEdgeFades) : null;
+    resizeObserver?.observe(el);
+    window.addEventListener('resize', updateEdgeFades);
+
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener('resize', updateEdgeFades);
+    };
+  }, [updateEdgeFades, displayList.length]);
+
   const handleCategoryClick = (cat: Category) => {
     if (cat.id === 'offers-shortcut' || cat.slug === 'offers') {
       navigate(ROUTES.OFFERS);
@@ -127,32 +173,84 @@ export const CategoryShortcuts: React.FC = () => {
   };
 
   return (
-    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-3 relative z-20">
-      <div className="w-full overflow-x-auto no-scrollbar scroll-smooth py-2">
-        <div className="flex items-center sm:justify-center gap-2.5 sm:gap-3.5 min-w-max px-1">
-          {displayList.map((category) => {
-            const iconType = getCategoryIconType(category);
+    <section className="w-full max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 pt-1 sm:pt-2 relative z-20">
+      <div className="relative">
+        <div
+          ref={scrollContainerRef}
+          onScroll={updateEdgeFades}
+          className="w-full overflow-x-auto no-scrollbar scroll-smooth py-2"
+        >
+          <div className="flex items-center sm:justify-center gap-2.5 sm:gap-3.5 min-w-max px-4 sm:px-1">
+            {displayList.map((category) => {
+              const iconType = getCategoryIconType(category);
 
-            return (
-              <button
-                key={category.id}
-                onClick={() => handleCategoryClick(category)}
-                className="flex flex-col items-center justify-center rounded-2xl transition-all duration-200 cursor-pointer select-none active:scale-95 shrink-0 px-3.5 py-3 sm:px-4 sm:py-3.5 min-w-[76px] sm:min-w-[88px] min-h-[76px] sm:min-h-[88px] bg-white hover:bg-primary-50 text-dark hover:text-primary border border-border hover:border-primary-200 shadow-card hover:shadow-card-hover group"
-                title={category.name.ar}
-                aria-label={category.name.ar}
-              >
-                {/* Category Icon */}
-                <div className="mb-1.5 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                  <CategoryIcon iconType={iconType} />
-                </div>
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => handleCategoryClick(category)}
+                  className="flex flex-col items-center justify-center rounded-2xl transition-all duration-200 cursor-pointer select-none active:scale-95 shrink-0 px-3 py-3 sm:px-4 sm:py-3.5 min-w-[72px] sm:min-w-[88px] min-h-[76px] sm:min-h-[88px] bg-white hover:bg-primary-50 text-dark hover:text-primary border border-border hover:border-primary-200 shadow-card hover:shadow-card-hover group"
+                  title={category.name.ar}
+                  aria-label={category.name.ar}
+                >
+                  {/* Category Icon */}
+                  <div className="mb-1.5 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                    <CategoryIcon iconType={iconType} />
+                  </div>
 
-                {/* Category Name */}
-                <span className="text-xs sm:text-sm font-extrabold tracking-tight leading-none">
-                  {category.name.ar}
-                </span>
-              </button>
-            );
-          })}
+                  {/* Category Name */}
+                  <span className="text-xs sm:text-sm font-extrabold tracking-tight leading-none">
+                    {category.name.ar}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Left viewport-edge fade + feather blur hint (only active when off-screen cards remain on the left) */}
+        <div
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-y-0 left-0 w-8 sm:w-12 transition-opacity duration-200 ${
+            edgeFades.left ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'linear-gradient(to right, rgba(253, 252, 254, 0.90) 0%, rgba(253, 252, 254, 0.52) 40%, rgba(253, 252, 254, 0.14) 76%, transparent 100%)',
+            }}
+          />
+          <div
+            className="absolute inset-y-1 left-0 w-4 backdrop-blur-[1px]"
+            style={{
+              WebkitMaskImage: 'linear-gradient(to right, #000 0%, transparent 100%)',
+              maskImage: 'linear-gradient(to right, #000 0%, transparent 100%)',
+            }}
+          />
+        </div>
+
+        {/* Right viewport-edge fade + feather blur hint (only active when off-screen cards remain on the right) */}
+        <div
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-y-0 right-0 w-8 sm:w-12 transition-opacity duration-200 ${
+            edgeFades.right ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'linear-gradient(to left, rgba(253, 252, 254, 0.90) 0%, rgba(253, 252, 254, 0.52) 40%, rgba(253, 252, 254, 0.14) 76%, transparent 100%)',
+            }}
+          />
+          <div
+            className="absolute inset-y-1 right-0 w-4 backdrop-blur-[1px]"
+            style={{
+              WebkitMaskImage: 'linear-gradient(to left, #000 0%, transparent 100%)',
+              maskImage: 'linear-gradient(to left, #000 0%, transparent 100%)',
+            }}
+          />
         </div>
       </div>
     </section>

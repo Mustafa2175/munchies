@@ -1,25 +1,17 @@
 /**
  * @module components/layout/RestaurantClosedBanner
  * @description Notification banner displayed at the top of customer pages
- * whenever the restaurant is closed (manual emergency close or outside working hours).
+ * whenever the restaurant is not accepting orders (scheduled close, manual override, or manual mode).
  */
 
 import React from 'react';
 import { AlertTriangle, Clock } from 'lucide-react';
-import {
-  useIsStoreOpen,
-  useRestaurantStore,
-  getTodayWorkingHoursText,
-} from '@/stores/restaurantStore';
+import { useRestaurantOperationsStatus } from '@/stores/restaurantStore';
 
 export const RestaurantClosedBanner: React.FC = () => {
-  const isOpen = useIsStoreOpen();
-  const isManualClosed = useRestaurantStore((state) => state.isManualClosed);
-  const closureMessage = useRestaurantStore((state) => state.closureMessage);
+  const status = useRestaurantOperationsStatus();
 
-  if (isOpen) return null;
-
-  const todayHours = getTodayWorkingHoursText();
+  if (status.isOpen) return null;
 
   return (
     <div className="bg-danger text-white px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-bold shadow-sm relative z-40 w-full animate-fadeIn select-none">
@@ -30,26 +22,18 @@ export const RestaurantClosedBanner: React.FC = () => {
         </div>
 
         <p className="leading-snug">
-          {isManualClosed ? (
-            <span>
-              {closureMessage || 'معلش، إحنا قافلين دلوقتي. راجعنا قريب!'}
-            </span>
-          ) : (
-            <span>
-              معلش، إحنا قافلين دلوقتي. راجعنا قريب!
-              {todayHours ? (
-                <> — مواعيدنا النهاردة: <span className="underline decoration-white/40 font-black">{todayHours}</span></>
-              ) : (
-                ' — النهاردة إجازة'
-              )}
+          <span>{status.customerMessage}</span>
+          {status.reason !== 'scheduled_closed' && status.nextOpeningText && (
+            <span className="mr-1.5 underline decoration-white/40 font-black">
+              (متوقع الفتح {status.nextOpeningText})
             </span>
           )}
         </p>
 
-        {todayHours && !isManualClosed && (
+        {status.scheduleText && status.operatingMode === 'automatic' && (
           <div className="hidden md:inline-flex items-center gap-1 text-[11px] bg-black/20 px-2.5 py-0.5 rounded-full font-medium">
             <Clock className="w-3 h-3 text-yellow" />
-            <span>توقيت أسوان</span>
+            <span>مواعيد العمل: {status.scheduleText}</span>
           </div>
         )}
       </div>

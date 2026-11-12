@@ -30,10 +30,8 @@ import { useAuthStore } from '@/stores/authStore';
 import { useProductStore, isProductAvailable } from '@/stores/productStore';
 import { normalizeEgyptianPhone, isValidEgyptianPhone } from '@/lib/validators';
 import {
-  useIsStoreOpen,
-  useRestaurantStore,
+  useRestaurantOperationsStatus,
   isStoreCurrentlyOpen,
-  getTodayWorkingHoursText,
 } from '@/stores/restaurantStore';
 import { useCategoryStore, isCategoryActive, getCategoryName } from '@/stores/categoryStore';
 import { CartSummary } from '@/components/cart/CartSummary';
@@ -64,10 +62,8 @@ export const CheckoutPage: React.FC = () => {
   const customerProfile = useAuthStore((state) => state.customerProfile);
   const activeProfile = customerProfile || user;
 
-  const isStoreOpen = useIsStoreOpen();
-  const isManualClosed = useRestaurantStore((s) => s.isManualClosed);
-  const closureMessage = useRestaurantStore((s) => s.closureMessage);
-  const todayHours = getTodayWorkingHoursText();
+  const operationsStatus = useRestaurantOperationsStatus();
+  const isStoreOpen = operationsStatus.isOpen;
   useCategoryStore((s) => s.categories);
   const currentProducts = useProductStore((s) => s.products);
 
@@ -373,12 +369,12 @@ export const CheckoutPage: React.FC = () => {
               معلش، قافلين دلوقتي ومش بنستقبل طلبات
             </h4>
             <p className="mt-0.5 leading-relaxed text-xs">
-              {isManualClosed ? (
-                closureMessage || 'استلام الطلبات متوقف مؤقتًا، وهنرجع نستقبل طلباتك قريب!'
-              ) : (
-                <>
-                  مواعيد شغلنا النهارده: <span className="font-bold">{todayHours || 'قافلين'}</span>.
-                </>
+              {operationsStatus.customerMessage}
+              {operationsStatus.nextOpeningText && operationsStatus.reason !== 'scheduled_closed' && (
+                <> — متوقع الفتح: <span className="font-bold">{operationsStatus.nextOpeningText}</span></>
+              )}
+              {operationsStatus.scheduleText && (
+                <> — مواعيد العمل: <span className="font-bold">{operationsStatus.scheduleText}</span></>
               )}
             </p>
           </div>

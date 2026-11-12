@@ -4,6 +4,7 @@
  */
 
 import type { RestaurantSettings } from '@/types';
+import { evaluateRestaurantStatus } from '@/lib/restaurantOperations';
 
 export const TIMEZONE = 'Africa/Cairo';
 
@@ -67,51 +68,6 @@ export function formatDateTime(dateInput: unknown, locale: 'ar' | 'en' = 'ar'): 
 
 export function isRestaurantOpen(settings?: RestaurantSettings | null): boolean {
   if (!settings) return true;
-  if (settings.isManualClosed) return false;
-  if (settings.orderAcceptanceEnabled === false) return false;
-
-  const hours = settings.workingHours;
-  if (!hours) return true;
-
-  const now = new Date();
-  const cairoFormatter = new Intl.DateTimeFormat('en-US', {
-    timeZone: TIMEZONE,
-    weekday: 'short',
-    hour: 'numeric',
-    minute: 'numeric',
-    hour12: false,
-  });
-
-  const parts = cairoFormatter.formatToParts(now);
-  const weekdayStr = parts.find((p) => p.type === 'weekday')?.value;
-  const hour = parseInt(parts.find((p) => p.type === 'hour')?.value || '0', 10);
-  const minute = parseInt(parts.find((p) => p.type === 'minute')?.value || '0', 10);
-  const currentMinutes = hour * 60 + minute;
-
-  const dayMap: Record<string, number> = {
-    Sun: 0,
-    Mon: 1,
-    Tue: 2,
-    Wed: 3,
-    Thu: 4,
-    Fri: 5,
-    Sat: 6,
-  };
-
-  const dayIndex = weekdayStr ? dayMap[weekdayStr] ?? now.getDay() : now.getDay();
-  const todaySchedule = hours[dayIndex];
-
-  if (!todaySchedule || !todaySchedule.isOpen) return false;
-
-  const [openH, openM] = todaySchedule.openTime.split(':').map(Number);
-  const [closeH, closeM] = todaySchedule.closeTime.split(':').map(Number);
-
-  const openMinutes = openH * 60 + openM;
-  const closeMinutes = closeH * 60 + closeM;
-
-  if (closeMinutes < openMinutes) {
-    return currentMinutes >= openMinutes || currentMinutes <= closeMinutes;
-  }
-
-  return currentMinutes >= openMinutes && currentMinutes <= closeMinutes;
+  if ((settings as any).orderAcceptanceEnabled === false) return false;
+  return evaluateRestaurantStatus(settings as any, new Date()).isOpen;
 }

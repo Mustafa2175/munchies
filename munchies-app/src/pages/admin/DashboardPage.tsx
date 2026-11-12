@@ -24,10 +24,12 @@ import { formatTime } from '@/lib/date';
 import { subscribeToCollection, updateOrderStatusInFirestore } from '@/lib/firestore';
 import { getLocalizedText } from '@/lib/i18n';
 import { formatDeliveryAddress } from '@/lib/address';
+import { useRestaurantOperationsStatus } from '@/stores/restaurantStore';
 import toast from 'react-hot-toast';
 
 export const DashboardPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
+  const operationsStatus = useRestaurantOperationsStatus();
 
   // Subscribe to real-time Firestore orders (single source of truth)
   useEffect(() => {
@@ -64,11 +66,29 @@ export const DashboardPage: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-black text-dark">ملخص العمليات والتشغيل</h1>
-        <p className="text-xs text-gray-500 mt-1">
-          متابعة فورية لطلبات اليوم في مطعم مانشيز وأداء المطبخ
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-black text-dark">ملخص العمليات والتشغيل</h1>
+          <p className="text-xs text-gray-500 mt-1">
+            متابعة فورية لطلبات اليوم في مطعم مانشيز وأداء المطبخ
+          </p>
+        </div>
+
+        <Link
+          to="/admin/operations"
+          className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold border transition-colors self-start sm:self-auto ${
+            operationsStatus.isOpen
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+              : 'bg-red-50 text-danger border-red-200 hover:bg-red-100'
+          }`}
+        >
+          <span
+            className={`w-2 h-2 rounded-full ${
+              operationsStatus.isOpen ? 'bg-emerald-500' : 'bg-danger'
+            }`}
+          />
+          <span>{operationsStatus.statusLabel}</span>
+        </Link>
       </div>
 
       {/* KPI Cards */}

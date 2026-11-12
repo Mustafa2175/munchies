@@ -5,6 +5,7 @@
 
 import * as admin from 'firebase-admin';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { evaluateRestaurantStatus } from './restaurantOperations';
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -27,14 +28,15 @@ export const createOrder = onCall({ region: 'us-central1' }, async (request) => 
     throw new HttpsError('invalid-argument', 'Customer contact details required.');
   }
 
-  // 1. Verify restaurant working hours and manual closure
+  // 1. Verify restaurant operating mode, automatic schedule (Africa/Cairo), and manual overrides
   const settingsDoc = await db.doc('settings/restaurant').get();
   if (settingsDoc.exists) {
     const settings = settingsDoc.data();
-    if (settings?.isManualClosed) {
+    const operatingStatus = evaluateRestaurantStatus(settings, new Date());
+    if (!operatingStatus.isOpen) {
       throw new HttpsError(
         'failed-precondition',
-        settings.closureMessage?.ar || 'المطعم مغلق حالياً ولا يستقبل طلبات جديدة.'
+        operatingStatus.customerMessage || 'المطعم مغلق حالياً ولا يستقبل طلبات جديدة.'
       );
     }
   }

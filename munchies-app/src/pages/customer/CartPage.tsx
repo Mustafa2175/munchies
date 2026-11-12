@@ -10,7 +10,7 @@ import { ShoppingBag, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useProductStore, isProductAvailable } from '@/stores/productStore';
-import { useIsStoreOpen, useRestaurantStore, getTodayWorkingHoursText } from '@/stores/restaurantStore';
+import { useRestaurantOperationsStatus } from '@/stores/restaurantStore';
 import { useCategoryStore, isCategoryActive, getCategoryName } from '@/stores/categoryStore';
 import { CartItem } from '@/components/cart/CartItem';
 import { CartSummary } from '@/components/cart/CartSummary';
@@ -27,10 +27,8 @@ export const CartPage: React.FC = () => {
   const needsProfileRecovery = useAuthStore((state) => state.needsProfileRecovery);
   const itemCount = useCartStore((state) => state.getItemCount());
   const products = useProductStore((state) => state.products);
-  const isStoreOpen = useIsStoreOpen();
-  const closureMessage = useRestaurantStore((state) => state.closureMessage);
-  const isManualClosed = useRestaurantStore((state) => state.isManualClosed);
-  const todayHours = getTodayWorkingHoursText();
+  const operationsStatus = useRestaurantOperationsStatus();
+  const isStoreOpen = operationsStatus.isOpen;
   useCategoryStore((state) => state.categories);
 
   const disabledCategoryItem = items.find((item) => {
@@ -107,12 +105,12 @@ export const CartPage: React.FC = () => {
               قافلين دلوقتي ومش بنستقبل طلبات جديدة
             </h4>
             <p className="mt-0.5 leading-relaxed">
-              {isManualClosed ? (
-                closureMessage || 'استلام الطلبات متوقف مؤقتًا، وهنرجع نستقبل طلباتك قريب!'
-              ) : (
-                <>
-                  مواعيد شغلنا النهارده: <span className="font-bold">{todayHours || 'قافلين'}</span>. تقدر تقلب في السلة وتكمل طلبك أول ما نفتح.
-                </>
+              {operationsStatus.customerMessage}
+              {operationsStatus.nextOpeningText && operationsStatus.reason !== 'scheduled_closed' && (
+                <> — متوقع الفتح: <span className="font-bold">{operationsStatus.nextOpeningText}</span></>
+              )}
+              {operationsStatus.scheduleText && (
+                <> — مواعيد العمل: <span className="font-bold">{operationsStatus.scheduleText}</span></>
               )}
             </p>
           </div>

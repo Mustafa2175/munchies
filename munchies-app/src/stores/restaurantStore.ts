@@ -1,8 +1,9 @@
 /**
  * @module stores/restaurantStore
- * @description Centralized Zustand store for restaurant open/close status and weekly working hours.
+ * @description Centralized Zustand store for restaurant operating mode (Automatic vs Manual),
+ * operating hours (Africa/Cairo), and manual overrides.
  * Provides real-time sync via Firestore onSnapshot (cross-device), BroadcastChannel (cross-tab),
- * and localStorage persistence. Serves as the single source of truth for both Admin and Customer.
+ * and localStorage persistence. Delegates all open/closed evaluation to `lib/restaurantOperations`.
  */
 
 import { useState, useEffect } from 'react';
@@ -10,43 +11,29 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from '@/config/firebase';
-import { TIMEZONE } from '@/config/constants';
-import { toZonedTime } from 'date-fns-tz';
+import {
+  DEFAULT_OPENING_TIME,
+  DEFAULT_CLOSING_TIME,
+  DEFAULT_CLOSURE_MESSAGE,
+  DEFAULT_SCHEDULE,
+  computeNextScheduledOpening,
+  evaluateRestaurantStatus,
+  normalizeRestaurantSettings,
+  type EvaluatedRestaurantStatus,
+  type NormalizedOperationsSettings,
+  type OperatingMode,
+  type OverrideReopenCondition,
+  type WorkingHoursEntry,
+} from '@/lib/restaurantOperations';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-/** A single day's working hours entry. */
-export interface WorkingHoursEntry {
-  day: string;
-  open: string;   // HH:mm (24h)
-  close: string;  // HH:mm (24h)
-  active: boolean;
-}
-
-/** Default weekly schedule matching OperationsPage defaults. */
-export const DEFAULT_SCHEDULE: WorkingHoursEntry[] = [
-  { day: 'الأحد', open: '12:00', close: '03:00', active: true },
-  { day: 'الإثنين', open: '12:00', close: '03:00', active: true },
-  { day: 'الثلاثاء', open: '12:00', close: '03:00', active: true },
-  { day: 'الأربعاء', open: '12:00', close: '03:00', active: true },
-  { day: 'الخميس', open: '12:00', close: '03:00', active: true },
-  { day: 'الجمعة', open: '13:00', close: '04:00', active: true },
-  { day: 'السبت', open: '12:00', close: '03:00', active: true },
-];
-
-/**
- * Maps JS Date.getDay() index (0=Sunday) to Arabic day names.
- * Index matches the order in DEFAULT_SCHEDULE.
- */
-export const DAY_INDEX_TO_ARABIC: string[] = [
-  'الأحد',     // 0 = Sunday
-  'الإثنين',   // 1 = Monday
-  'الثلاثاء',  // 2 = Tuesday
-  'الأربعاء',  // 3 = Wednesday
-  'الخميس',    // 4 = Thursday
-  'الجمعة',    // 5 = Friday
-  'السبت',     // 6 = Saturday
-];
+export type {
+  WorkingHoursEntry,
+  OperatingMode,
+  OverrideReopenCondition,
+  EvaluatedRestaurantStatus,
+  NormalizedOperationsSettings,
+};
+export { DEFAULT_SCHEDULE };
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -56,114 +43,68 @@ const FIRESTORE_DOC_PATH = 'settings/restaurant';
 
 // ─── Store Interface ─────────────────────────────────────────────────────────
 
-interface RestaurantState {
+export interface RestaurantState extends NormalizedOperationsSettings {
+  /** Legacy compatibility flag kept in sync with operatingMode + manualOpen / manualOverrideClosed. */
   isManualClosed: boolean;
-  closureMessage: string;
-  workingHours: WorkingHoursEntry[];
   isLoaded: boolean;
 
-  // Actions
-  setManualClosed: (closed: boolean, message?: string) => void;
   setClosureMessage: (message: string) => void;
-  setWorkingHours: (schedule: WorkingHoursEntry[]) => void;
-  saveScheduleToFirestore: (schedule: WorkingHoursEntry[]) => Promise<void>;
+  saveOperationsSettings: (partial: Partial<NormalizedOperationsSettings>) => Promise<void>;
+  setManualOpenState: (open: boolean, message?: string) => Promise<void>;
+  setManualOverride: (
+    closed: boolean,
+    reopenCondition?: OverrideReopenCondition,
+    message?: string
+  ) => Promise<void>;
+  /** Legacy wrappers preserved for backward compatibility */
   toggleManualClosure: (closed: boolean, message?: string) => Promise<void>;
+  saveScheduleToFirestore: (schedule: WorkingHoursEntry[]) => Promise<void>;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-/** Parse "HH:mm" into total minutes since midnight. */
-function parseTimeToMinutes(time: string): number {
-  if (!time) return 0;
-  const [h, m] = time.split(':').map(Number);
-  return (h || 0) * 60 + (m || 0);
+function computeLegacyManualClosedFlag(s: Pick<
+  NormalizedOperationsSettings,
+  'operatingMode' | 'manualOpen' | 'manualOverrideClosed'
+>): boolean {
+  return s.operatingMode === 'manual' ? !s.manualOpen : s.manualOverrideClosed;
+}
+
+function extractNormalizedState(state: RestaurantState): NormalizedOperationsSettings {
+  return {
+    operatingMode: state.operatingMode,
+    openingTime: state.openingTime,
+    closingTime: state.closingTime,
+    manualOpen: state.manualOpen,
+    manualOverrideClosed: state.manualOverrideClosed,
+    manualOverrideUntil: state.manualOverrideUntil,
+    closureMessage: state.closureMessage,
+    useCustomDailySchedule: state.useCustomDailySchedule,
+    workingHours: state.workingHours,
+  };
 }
 
 /**
- * Determines if the restaurant is currently open based on schedule and manual override.
- * Evaluates in Cairo timezone. Handles overnight shifts crossing midnight.
+ * Evaluates the full restaurant operating state using the single shared logic.
+ */
+export function getRestaurantOperationsStatus(now: Date = new Date()): EvaluatedRestaurantStatus {
+  const state = useRestaurantStore.getState();
+  return evaluateRestaurantStatus(extractNormalizedState(state), now);
+}
+
+/**
+ * Determines if the restaurant is currently accepting orders.
  */
 export function isStoreCurrentlyOpen(): boolean {
-  const state = useRestaurantStore.getState();
-
-  // 1. Manual close overrides everything
-  if (state.isManualClosed) return false;
-
-  // 2. Check working hours schedule
-  try {
-    const now = toZonedTime(new Date(), TIMEZONE);
-    const currentDayIndex = now.getDay(); // 0=Sunday
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-    const schedule = state.workingHours;
-    if (!schedule || schedule.length === 0) return true; // No schedule = always open
-
-    // Check today's schedule
-    const todayArabicDay = DAY_INDEX_TO_ARABIC[currentDayIndex];
-    const todayEntry = schedule.find((e) => e.day === todayArabicDay);
-
-    if (todayEntry && todayEntry.active) {
-      const openMin = parseTimeToMinutes(todayEntry.open);
-      const closeMin = parseTimeToMinutes(todayEntry.close);
-
-      if (closeMin > openMin) {
-        // Normal shift: e.g., 12:00 to 23:00
-        if (currentMinutes >= openMin && currentMinutes < closeMin) {
-          return true;
-        }
-      } else {
-        // Overnight shift: e.g., 12:00 to 03:00 (close < open)
-        // Today's shift extends past midnight: open if currentTime >= openTime
-        if (currentMinutes >= openMin) {
-          return true;
-        }
-      }
-    }
-
-    // Check previous day's overnight shift that may still be active now (after midnight)
-    const prevDayIndex = (currentDayIndex + 6) % 7; // yesterday
-    const prevArabicDay = DAY_INDEX_TO_ARABIC[prevDayIndex];
-    const prevEntry = schedule.find((e) => e.day === prevArabicDay);
-
-    if (prevEntry && prevEntry.active) {
-      const prevOpenMin = parseTimeToMinutes(prevEntry.open);
-      const prevCloseMin = parseTimeToMinutes(prevEntry.close);
-
-      // Only if it's an overnight shift (close < open)
-      if (prevCloseMin <= prevOpenMin) {
-        // We're in the "after midnight" portion of yesterday's shift
-        if (currentMinutes < prevCloseMin) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  } catch (err) {
-    console.warn('Error evaluating working hours:', err);
-    return true; // Fail-open to avoid accidentally blocking orders
-  }
+  return getRestaurantOperationsStatus().isOpen;
 }
 
 /**
- * Returns a formatted string for today's working hours, e.g., "من 12:00 ظهراً إلى 03:00 فجراً".
- * Returns null if today is closed.
+ * Returns a formatted string for active schedule hours (e.g. "من 12:00 م إلى 3:00 ص"),
+ * or null in Manual Mode / inactive day.
  */
 export function getTodayWorkingHoursText(): string | null {
-  const state = useRestaurantStore.getState();
-  try {
-    const now = toZonedTime(new Date(), TIMEZONE);
-    const currentDayIndex = now.getDay();
-    const todayArabicDay = DAY_INDEX_TO_ARABIC[currentDayIndex];
-    const todayEntry = state.workingHours.find((e) => e.day === todayArabicDay);
-
-    if (todayEntry && todayEntry.active) {
-      return `من ${todayEntry.open} إلى ${todayEntry.close}`;
-    }
-    return null;
-  } catch {
-    return null;
-  }
+  return getRestaurantOperationsStatus().scheduleText;
 }
 
 // ─── BroadcastChannel helpers ────────────────────────────────────────────────
@@ -179,18 +120,14 @@ function getChannel(): BroadcastChannel | null {
 
 interface RestaurantSyncPayload {
   type: 'RESTAURANT_STATUS_UPDATED';
-  isManualClosed: boolean;
-  closureMessage: string;
-  workingHours: WorkingHoursEntry[];
+  settings: NormalizedOperationsSettings;
 }
 
-function broadcastStatus(state: Pick<RestaurantState, 'isManualClosed' | 'closureMessage' | 'workingHours'>) {
+function broadcastStatus(settings: NormalizedOperationsSettings) {
   try {
     const payload: RestaurantSyncPayload = {
       type: 'RESTAURANT_STATUS_UPDATED',
-      isManualClosed: state.isManualClosed,
-      closureMessage: state.closureMessage,
-      workingHours: state.workingHours,
+      settings,
     };
     getChannel()?.postMessage(payload);
   } catch {
@@ -198,15 +135,10 @@ function broadcastStatus(state: Pick<RestaurantState, 'isManualClosed' | 'closur
   }
 }
 
-/** Write restaurant status fields to Firestore settings/restaurant (merge). */
 async function syncStatusToFirestore(data: Record<string, unknown>) {
-  try {
-    if (!db) return;
-    const docRef = doc(db, FIRESTORE_DOC_PATH);
-    await setDoc(docRef, data, { merge: true });
-  } catch (err) {
-    console.warn('Error syncing restaurant status to Firestore:', err);
-  }
+  if (!db) return;
+  const docRef = doc(db, FIRESTORE_DOC_PATH);
+  await setDoc(docRef, data, { merge: true });
 }
 
 // ─── Zustand Store ───────────────────────────────────────────────────────────
@@ -214,45 +146,93 @@ async function syncStatusToFirestore(data: Record<string, unknown>) {
 export const useRestaurantStore = create<RestaurantState>()(
   persist(
     (set, get) => ({
+      operatingMode: 'automatic',
+      openingTime: DEFAULT_OPENING_TIME,
+      closingTime: DEFAULT_CLOSING_TIME,
+      manualOpen: true,
+      manualOverrideClosed: false,
+      manualOverrideUntil: null,
       isManualClosed: false,
-      closureMessage:
-        'معلش، مش بنستقبل طلبات دلوقتي عشان ضغط الشغل في المطبخ. هنرجع نفتح قريب!',
+      closureMessage: DEFAULT_CLOSURE_MESSAGE,
+      useCustomDailySchedule: false,
       workingHours: DEFAULT_SCHEDULE,
       isLoaded: false,
-
-      setManualClosed: (closed, message) => {
-        const updates: Partial<RestaurantState> = { isManualClosed: closed };
-        if (message !== undefined) updates.closureMessage = message;
-        set(updates);
-        broadcastStatus({ ...get(), ...updates });
-      },
 
       setClosureMessage: (message) => {
         set({ closureMessage: message });
       },
 
-      setWorkingHours: (schedule) => {
-        set({ workingHours: schedule });
-        broadcastStatus({ ...get(), workingHours: schedule });
+      saveOperationsSettings: async (partial) => {
+        const current = extractNormalizedState(get());
+        const merged = normalizeRestaurantSettings({
+          ...current,
+          ...partial,
+        });
+        const isManualClosed = computeLegacyManualClosedFlag(merged);
+
+        set({ ...merged, isManualClosed });
+        broadcastStatus(merged);
+
+        await syncStatusToFirestore({
+          operatingMode: merged.operatingMode,
+          openingTime: merged.openingTime,
+          closingTime: merged.closingTime,
+          manualOpen: merged.manualOpen,
+          manualOverrideClosed: merged.manualOverrideClosed,
+          manualOverrideUntil: merged.manualOverrideUntil,
+          isManualClosed,
+          closureMessage: merged.closureMessage,
+          useCustomDailySchedule: merged.useCustomDailySchedule,
+          workingHours: merged.workingHours,
+          updatedAt: new Date().toISOString(),
+        });
       },
 
-      saveScheduleToFirestore: async (schedule) => {
-        set({ workingHours: schedule });
-        broadcastStatus({ ...get(), workingHours: schedule });
-        await syncStatusToFirestore({
-          workingHours: schedule,
-          workingHoursUpdatedAt: new Date().toISOString(),
+      setManualOpenState: async (open, message) => {
+        const current = get();
+        const closureMessage = message !== undefined ? message : current.closureMessage;
+        await current.saveOperationsSettings({
+          operatingMode: 'manual',
+          manualOpen: open,
+          manualOverrideClosed: false,
+          manualOverrideUntil: null,
+          closureMessage,
+        });
+      },
+
+      setManualOverride: async (closed, reopenCondition = 'until_manual_reopen', message) => {
+        const current = extractNormalizedState(get());
+        const closureMessage = message !== undefined ? message : current.closureMessage;
+
+        let manualOverrideUntil: string | null = null;
+        if (closed && reopenCondition === 'until_next_open') {
+          const nextOpening = computeNextScheduledOpening(
+            { ...current, operatingMode: 'automatic' },
+            new Date()
+          );
+          manualOverrideUntil = nextOpening?.iso ?? null;
+        }
+
+        await get().saveOperationsSettings({
+          operatingMode: 'automatic',
+          manualOverrideClosed: closed,
+          manualOverrideUntil,
+          closureMessage,
         });
       },
 
       toggleManualClosure: async (closed, message) => {
-        const closureMsg = message || get().closureMessage;
-        set({ isManualClosed: closed, closureMessage: closureMsg });
-        broadcastStatus({ ...get(), isManualClosed: closed, closureMessage: closureMsg });
-        await syncStatusToFirestore({
-          isManualClosed: closed,
-          closureMessage: closureMsg,
-          manualClosureUpdatedAt: new Date().toISOString(),
+        const current = get();
+        if (current.operatingMode === 'manual') {
+          await current.setManualOpenState(!closed, message);
+        } else {
+          await current.setManualOverride(closed, 'until_manual_reopen', message);
+        }
+      },
+
+      saveScheduleToFirestore: async (schedule) => {
+        await get().saveOperationsSettings({
+          workingHours: schedule,
         });
       },
     }),
@@ -268,11 +248,11 @@ try {
   if (ch) {
     ch.addEventListener('message', (event) => {
       const data = event.data as RestaurantSyncPayload;
-      if (data?.type === 'RESTAURANT_STATUS_UPDATED') {
+      if (data?.type === 'RESTAURANT_STATUS_UPDATED' && data.settings) {
+        const normalized = normalizeRestaurantSettings(data.settings);
         useRestaurantStore.setState({
-          isManualClosed: data.isManualClosed,
-          closureMessage: data.closureMessage,
-          workingHours: data.workingHours,
+          ...normalized,
+          isManualClosed: computeLegacyManualClosedFlag(normalized),
         });
       }
     });
@@ -287,12 +267,11 @@ if (typeof window !== 'undefined') {
     if (e.key === STORAGE_KEY && e.newValue) {
       try {
         const parsed = JSON.parse(e.newValue);
-        const state = parsed?.state;
-        if (state) {
+        if (parsed?.state) {
+          const normalized = normalizeRestaurantSettings(parsed.state);
           useRestaurantStore.setState({
-            isManualClosed: !!state.isManualClosed,
-            closureMessage: state.closureMessage || '',
-            workingHours: Array.isArray(state.workingHours) ? state.workingHours : DEFAULT_SCHEDULE,
+            ...normalized,
+            isManualClosed: computeLegacyManualClosedFlag(normalized),
           });
         }
       } catch {
@@ -310,19 +289,12 @@ try {
       (snap) => {
         if (snap.exists()) {
           const data = snap.data();
-          const updates: Partial<RestaurantState> = { isLoaded: true };
-
-          if (typeof data.isManualClosed === 'boolean') {
-            updates.isManualClosed = data.isManualClosed;
-          }
-          if (typeof data.closureMessage === 'string') {
-            updates.closureMessage = data.closureMessage;
-          }
-          if (Array.isArray(data.workingHours) && data.workingHours.length > 0) {
-            updates.workingHours = data.workingHours;
-          }
-
-          useRestaurantStore.setState(updates);
+          const normalized = normalizeRestaurantSettings(data);
+          useRestaurantStore.setState({
+            ...normalized,
+            isManualClosed: computeLegacyManualClosedFlag(normalized),
+            isLoaded: true,
+          });
         } else {
           useRestaurantStore.setState({ isLoaded: true });
         }
@@ -338,25 +310,49 @@ try {
 }
 
 /**
- * React hook that re-evaluates `isStoreCurrentlyOpen()` every 30 seconds
- * so that schedule-based transitions (reaching open/close time) are reflected
- * in the UI without requiring a page refresh or Firestore change.
+ * React hook returning the full evaluated operating status, re-evaluating automatically
+ * every 15 seconds so scheduled opening/closing/override transitions update live in UI.
  */
-export function useIsStoreOpen(): boolean {
-  const isManualClosed = useRestaurantStore((s) => s.isManualClosed);
+export function useRestaurantOperationsStatus(): EvaluatedRestaurantStatus {
+  const operatingMode = useRestaurantStore((s) => s.operatingMode);
+  const openingTime = useRestaurantStore((s) => s.openingTime);
+  const closingTime = useRestaurantStore((s) => s.closingTime);
+  const manualOpen = useRestaurantStore((s) => s.manualOpen);
+  const manualOverrideClosed = useRestaurantStore((s) => s.manualOverrideClosed);
+  const manualOverrideUntil = useRestaurantStore((s) => s.manualOverrideUntil);
+  const closureMessage = useRestaurantStore((s) => s.closureMessage);
+  const useCustomDailySchedule = useRestaurantStore((s) => s.useCustomDailySchedule);
   const workingHours = useRestaurantStore((s) => s.workingHours);
 
-  const [isOpen, setIsOpen] = useState(() => isStoreCurrentlyOpen());
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
 
   useEffect(() => {
-    setIsOpen(isStoreCurrentlyOpen());
-
     const timer = setInterval(() => {
-      setIsOpen(isStoreCurrentlyOpen());
-    }, 30_000);
+      setNowMs(Date.now());
+    }, 15_000);
 
     return () => clearInterval(timer);
-  }, [isManualClosed, workingHours]);
+  }, []);
 
-  return isOpen;
+  return evaluateRestaurantStatus(
+    {
+      operatingMode,
+      openingTime,
+      closingTime,
+      manualOpen,
+      manualOverrideClosed,
+      manualOverrideUntil,
+      closureMessage,
+      useCustomDailySchedule,
+      workingHours,
+    },
+    new Date(nowMs)
+  );
+}
+
+/**
+ * React hook returning whether the restaurant is currently accepting new orders.
+ */
+export function useIsStoreOpen(): boolean {
+  return useRestaurantOperationsStatus().isOpen;
 }

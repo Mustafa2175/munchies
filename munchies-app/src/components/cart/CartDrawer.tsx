@@ -11,7 +11,7 @@ import { useCartStore } from '@/stores/cartStore';
 import { useUIStore } from '@/stores/uiStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useProductStore, isProductAvailable } from '@/stores/productStore';
-import { useIsStoreOpen, useRestaurantStore } from '@/stores/restaurantStore';
+import { useRestaurantOperationsStatus } from '@/stores/restaurantStore';
 import { useCategoryStore, isCategoryActive, getCategoryName } from '@/stores/categoryStore';
 import { CartItem } from './CartItem';
 import { CartSummary } from './CartSummary';
@@ -29,8 +29,8 @@ export const CartDrawer: React.FC = () => {
   const items = useCartStore((state) => state.items);
   const itemCount = useCartStore((state) => state.getItemCount());
   const products = useProductStore((state) => state.products);
-  const isStoreOpen = useIsStoreOpen();
-  const closureMessage = useRestaurantStore((state) => state.closureMessage);
+  const operationsStatus = useRestaurantOperationsStatus();
+  const isStoreOpen = operationsStatus.isOpen;
   // Re-render when categories update
   useCategoryStore((state) => state.categories);
 
@@ -138,7 +138,7 @@ export const CartDrawer: React.FC = () => {
               <AlertTriangle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
               <div>
                 <span className="font-black block">قافلين دلوقتي:</span>
-                <span>{closureMessage || 'معلش، مش بنستقبل طلبات دلوقتي عشان المطعم قافل.'}</span>
+                <span>{operationsStatus.customerMessage}</span>
               </div>
             </div>
           )}

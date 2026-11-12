@@ -6,7 +6,8 @@
 import { doc, collection, getDoc, setDoc, runTransaction, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/config/firebase';
 import { updateOrderStatusInFirestore } from '@/lib/firestore';
-import { isStoreCurrentlyOpen } from '@/stores/restaurantStore';
+import { getRestaurantOperationsStatus } from '@/stores/restaurantStore';
+import { evaluateRestaurantStatus } from '@/lib/restaurantOperations';
 import { isProductAvailable, useProductStore } from '@/stores/productStore';
 import { normalizeEgyptianPhone, normalizeEmail, normalizeFullName } from '@/lib/validators';
 import type { Order, OrderStatus } from '@/types';
@@ -90,8 +91,21 @@ export async function callCreateOrder(
     throw new Error('يجب تسجيل الدخول أولاً لإتمام الطلب.');
   }
 
-  if (!isStoreCurrentlyOpen()) {
-    throw new Error('معلش، إحنا قافلين دلوقتي ومبنستقبلش طلبات جديدة. راجعنا قريب!');
+  // Validate live restaurant operating mode & schedule directly against Firestore
+  let operatingStatus = getRestaurantOperationsStatus();
+  try {
+    const settingsSnap = await getDoc(doc(db, 'settings', 'restaurant'));
+    if (settingsSnap.exists()) {
+      operatingStatus = evaluateRestaurantStatus(settingsSnap.data(), new Date());
+    }
+  } catch {
+    // Fall back to real-time synced store if offline
+  }
+
+  if (!operatingStatus.isOpen) {
+    throw new Error(
+      operatingStatus.customerMessage || 'معلش، إحنا قافلين دلوقتي ومبنستقبلش طلبات جديدة. راجعنا قريب!'
+    );
   }
 
   const storeProducts = useProductStore.getState().products;

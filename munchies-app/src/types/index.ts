@@ -240,6 +240,14 @@ export interface RestaurantSettings {
   description: LocalizedText;
   phone: string;
   address: LocalizedText;
+  operatingMode?: 'automatic' | 'manual';
+  openingTime?: string;
+  closingTime?: string;
+  manualOpen?: boolean;
+  manualOverrideClosed?: boolean;
+  manualOverrideUntil?: string | null;
+  closureMessage?: string | LocalizedText;
+  useCustomDailySchedule?: boolean;
   workingHours?: any;
   deliveryFee?: number;
   freeDeliveryMinimum?: number;

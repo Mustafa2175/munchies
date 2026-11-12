@@ -313,7 +313,7 @@ export const OrdersPage: React.FC = () => {
     .reduce((sum, o) => sum + (o.total || 0), 0);
 
   // Shift hours
-  const workingHoursText = getTodayWorkingHoursText() || 'من 12:00 م إلى 03:00 ص';
+  const workingHoursText = getTodayWorkingHoursText() || 'التحكم اليدوي';
 
   return (
     <div className="w-full space-y-6">

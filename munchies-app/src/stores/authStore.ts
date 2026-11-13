@@ -770,8 +770,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
-    // 1. Attempt server-side refresh token revocation via Cloud Function (fire-and-forget failsafe)
-    if (auth.currentUser) {
+    // 1. Server-side session revocation is gated behind VITE_ENABLE_REVOKE_SESSION_FUNCTION.
+    // By default, do NOT call the undeployed Cloud Function endpoint to avoid 404 CORS console errors.
+    // Standard Firebase client signOut(auth) and local state cleanup handle logout cleanly.
+    const enableServerRevoke =
+      (typeof import.meta !== 'undefined' &&
+        import.meta.env &&
+        import.meta.env.VITE_ENABLE_REVOKE_SESSION_FUNCTION === 'true') ||
+      false;
+
+    if (enableServerRevoke && auth.currentUser) {
       try {
         const revokeFn = httpsCallable(functions, 'revokeUserSession');
         await withTimeout(revokeFn().catch(() => {}), 1500, null);

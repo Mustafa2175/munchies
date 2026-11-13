@@ -27,10 +27,10 @@ export const BuilderIntro: React.FC<BuilderIntroProps> = ({ onStart }) => {
       {/* Copy */}
       <div className="space-y-3">
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-dark leading-tight">
-          اصنع ساندوتشك بنفسك
+          اعمل ساندوتشك بنفسك
         </h1>
         <p className="text-sm sm:text-base text-medium-gray max-w-md mx-auto leading-relaxed">
-          اختار المكونات اللي بتحبها وكون ساندوتش فريد من نوعه.
+          اختار مكوناتك، وظبطه على مزاجك
         </p>
       </div>
 
@@ -54,7 +54,7 @@ export const BuilderIntro: React.FC<BuilderIntroProps> = ({ onStart }) => {
           leftIcon={ArrowLeft}
           className="font-bold text-base px-8 h-12 shadow-sm hover:shadow"
         >
-          ابدأ البناء
+          يلا نبدأ!
         </Button>
       </div>
     </div>
